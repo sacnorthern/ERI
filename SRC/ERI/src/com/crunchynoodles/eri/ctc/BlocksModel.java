@@ -10,6 +10,7 @@ import com.crunchynoodles.eri.block.interfaces.CtcTurnoutItem;
 import com.crunchynoodles.eri.block.interfaces.CtcBlockItemListener;
 import com.crunchynoodles.eri.block.interfaces.CtcSignalMastItemListener;
 import com.crunchynoodles.eri.block.interfaces.CtcBlockItem;
+import com.crunchynoodles.eri.ctc.exceptions.UnknownCtcBlockException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -34,11 +35,14 @@ public class BlocksModel {
         this.m_baseline_model = null;
 
         m_blocks = new HashMap<>();
+        m_block_change_reasons = new HashMap<>();
+
         m_signals = new HashMap<>();
+
         m_turnouts = new HashMap<>();
+        m_turnout_veto_listeners = new ArrayList<>();
 
         m_change_listeners = new EventListenerList();
-        m_turnout_veto_listeners = new ArrayList<>();
 
     }
 
@@ -84,6 +88,8 @@ public class BlocksModel {
         this.m_baseline_model = null;
 
         this.m_blocks = null;
+        this.m_block_change_reasons = null;
+
         this.m_signals = null;
         this.m_turnouts = null;
         this.m_turnout_veto_listeners = null;
@@ -148,6 +154,7 @@ public class BlocksModel {
 
     /***
      *  Add a list of blocks.  After the batch is in, the block-changed event is fired.
+     *  Used during initialization to populate the model.
      * @param new_block_list array of blocks to add, could be null or empty.
      */
     public void     addBlocks( CtcBlockItem[] new_block_list )
@@ -167,6 +174,40 @@ public class BlocksModel {
         //  If stuff added to baseline, then fire the event!
         if( new_block_list != null && new_block_list.length > 0 && this.m_baseline_model != null )
             this.fireBlockOccupancyChanged( new_block_list, BlockItemChangedEvent.CUZ_ADD_TO_MODEL );
+    }
+
+    /***
+     *  Note a change-reason for some block (reference provided),
+     *  firing change-event when trx completes or immediately if model is baseline.
+     *  Clients are given references that they are expected to change as needed.
+     *  After modifying ( we don't know <em>when</em> the changes occurred ),
+     *  client calls here with a change-reason code.
+     *  The name cannot be changed here; otherwise {link UnknownCtcBlockException} is thrown.
+     *
+     * @param changed_block referenced to block already in model.
+     * @param reason_flags See {@link BlockItemChangedEvent} {@code CUZ_ZZZ} codes
+     */
+    public void     updateBlock( CtcBlockItem changed_block, int reason_flags )
+    {
+        if( changed_block == null )
+            return;
+
+        if( getBlock( changed_block.getName() ) == null )
+        {
+            throw new UnknownCtcBlockException( "Block " + changed_block.getName() + "unknown" );
+        }
+
+        Integer  now_value = m_block_change_reasons.get( changed_block.getName() );
+        if( now_value != null )
+        {
+            now_value = now_value.intValue() | reason_flags;
+        }
+        else
+        {
+            now_value = new Integer( reason_flags );
+        }
+        m_block_change_reasons.put( changed_block.getName(), now_value );
+
     }
 
     /***
@@ -529,6 +570,8 @@ public class BlocksModel {
     // ArrayList<>  : Note that this implementation is not synchronized
 
     protected HashMap<String, CtcBlockItem>   m_blocks;
+
+    private HashMap< String, Integer >  m_block_change_reasons;
 
     protected HashMap<String, CtcSignalMastItem>  m_signals;
 
