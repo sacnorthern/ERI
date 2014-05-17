@@ -25,7 +25,7 @@ package com.crunchynoodles.eri.block.interfaces;
  */
 public interface CtcSignalMastItem extends CtcModelItem {
 
-    //---------------  JDK 7 Enums  ----------------
+    //-------------------------  JDK 7 Enums  --------------------------
 
     public enum ROUTE_CHOICE {
         NONE(0),
@@ -100,7 +100,7 @@ public interface CtcSignalMastItem extends CtcModelItem {
 
     public SPEED_CHOICE     getEffectiveSpeedAspect();
 
-    //-----------------  BLOCKS  ------------------
+    //---------------------------  BLOCKS  ----------------------------
 
     /***
      * @return Block to which signal protects entry.
@@ -114,7 +114,7 @@ public interface CtcSignalMastItem extends CtcModelItem {
 
     public void     setMilepost( float milage );
 
-    //---------------  FINER POINTS  ----------------
+    //-------------------------  FINER POINTS  --------------------------
 
     /***
      * @return {@code true} if signal is absolute, i.e. STOP cannot be passed without permission.
@@ -144,7 +144,7 @@ public interface CtcSignalMastItem extends CtcModelItem {
 
     public void setHeadCount( int heads );
 
-    //-----------------  MUTATORS  ------------------
+    //---------------------------  MUTATORS  ----------------------------
 
     /***
      *  Set signal to full-stop, all signals STOP.

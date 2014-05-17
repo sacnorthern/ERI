@@ -30,21 +30,21 @@ public class BlocksView
         this.m_model = model;
     }
 
-    //-------------  BLOCK ITEM LISTENER  ------------
+    //-----------------------  BLOCK ITEM LISTENER  ----------------------
 
     @Override
     public void ctcBlockChanged( BlockItemChangedEvent evt ) {
         throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
     }
 
-    //------------  SIGNAL MAST LISTENER  ------------
+    //----------------------  SIGNAL MAST LISTENER  ----------------------
 
     @Override
     public void ctcSignalChanged( SignalMastItemChangedEvent evt ) {
         throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
     }
 
-    //--------------  TURNOUT LISTENER  --------------
+    //------------------------  TURNOUT LISTENER  ------------------------
 
     @Override
     public void ctcTurnoutChanged( TurnoutItemChangedEvent evt ) {
@@ -56,7 +56,7 @@ public class BlocksView
         throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
     }
 
-    //----------------  INSTANCE VARS  ---------------
+    //--------------------------  INSTANCE VARS  -------------------------
 
     protected BlocksModel   m_model;
 

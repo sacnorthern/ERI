@@ -19,7 +19,7 @@ package com.crunchynoodles.eri.block.interfaces;
  */
 public interface CtcTurnoutItem extends CtcModelItem {
 
-    //---------------  JDK 7 Enums  ----------------
+    //-------------------------  JDK 7 Enums  --------------------------
 
     public enum TURNOUT_LEADS_TO {
         MAIN(10),
@@ -50,7 +50,7 @@ public interface CtcTurnoutItem extends CtcModelItem {
         }
     }
 
-    //-----------------  BLOCKS  ------------------
+    //---------------------------  BLOCKS  ----------------------------
 
     /***
      * @return Block where turnout lives.
@@ -86,7 +86,7 @@ public interface CtcTurnoutItem extends CtcModelItem {
      */
     public TURNOUT_DIVERAGE_DIRECTION getDiverageDirection( int which );
 
-    //-----------------  ROUTES  ------------------
+    //---------------------------  ROUTES  ----------------------------
 
     /***
      * @return MAX routes possible.  Route 1 is straight-most.
@@ -105,7 +105,7 @@ public interface CtcTurnoutItem extends CtcModelItem {
      */
     public int setRoute( int which );
 
-    //--------------  ROUTE LOCKS  ---------------
+    //------------------------  ROUTE LOCKS  -------------------------
 
     /***
      * @return Return bitmask of reasons turnout is locked, 0 = none.
@@ -126,7 +126,7 @@ public interface CtcTurnoutItem extends CtcModelItem {
      */
     public void setLockingFlag( int flag );
 
-    //--------------  ROUTE SPEED  ----------------
+    //------------------------  ROUTE SPEED  --------------------------
 
     /***
      *  Ask for maximum speed of some route over a turnout.

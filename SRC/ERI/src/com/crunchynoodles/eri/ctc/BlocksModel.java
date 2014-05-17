@@ -52,7 +52,7 @@ public class BlocksModel {
         //  model will fire change events.
     }
 
-    //---------------  TRANSACTION  ---------------
+    //-------------------------  TRANSACTION  -------------------------
 
     /***
      *  Copy over the event listeners into this object.
@@ -131,7 +131,7 @@ public class BlocksModel {
         _wipeFields();
     }
 
-    //-----------------  BLOCKS  ------------------
+    //---------------------------  BLOCKS  ----------------------------
 
     /***
      *  Insert one block into model.
@@ -237,7 +237,7 @@ public class BlocksModel {
         return blk;
     }
 
-    //-----------------  SIGNALS  -----------------
+    //---------------------------  SIGNALS  ---------------------------
 
     /***
      *  Makes a shallow-list, i.e. every item is a reference into model.
@@ -312,7 +312,7 @@ public class BlocksModel {
         return sm;
     }
 
-    //----------------  TURNOUTS  -----------------
+    //-------------------------  TURNOUTS  ---------------------------
 
     /***
      *  Makes a shallow-list, i.e. every item is a reference into model.
@@ -388,7 +388,7 @@ public class BlocksModel {
         return turn;
     }
 
-    //----------------  LISTENERS  ----------------
+    //--------------------------  LISTENERS  --------------------------
 
     /***
      *  Add a listener for block changed events,
@@ -514,7 +514,7 @@ public class BlocksModel {
         m_change_listeners.remove( CtcTurnoutItemListener.class, me );
     }
 
-    //----------------  INSTANCE VARS  ---------------
+    //--------------------------  INSTANCE VARS  -------------------------
 
     /***
      *  Data access READER/WRITER lock.
@@ -534,7 +534,7 @@ public class BlocksModel {
 
     protected HashMap<String, CtcTurnoutItem> m_turnouts;
 
-    //---------------  LISTENER SUPPORT  -------------
+    //-------------------------  LISTENER SUPPORT  -----------------------
 
     private EventListenerList   m_change_listeners;
 

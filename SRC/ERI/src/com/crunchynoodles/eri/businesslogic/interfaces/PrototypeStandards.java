@@ -18,7 +18,7 @@ import java.util.UUID;
  */
 public interface PrototypeStandards {
 
-    //----------------  DESIGNER  -----------------
+    //--------------------------  DESIGNER  ---------------------------
 
     /*** Short name of this prototype standard, e.g. "1940's SP" */
     public final static int   PROP_NAME_SHORT = 1;
@@ -51,7 +51,7 @@ public interface PrototypeStandards {
      */
     public UUID         getVersionGuid();
 
-    //-----------------  GENERAL  -----------------
+    //---------------------------  GENERAL  ---------------------------
 
     public NumericSpan<Integer> getYearRange();
 

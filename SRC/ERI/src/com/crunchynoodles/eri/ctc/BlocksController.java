@@ -4,6 +4,9 @@
  */
 package com.crunchynoodles.eri.ctc;
 
+import java.util.ArrayList;
+import com.crunchynoodles.eri.block.interfaces.CtcBlockItem;
+
 /**
  *
  *  <pre><tt>
@@ -22,7 +25,15 @@ public class BlocksController {
         this.m_model = model;
     }
 
-    //----------------  INSTANCE VARS  ---------------
+    public void updateBlocks( ArrayList<CtcBlockItem> changed_blocks, int reason_flags )
+    {
+        for( CtcBlockItem blk : changed_blocks )
+        {
+            m_model.updateBlock( blk, reason_flags );
+        }
+    }
+
+    //--------------------------  INSTANCE VARS  -------------------------
 
     protected BlocksModel   m_model;
 

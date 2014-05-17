@@ -70,7 +70,7 @@ public class NumericSpan<T extends Number> {
     public T getHigh() { return this.m_high; }
     public void setHigh( T v ) { this.m_high = v; }
 
-    //----------------  INSTANCE VARS  ---------------
+    //--------------------------  INSTANCE VARS  -------------------------
 
     private T     m_low;
     private T     m_high;

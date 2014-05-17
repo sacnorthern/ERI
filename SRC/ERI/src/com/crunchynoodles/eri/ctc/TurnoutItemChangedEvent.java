@@ -81,7 +81,7 @@ public class TurnoutItemChangedEvent extends java.util.EventObject
 
     public CtcTurnoutItem  getTurnout() { return (CtcTurnoutItem) this.source; }
 
-    //----------------  INSTANCE VARS  ---------------
+    //--------------------------  INSTANCE VARS  -------------------------
 
     private int             m_reasons;
 
