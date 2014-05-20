@@ -4,7 +4,7 @@
  */
 package org.embeddedrailroad.eri.block.interfaces;
 
-import com.crunchynoodles.eri.util.NumericSpan;
+import org.embeddedrailroad.eri.util.NumericSpan;
 import java.util.UUID;
 
 /**

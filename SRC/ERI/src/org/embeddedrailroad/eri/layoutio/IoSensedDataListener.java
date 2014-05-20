@@ -14,6 +14,6 @@ public interface IoSensedDataListener extends EventListener {
 
     public void     ioDataChanged( Object device_addr, boolean[] old_bits, boolean[] new_bits );
 
-    public void     ioBlobChanged( Object device_addr, boolean[] old_bits, boolean[] new_bits );
+    public void     ioBlobChanged( Object device_addr, byte[] old_bits, byte[] new_bits );
 
 }
