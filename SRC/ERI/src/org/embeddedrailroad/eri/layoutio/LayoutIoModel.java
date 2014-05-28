@@ -14,7 +14,7 @@ import java.util.HashMap;
  *
  * @author brian
  */
-public interface LayoutIoModel<TUnitAddr> {
+public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
 
     //------------------  SENSED DATA FORM DEVICE  -------------------
 
@@ -53,9 +53,11 @@ public interface LayoutIoModel<TUnitAddr> {
      *  Return the value of just one sensor.
      * @param device address of device
      * @param bit_number the input sense to retrieve.
-     * @return {@code true} if one, else {@code false} if off or never set.
+     * @return {@code true} if one, else {@code false} if off.
+     * @exception ArrayIndexOutOfBoundsException if {@code bit_number} out-of-bounds.
      */
-    public boolean      getSensedDataOne( TUnitAddr device, int bit_number );
+    public boolean      getSensedDataOne( TUnitAddr device, int bit_number )
+            throws ArrayIndexOutOfBoundsException;
 
     /***
      *  Return a blob of data as sensed from a device.
