@@ -35,7 +35,8 @@ public class CmriLayoutModelImplTest {
                 return;
             if( (expecteds == null && actuals != null) ||
                 (expecteds != null && actuals == null) )
-                return;
+                throw new ArrayComparisonFailure( mesg, null, 0 );
+
             int  el = expecteds.length;
             if( el != actuals.length )
                 throw new ArrayComparisonFailure( mesg, null, Math.max( el, actuals.length ) );
