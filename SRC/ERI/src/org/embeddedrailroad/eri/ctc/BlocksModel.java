@@ -60,22 +60,27 @@ public class BlocksModel {
      *  Element count must be even, [n] is class and [n+1] is listener object.
      * @param ell collection of listeners to copy
      */
-    private void _copyListeners( EventListenerList ell )
-    {
-        Object listeners[] = ell.getListenerList();
-
-        for (int j = listeners.length-2; j>=0; j-=2) {
-            try {
-                Class <EventListener>  which = (Class <EventListener>) listeners[j];
-                EventListener  it = (EventListener) listeners[j+1];
-                this.m_change_listeners.add( which, it );
-            } catch( Exception e )
-            {
-                // do nothing, copy is aborted.
-                // but this should not happen!
-            }
-        }
-    }
+    // Transactions keep their own list of listeners, if any.
+    // When the trx commits, the baseline's listeners are notified.
+    // That way if trx aborts, no listeners need to undo their reaction.
+    //      brian witt, May 2014.
+    //
+//    private void _copyListeners( EventListenerList ell )
+//    {
+//        Object listeners[] = ell.getListenerList();
+//
+//        for (int j = listeners.length-2; j>=0; j-=2) {
+//            try {
+//                Class <EventListener>  which = (Class <EventListener>) listeners[j];
+//                EventListener  it = (EventListener) listeners[j+1];
+//                this.m_change_listeners.add( which, it );
+//            } catch( Throwable e )
+//            {
+//                // do nothing, copy is aborted.
+//                // but this should not happen!
+//            }
+//        }
+//    }
 
     /***
      *  Setting lists to null will surely cause an exception if caller tries to use them!
@@ -231,7 +236,7 @@ public class BlocksModel {
                 //  allows us to modify the underlying list.
                 Set<String> overrides = m_blocks.keySet();
                 ListIterator<CtcBlockItem>  has_list = list.listIterator();
-                CtcBlockItem    c = null;
+                CtcBlockItem    c;
 
                 //  Remove those that will be overwritten.
                 while( has_list.hasNext() )
