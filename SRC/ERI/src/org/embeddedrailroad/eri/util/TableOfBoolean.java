@@ -63,33 +63,33 @@ public class TableOfBoolean {
 
     public Iterator<Boolean> iterator()
     {
-        return new TableIterator<>();
+        return new TableIterator<Boolean>();
     }
 
     private class TableIterator<E extends Boolean> implements Iterator<E>
     {
-        int  index;             // current slot
+        int  m_index;             // current slot
 
         TableIterator()
         {
-            index = -1;
+            m_index = -1;
             if( hasNext() == false )
-                index = m_has_value.length + 1;
+                m_index = m_has_value.length + 1;
 
         }
 
         @Override
         public final boolean hasNext() {
-            return( index == -1 || index < m_has_value.length );
+            return( m_index == -1 || m_index < m_has_value.length );
         }
 
         final Boolean nextEntry()
         {
-            while( ++index < m_has_value.length )
+            while( ++m_index < m_has_value.length )
             {
-                if( m_has_value[index] )
+                if( m_has_value[m_index] )
                 {
-                    return new java.lang.Boolean( m_value[index] );
+                    return new java.lang.Boolean( m_value[m_index] );
                 }
             }
 
@@ -105,10 +105,10 @@ public class TableOfBoolean {
         @Override
         public final void remove()
         {
-            if( index < 0 )
+            if( m_index < 0 )
                 throw new IllegalStateException();
-            TableOfBoolean.this.m_has_value[ index ] = false;
-            ++index;
+            TableOfBoolean.this.m_has_value[ m_index ] = false;
+            ++m_index;
         }
     }
 
