@@ -7,8 +7,11 @@ package org.embeddedrailroad.eri.layoutio.cmri;
 // import java.lang.Integer;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.embeddedrailroad.eri.layoutio.LayoutIoModel;
 
 
@@ -17,7 +20,7 @@ import org.embeddedrailroad.eri.layoutio.LayoutIoModel;
  * @author brian
  * @param <java>
  */
-public class CmriLayoutModelImpl<Integer> implements LayoutIoModel
+public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
 {
     public CmriLayoutModelImpl()
     {
@@ -40,32 +43,58 @@ public class CmriLayoutModelImpl<Integer> implements LayoutIoModel
     //--------------------------  DATA SETTORS  --------------------------
 
     @Override
-    public void setSensedBinaryData( Comparable device, boolean[] new_bits )
+    public void setSensedBinaryData( Integer device, boolean[] new_bits )
     {
+        /***
+         *  'device' cannot be null.
+         *  'new_bits' as null means remove info about 'device'.
+         */
+        if( device == null )
+            throw new NullPointerException("device cannot be null");
+
+        m_lock.writeLock().lock();
         try
         {
             Integer  dev = (Integer) device;
-            m_inputs.put( dev, (boolean[]) new_bits.clone() );
+            if( new_bits != null )
+            {
+                m_inputs.put( dev, (boolean[]) new_bits.clone() );
+            }
+            else
+            {
+                m_inputs.remove( dev );
+            }
         }
         catch( Throwable ex )
         {
             System.out.println( "ERROR in setSensedBinaryData(): " + ex.toString() );
+            ex.printStackTrace( System.out );
+        }
+        finally
+        {
+            m_lock.writeLock().unlock();
         }
     }
 
     @Override
-    public void setSensedBinaryData( Comparable device, HashMap individual_bits )
+    public void setSensedBinaryData( Integer device, HashMap<Integer, Boolean> individual_bits )
     {
         /***
          *  'individual_bits' is type HashMap< Integer, Boolean > for CMRI.
          *  The 'individual_bits' are copied one-at-a-time into the object.
          */
+        if( device == null )
+            throw new NullPointerException("device cannot be null");
+        if( individual_bits == null )
+            return;
+
+        m_lock.writeLock().lock();
         try
         {
             Integer  dev = (Integer) device;
 
             //  1.  Determine highest bit number in individual_bits
-            Set<java.lang.Integer>   keys = individual_bits.keySet();
+            Set<Integer>   keys = individual_bits.keySet();
             int  max = 0;
 
             for( java.lang.Integer itemp : keys )
@@ -92,20 +121,31 @@ public class CmriLayoutModelImpl<Integer> implements LayoutIoModel
             }
 
             //  3.  Copy of the changes, not changing if not mentioned in 'individual_bits'.
-            for (Object entry : individual_bits.entrySet() )
+            //      With a Set, bit numbers can be in any order!
+            //      I had a lot of trouble getting the types to match up...  :(
+            Iterator  everything = individual_bits.entrySet().iterator();
+
+            while( everything.hasNext() )
             {
-                Boolean  there = (Boolean) individual_bits.get( entry );
-                dev_bits[ ((java.lang.Integer)entry).intValue() ] = there.booleanValue();
+                Map.Entry<Integer, Boolean>  entry = (Map.Entry<Integer, Boolean>) everything.next();
+
+                Boolean  there = (Boolean) entry.getValue();
+                dev_bits[ entry.getKey() ] = there.booleanValue();
             }
         }
         catch( Throwable ex )
         {
             System.out.println("ERROR in setSensedBinaryData(" + device.toString() + "): " + ex.toString() );
+            ex.printStackTrace( System.out );
+        }
+        finally
+        {
+            m_lock.writeLock().unlock();
         }
     }
 
     @Override
-    public void setSensedBinaryBlob( Comparable device, int subfunction, byte[] blob )
+    public void setSensedBinaryBlob( Integer device, int subfunction, byte[] blob )
     {
         /**
          *  E.g. device "6.22.19" on subfunction "3" has bytes from an RFID reader,
@@ -116,7 +156,12 @@ public class CmriLayoutModelImpl<Integer> implements LayoutIoModel
          *  of one 8-bit value.
          *
          *  The 'blob' is cloned before storing.
+         *  If null, then it is removed.
          */
+        if( device == null )
+            throw new NullPointerException("device cannot be null");
+
+        m_lock.writeLock().lock();
         try
         {
             Integer  dev = (Integer) device;
@@ -130,23 +175,38 @@ public class CmriLayoutModelImpl<Integer> implements LayoutIoModel
             HashMap< Integer, byte[] >  funct = m_blobs.get( dev );
 
             //  2.  Store the sub-function blob.
-            funct.put( subf, (byte[]) blob.clone() );
+            if( blob != null )
+            {
+                funct.put( subf, (byte[]) blob.clone() );
+            }
+            else
+            {
+                funct.remove( subf );
+            }
         }
         catch( Throwable ex )
         {
             System.out.println("ERROR in setSensedBinaryData(" + device.toString() + "): " + ex.toString() );
+            ex.printStackTrace( System.out );
+        }
+        finally
+        {
+            m_lock.writeLock().unlock();
         }
     }
 
     //--------------------------  DATA GETTORS  --------------------------
 
     @Override
-    public boolean[] getSensedDataAll( Comparable device )
+    public boolean[] getSensedDataAll( Integer device )
     {
         /***
          *  Returned array is direct reference to what is stored, so please don't
          *  modify it.  However, caller can modify it, just be careful, OK?
          */
+        if( device == null )
+            throw new NullPointerException("device cannot be null");
+
         Integer  dev = null;
         try
         {
@@ -162,6 +222,7 @@ public class CmriLayoutModelImpl<Integer> implements LayoutIoModel
         catch( Throwable ex )
         {
             System.out.println("ERROR in getSensedDataAll(" + device.toString() + "): " + ex.toString() );
+            ex.printStackTrace( System.out );
             return new boolean[0];
         }
 
@@ -169,9 +230,12 @@ public class CmriLayoutModelImpl<Integer> implements LayoutIoModel
     }
 
     @Override
-    public boolean getSensedDataOne( Comparable device, int bit_number )
+    public boolean getSensedDataOne( Integer device, int bit_number )
             throws ArrayIndexOutOfBoundsException
     {
+        if( device == null )
+            throw new NullPointerException("device cannot be null");
+
         boolean[]   whole = getSensedDataAll( device );
 
         if( bit_number < 0 || bit_number >= whole.length )
@@ -183,12 +247,17 @@ public class CmriLayoutModelImpl<Integer> implements LayoutIoModel
     }
 
     @Override
-    public byte[] getSensedBlob( Comparable device, int subfunction )
+    public byte[] getSensedBlob( Integer device, int subfunction )
     {
         /***
          *  Return byte[] blob if known, else null if unknown.
          */
+        if( device == null )
+            throw new NullPointerException("device cannot be null");
+
         Integer  dev = null;
+
+        m_lock.readLock().lock();
         try
         {
             dev = (Integer) device;
@@ -201,12 +270,23 @@ public class CmriLayoutModelImpl<Integer> implements LayoutIoModel
         catch( Throwable ex )
         {
             System.out.println("ERROR in getSensedDataAll(" + device.toString() + "): " + ex.toString() );
+            ex.printStackTrace( System.out );
+        }
+        finally
+        {
+            m_lock.readLock().unlock();
         }
 
         return null;
     }
 
     //--------------------------  INSTANCE VARS  -------------------------
+
+    /***
+     *  Data access READER/WRITER lock.
+     *  @see https://www.obsidianscheduler.com/blog/java-concurrency-part-2-reentrant-locks/
+     */
+    private ReadWriteLock   m_lock = new ReentrantReadWriteLock();
 
     /***
      *  HashMap of boolean input bits, indexed by device address.
