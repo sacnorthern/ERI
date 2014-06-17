@@ -123,11 +123,11 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
             //  3.  Copy of the changes, not changing if not mentioned in 'individual_bits'.
             //      With a Set, bit numbers can be in any order!
             //      I had a lot of trouble getting the types to match up...  :(
-            Iterator  everything = individual_bits.entrySet().iterator();
+            Iterator< Map.Entry<Integer, Boolean> >  everything = individual_bits.entrySet().iterator();
 
             while( everything.hasNext() )
             {
-                Map.Entry<Integer, Boolean>  entry = (Map.Entry<Integer, Boolean>) everything.next();
+                Map.Entry<Integer, Boolean>  entry = everything.next();
 
                 Boolean  there = (Boolean) entry.getValue();
                 dev_bits[ entry.getKey() ] = there.booleanValue();
