@@ -11,7 +11,7 @@ import org.embeddedrailroad.eri.block.interfaces.CtcBlockItem;
  *
  *  <pre><tt>
     WholeLayoutModel m = new WholeLayoutModel();
-    BlocksView v = new BlocksView(m);
+    WholeLayoutView v = new WholeLayoutView(m);
     WholeLayoutController c = new WholeLayoutController(m);
     MyFrame gui = new MyFrame(v, c);
 </tt></pre>

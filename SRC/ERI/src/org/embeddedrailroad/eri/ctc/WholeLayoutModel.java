@@ -24,8 +24,8 @@ import javax.swing.event.EventListenerList;
  *
  *  <pre><tt>
     WholeLayoutModel m = new WholeLayoutModel();
-    BlocksView v = new BlocksView(m);
-    BlocksController c = new BlocksController(m);
+    WholeLayoutView v = new WholeLayoutView(m);
+    WholeLayoutController c = new WholeLayoutController(m);
     MyFrame gui = new MyFrame(v, c);
 </tt></pre>
  *

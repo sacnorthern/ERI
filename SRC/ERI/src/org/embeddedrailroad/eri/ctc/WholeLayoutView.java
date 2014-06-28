@@ -13,7 +13,7 @@ import org.embeddedrailroad.eri.block.interfaces.CtcTurnoutItemListener;
  *  <pre><tt>
     WholeLayoutModel m = new WholeLayoutModel();
     WholeLayoutView v = new WholeLayoutView(m);
-    BlocksController c = new BlocksController(m);
+    WholeLayoutController c = new WholeLayoutController(m);
     MyFrame gui = new MyFrame(v, c);
 </tt></pre>
  *
