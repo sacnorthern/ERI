@@ -12,7 +12,7 @@ import java.util.UUID;
  *  some prototype.  Users can create their own prototype, if they'd like.
  *
  *  Each "division" has its own {@code PrototypeStandards} object, so technically
- *  a layout could have two separate prototype flavors in use at the same time.
+ *  a railroad could have two separate prototype flavors in use at the same time.
  *
  * @author brian
  */
@@ -28,10 +28,12 @@ public interface PrototypeStandards {
     public final static int   PROP_DESIGNER_NAME = 3;
     /*** Release version as a string, e.g. "SP vers 5.3.1 (Dec 2009)" */
     public final static int   PROP_DESIGNER_VERSION = 4;
-    /*** URL string of designer, ready to feed to {@link java.net.URL}, e.g. "http://www.spcoast.com/eri/models/" */
+    /*** URL string of designer, ready to feed to {@link java.net.URL} class constructor, e.g. "http://www.spcoast.com/eri/models/" */
     public final static int   PROP_DESIGNER_URL = 5;
     /*** Approximate era as a string, e.g. "1940 - 1955" */
     public final static int   PROP_ERA = 6;
+    /*** Measuring is miles "M" or kilometers "K". */
+    public final static int   PROP_USE_MILES = 7;
 
     /***
      *  Return a property string about this PrototypeStandards,
@@ -68,7 +70,7 @@ public interface PrototypeStandards {
     /***  Use lower-quadrant semaphores. */
     public final static int   SSF_SEMAPHORE_LOWER       = 1 << 4;
     /***  Use German Railway signals. */
-    public final static int   SSF_GERMAN                = 1 << 5;
+    public final static int   SSF_GERMANY               = 1 << 5;
     /***  Use English Railway signals. */
     public final static int   SSF_ENGLAND               = 1 << 6;
     /***  Use Chinese Railway signals. */
@@ -87,7 +89,7 @@ public interface PrototypeStandards {
     public int      getPrimarySignalStyleFlags();
 
     /***
-     *  Return flags describing all signal styles that can be deployed on the layout.
+     *  Return flags describing all signal styles that can be deployed on the railroad.
      *  These are primary and secondary.
      *  Only these choices are offered to the layout designer.
      *  {@code getPrimarySignalStyleFlags() &lt;= {@code getEverywhereSignalStyleFlags()]
