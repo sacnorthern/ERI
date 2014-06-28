@@ -10,17 +10,17 @@ import org.embeddedrailroad.eri.block.interfaces.CtcBlockItem;
 /**
  *
  *  <pre><tt>
-    WholeLayoutModel m = new WholeLayoutModel();
-    WholeLayoutView v = new WholeLayoutView(m);
-    WholeLayoutController c = new WholeLayoutController(m);
+    RailroadModel m = new RailroadModel();
+    RailroadView v = new RailroadView(m);
+    RailroadController c = new RailroadController(m);
     MyFrame gui = new MyFrame(v, c);
 </tt></pre>
  *
  * @author brian
  */
-public class WholeLayoutController {
+public class RailroadController {
 
-    public WholeLayoutController( WholeLayoutModel model )
+    public RailroadController( RailroadModel model )
     {
         this.m_model = model;
     }
@@ -38,6 +38,6 @@ public class WholeLayoutController {
 
     //--------------------------  INSTANCE VARS  -------------------------
 
-    protected WholeLayoutModel   m_model;
+    protected RailroadModel   m_model;
 
 }

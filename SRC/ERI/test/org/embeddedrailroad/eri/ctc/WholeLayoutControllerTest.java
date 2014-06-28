@@ -15,9 +15,9 @@ import org.junit.Test;
  *
  * @author brian
  */
-public class WholeLayoutControllerTest {
+public class RailroadControllerTest {
 
-    public WholeLayoutControllerTest() {
+    public RailroadControllerTest() {
     }
 
     @BeforeClass
@@ -29,16 +29,16 @@ public class WholeLayoutControllerTest {
     }
 
     /**
-     * Test of updateBlocks method, of class WholeLayoutController.
+     * Test of updateBlocks method, of class RailroadController.
      */
     @Test
     public void testUpdateBlocks() {
         System.out.println( "updateBlocks" );
         int reason_flags = 0;
 
-        WholeLayoutModel m = new WholeLayoutModel();
-        WholeLayoutView v = new WholeLayoutView(m);
-        WholeLayoutController c = new WholeLayoutController(m);
+        RailroadModel m = new RailroadModel();
+        RailroadView v = new RailroadView(m);
+        RailroadController c = new RailroadController(m);
 
         //  1.a  With no changed_blocks, don't throw exceptions.
         List<CtcBlockItem> changed_blocks = null;

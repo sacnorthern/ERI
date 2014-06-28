@@ -23,17 +23,17 @@ import javax.swing.event.EventListenerList;
 /**
  *
  *  <pre><tt>
-    WholeLayoutModel m = new WholeLayoutModel();
-    WholeLayoutView v = new WholeLayoutView(m);
-    WholeLayoutController c = new WholeLayoutController(m);
+    RailroadModel m = new RailroadModel();
+    RailroadView v = new RailroadView(m);
+    RailroadController c = new RailroadController(m);
     MyFrame gui = new MyFrame(v, c);
 </tt></pre>
  *
  * @author brian
  */
-public class WholeLayoutModel {
+public class RailroadModel {
 
-    public WholeLayoutModel()
+    public RailroadModel()
     {
         this.m_baseline_model = null;
 
@@ -49,7 +49,7 @@ public class WholeLayoutModel {
 
     }
 
-    protected WholeLayoutModel( WholeLayoutModel baseline )
+    protected RailroadModel( RailroadModel baseline )
     {
         this();
         this.m_baseline_model = baseline;   // link back to baseline.
@@ -111,9 +111,9 @@ public class WholeLayoutModel {
      *
      * @return New Model to play with, with empty listener lists.
      */
-    public WholeLayoutModel startTransaction()
+    public RailroadModel startTransaction()
     {
-        WholeLayoutModel  trx = new WholeLayoutModel( this );
+        RailroadModel  trx = new RailroadModel( this );
         //! No listeners cuz trx might be aborted, so wait until commited. trx._copyListeners( this.m_change_listeners );
         return( trx );
     }
@@ -573,7 +573,7 @@ public class WholeLayoutModel {
 
 
     /*** For transaction, link back to baseline Blocks Model object. */
-    protected WholeLayoutModel   m_baseline_model;
+    protected RailroadModel   m_baseline_model;
 
     // ArrayList<>  : Note that this implementation is not synchronized
 

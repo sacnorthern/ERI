@@ -11,9 +11,9 @@ import org.embeddedrailroad.eri.block.interfaces.CtcTurnoutItemListener;
 /***
  *
  *  <pre><tt>
-    WholeLayoutModel m = new WholeLayoutModel();
-    WholeLayoutView v = new WholeLayoutView(m);
-    WholeLayoutController c = new WholeLayoutController(m);
+    RailroadModel m = new RailroadModel();
+    RailroadView v = new RailroadView(m);
+    RailroadController c = new RailroadController(m);
     MyFrame gui = new MyFrame(v, c);
 </tt></pre>
  *
@@ -21,11 +21,11 @@ import org.embeddedrailroad.eri.block.interfaces.CtcTurnoutItemListener;
  * @see http://stackoverflow.com/questions/20027887/mvc-java-how-does-a-controller-set-listeners-to-the-children-classes-of-a-view
  * @see http://www.oracle.com/technetwork/articles/javase/index-142890.html
  */
-public class WholeLayoutView
+public class RailroadView
     implements CtcBlockItemListener, CtcSignalMastItemListener, CtcTurnoutItemListener
 {
 
-    public WholeLayoutView( WholeLayoutModel model )
+    public RailroadView( RailroadModel model )
     {
         this.m_model = model;
     }
@@ -58,6 +58,6 @@ public class WholeLayoutView
 
     //--------------------------  INSTANCE VARS  -------------------------
 
-    protected WholeLayoutModel   m_model;
+    protected RailroadModel   m_model;
 
 }
