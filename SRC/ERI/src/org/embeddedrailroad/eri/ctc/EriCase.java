@@ -23,7 +23,6 @@ import org.embeddedrailroad.eri.layoutio.IoTransportManager;
 import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
 import org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl;
 import org.ini4j.*;
-import sun.tools.jar.resources.jar;
 
 
 /**
@@ -148,7 +147,7 @@ public class EriCase {
                         }
                         URI  myJarUrl = myJarFile.toURI();
 
-                        URLClassLoader  cl = URLClassLoader.newInstance(new URL[]{myJarUrl.toURL()});
+                        URLClassLoader  cl = URLClassLoader.newInstance(new URL[]{ myJarUrl.toURL() });
 
                         Class jarred = null;
                         jarred = cl.loadClass("org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl");
