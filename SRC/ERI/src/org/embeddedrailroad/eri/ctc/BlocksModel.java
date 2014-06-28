@@ -12,7 +12,6 @@ import org.embeddedrailroad.eri.block.interfaces.CtcSignalMastItemListener;
 import org.embeddedrailroad.eri.block.interfaces.CtcBlockItem;
 import org.embeddedrailroad.eri.ctc.exceptions.UnknownCtcBlockException;
 import java.util.ArrayList;
-import java.util.EventListener;
 import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -22,6 +21,13 @@ import javax.swing.event.EventListenerList;
 
 
 /**
+ *
+ *  <pre><tt>
+    BlocksModel m = new BlocksModel();
+    BlocksView v = new BlocksView(m);
+    BlocksController c = new BlocksController(m);
+    MyFrame gui = new MyFrame(v, c);
+</tt></pre>
  *
  * @author brian
  */

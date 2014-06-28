@@ -4,7 +4,7 @@
  */
 package org.embeddedrailroad.eri.ctc;
 
-import java.util.ArrayList;
+import java.util.List;
 import org.embeddedrailroad.eri.block.interfaces.CtcBlockItem;
 
 /**
@@ -25,11 +25,14 @@ public class BlocksController {
         this.m_model = model;
     }
 
-    public void updateBlocks( ArrayList<CtcBlockItem> changed_blocks, int reason_flags )
+    public void updateBlocks( List<CtcBlockItem> changed_blocks, int reason_flags )
     {
-        for( CtcBlockItem blk : changed_blocks )
+        if( changed_blocks != null )
         {
-            m_model.updateBlock( blk, reason_flags );
+            for( CtcBlockItem blk : changed_blocks )
+            {
+                m_model.updateBlock( blk, reason_flags );
+            }
         }
     }
 
