@@ -31,6 +31,12 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
     //---------------------  Object & Type Properties  --------------------
 
     @Override
+    public Object   getUnitAddressType()
+    {
+        return Integer.class;
+    }
+
+    @Override
     public String getIoSystemName() {
         return "C/MRI";
     }
