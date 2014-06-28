@@ -16,7 +16,10 @@ import java.util.HashMap;
  */
 public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
 
-    //------------------  SENSED DATA FORM DEVICE  -------------------
+    /*** @return class-type of address @{code TUnitAddr} thing. */
+    public Object   getUnitAddressType();
+
+    //------------------  SENSED DATA FRPOM DEVICE  -------------------
 
     /***
      *  Received an update of all input bits from a device.
@@ -69,7 +72,7 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
 
     /***
      *  Return a blob of data as sensed from a device.
-     * 
+     *
      * @param device address of device
      * @param subfunction functional unit on the device
      * @return Array of data, {@code null} if none recorded.

@@ -27,6 +27,7 @@ public interface CtcSignalMastItem extends CtcModelItem {
 
     //-------------------------  JDK 7 Enums  --------------------------
 
+    /*** The larger the number, the more diverging is route and slower train/engine must go. */
     public enum ROUTE_CHOICE {
         NONE(0),
         DIVERAGE_1(1),
@@ -68,6 +69,8 @@ public interface CtcSignalMastItem extends CtcModelItem {
      *  Indicate speed for the route ahead.
      *  Depending on prototype signaling rules and number of signal-heads,
      *  some of these indications cannot be displayed.
+     *
+     *  The bigger the number, the faster you can go!
      */
     public enum SPEED_CHOICE {
         STOP(0),
@@ -124,7 +127,7 @@ public interface CtcSignalMastItem extends CtcModelItem {
     public void setIsAbsolute( boolean absolute );
 
     /***
-     * @return {@code true} is signal "is distant" to signal in advance of here.
+     * @return {@code true} if signal "is in the distant" to signal in advance of here.
      */
     public boolean isDistant();
 
@@ -149,7 +152,7 @@ public interface CtcSignalMastItem extends CtcModelItem {
     /***
      *  Set signal to full-stop, all signals STOP.
      */
-    public void SetAllStop();
+    public void setAllStop();
 
     /***
      *  Make signal the most restrictive of current setting and {@code aspect}.
@@ -164,7 +167,7 @@ public interface CtcSignalMastItem extends CtcModelItem {
     public void restrict();
 
     /***
-     *  Determine if this signal can display a certain speed aspect.
+     *  Sets whether this signal can display a certain speed aspect or not.
      * @param which Aspect to control
      * @param has_it {@code true} if can display, else {@code false} if can't.
      */
