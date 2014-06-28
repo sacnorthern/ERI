@@ -103,6 +103,24 @@ public interface CtcSignalMastItem extends CtcModelItem {
 
     public SPEED_CHOICE     getEffectiveSpeedAspect();
 
+    //--------------------------  IDENTITY  ---------------------------
+
+    /***
+     * @return Colloquial name for signal, e.g. "Colby East".
+     */
+    public String  getLocation();
+
+    /***
+     *  Sets the colloquial name for this signal, e.g. "Sprinkles".
+     *  The name isn't too long, but can include spaces.
+     *  It _should_ be unique but doesn't have to be ;
+     *  however, getName() is unique, e.g. "295L".
+     *  Not localized.
+     *
+     * @param nam Location name string.
+     */
+    public void     setLocation( String nam );
+
     //---------------------------  BLOCKS  ----------------------------
 
     /***
@@ -115,6 +133,10 @@ public interface CtcSignalMastItem extends CtcModelItem {
      */
     public float    getMilepost();
 
+    /***
+     *  Since milage is a {@code float}, about 5 decimal-places are all you get.
+     * @param milage Milage in kilometers or miles, e.g. 490.32
+     */
     public void     setMilepost( float milage );
 
     //-------------------------  FINER POINTS  --------------------------
@@ -127,7 +149,7 @@ public interface CtcSignalMastItem extends CtcModelItem {
     public void setIsAbsolute( boolean absolute );
 
     /***
-     * @return {@code true} if signal "is in the distant" to signal in advance of here.
+     * @return {@code true} if signal "is in the distance" to signal in advance of here.
      */
     public boolean isDistant();
 
