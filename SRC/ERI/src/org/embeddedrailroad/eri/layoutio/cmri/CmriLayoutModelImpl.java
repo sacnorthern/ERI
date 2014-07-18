@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.embeddedrailroad.eri.layoutio.LayoutIoModel;
+import org.embeddedrailroad.eri.layoutio.UnknownLayoutUnitException;
 
 
 /**
@@ -205,6 +206,7 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
 
     @Override
     public boolean[] getSensedDataAll( Integer device )
+            throws NullPointerException, UnknownLayoutUnitException
     {
         /***
          *  Returned array is direct reference to what is stored, so please don't
@@ -213,15 +215,15 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
         if( device == null )
             throw new NullPointerException("device cannot be null");
 
-        Integer  dev = null;
+        Integer  addr = null;
         try
         {
-            dev = (Integer) device;
+            addr = (Integer) device;
 
-            //  1.  Retrieve all blobs for this device, i.e. function
-            if( ! m_inputs.containsKey( dev ) )
+            //  If no matching device is found, then toss cookies.
+            if( ! m_inputs.containsKey( addr ) )
             {
-                return new boolean[0];
+                throw new UnknownLayoutUnitException("device not found");
             }
 
         }
@@ -232,16 +234,13 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
             return new boolean[0];
         }
 
-        return m_inputs.get( dev );
+        return m_inputs.get( addr );
     }
 
     @Override
     public boolean getSensedDataOne( Integer device, int bit_number )
-            throws ArrayIndexOutOfBoundsException
+            throws ArrayIndexOutOfBoundsException, UnknownLayoutUnitException, NullPointerException
     {
-        if( device == null )
-            throw new NullPointerException("device cannot be null");
-
         boolean[]   whole = getSensedDataAll( device );
 
         if( bit_number < 0 || bit_number >= whole.length )
@@ -249,7 +248,7 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
             throw new ArrayIndexOutOfBoundsException( "getSensedDataOne(" + device.toString() +"," + bit_number + ") out-of-range" );
         }
 
-        return whole[ bit_number ];
+        return whole[ bit_number ] ? Boolean.TRUE : Boolean.FALSE;
     }
 
     @Override
@@ -283,6 +282,7 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
             m_lock.readLock().unlock();
         }
 
+        //  An unknown devices return null instead of an exception.
         return null;
     }
 
