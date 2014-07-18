@@ -19,7 +19,7 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
     /*** @return class-type of address @{code TUnitAddr} thing. */
     public Object   getUnitAddressType();
 
-    //------------------  SENSED DATA FRPOM DEVICE  -------------------
+    //------------------  STORING SENSED DATA FROM DEVICE  --------------------
 
     /***
      *  Received an update of all input bits from a device.
@@ -50,6 +50,8 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
      */
     public void     setSensedBinaryBlob( TUnitAddr device, int subfunction, byte[] blob );
 
+    //------------------  READING SENSED DATA FROM DEVICE  --------------------
+
     /***
      *  Return all sensed data from a device.
      *  The return value is accumulated over all bulk and individual senses.
@@ -57,7 +59,8 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
      * @param device address of device
      * @param new_bits all bits back to the caller.
      */
-    public boolean[]    getSensedDataAll( TUnitAddr device );
+    public boolean[]    getSensedDataAll( TUnitAddr device )
+            throws UnknownLayoutUnitException, NullPointerException;
 
     /***
      *  Return the value of just one sensor.
@@ -68,7 +71,7 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
      * @exception ArrayIndexOutOfBoundsException if {@code bit_number} out-of-bounds.
      */
     public boolean      getSensedDataOne( TUnitAddr device, int bit_number )
-            throws ArrayIndexOutOfBoundsException;
+            throws UnknownLayoutUnitException, NullPointerException, ArrayIndexOutOfBoundsException;
 
     /***
      *  Return a blob of data as sensed from a device.
@@ -77,7 +80,8 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
      * @param subfunction functional unit on the device
      * @return Array of data, {@code null} if none recorded.
      */
-    public byte[]       getSensedBlob( TUnitAddr device, int subfunction );
+    public byte[]       getSensedBlob( TUnitAddr device, int subfunction )
+            throws UnknownLayoutUnitException, NullPointerException, ArrayIndexOutOfBoundsException;
 
     //--------------------------  DESIGNER  ---------------------------
 

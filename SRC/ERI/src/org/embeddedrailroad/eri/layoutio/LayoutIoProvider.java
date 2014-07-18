@@ -31,6 +31,7 @@ public interface LayoutIoProvider
 
     /***
      *  Convert a string-form of a unit's address into native object-type.
+     *
      * @param addr A string, i.e. from a GUI.
      * @return converted into an addressable unit
      * @throws IllegalArgumentException when {@code addr} is ill-formed.
@@ -39,7 +40,8 @@ public interface LayoutIoProvider
             throws IllegalArgumentException, NumberFormatException;
 
     /***
-     *   Convert a single IO line address into
+     *   Convert a single IO line address into native object-type.
+     *
      * @param bit which single IO line referencing.
      * @return converted into an input or output line.
      * @throws IllegalArgumentException when {@code bit} is ill-formed.
@@ -78,8 +80,8 @@ public interface LayoutIoProvider
 
     public final static String    MODE_READ = "read";
     public final static String    MODE_WRITE = "write";
-    public final static String    MODE_READ_PULLUP = "read_up";
-    public final static String    MODE_READ_INVERT = "read_invert";
-    public final static String    MODE_READ_PULLUP_INVERT = "read_up_invert";
+    public final static String    MODE_READ_WITH_PULLUP = "read_up";
+    public final static String    MODE_READ_WITH_INVERT = "read_invert";
+    public final static String    MODE_READ_WITH_PULLUP_INVERT = "read_up_invert";
 
 }
