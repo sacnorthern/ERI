@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT layoutSpecification (bankList,layoutSensorList) >
+<!ATTLIST layoutSpecification
+        formatVersion	CDATA #REQUIRED
+>
+
+<!-- ================================================ -->
+
+<!ELEMENT bankList (bank*)>
+
+<!ELEMENT bank (comms,unit*)>
+<!ATTLIST bank
+        protocol   NMTOKEN  #REQUIRED
+        address    NMTOKEN  #REQUIRED
+        alias      CDATA    ""
+>
+
+<!ELEMENT comms EMPTY>
+
+<!ELEMENT unit EMPTY>
+
+<!-- ================================================ -->
+
+
+
+<!-- ================================================ -->
+<!-- common “uiName” -->
+<!ELEMENT uiName (#PCDATA)>
+<!ATTLIST uiName
+        xml:lang  NMTOKEN  "en"
+>
+
+<!-- ================================================ -->
+<!-- common “propertyList” -->
+<!ELEMENT propertyList (add*)>
+<!ELEMENT property #PCDATA>
+<!ATTLIST property
+        key	NMTOKEN  #REQUIRED
+        type    NMTOKEN  #REQUIRED
+>
+
+<!-- ================================================ -->
+<!ENTITY % Boolean "(yes | no | true | false)">
+
+<!ELEMENT pinSetList (pinSet+)>
+<!ELEMENT pinSet (uiName+,pin+)>
+<!ATTLIST pinSet
+        type 		NMTOKEN 	#REQUIRED
+        input		%Boolean;	"false"
+        output 	        %Boolean;	"false"
+        priority	NMTOKEN 	#REQUIRED
+        whole 		%Boolean;	"false"
+>
+
+<!ELEMENT pin (uiName+)>
+<!ATTLIST pin
+        thisPin	NMTOKEN	#REQUIRED
+>
