@@ -32,8 +32,8 @@ public class TableOfBoolean {
 
     public TableOfBoolean( int init_size )
     {
-        if( init_size < 0 )
-            throw new IllegalArgumentException( "init_size < 0" );
+        if( init_size <= 0 )
+            throw new IllegalArgumentException( "init_size <= 0" );
 
         m_has_value = new boolean[ init_size ];
         m_value = new boolean[ init_size ];
@@ -52,8 +52,8 @@ public class TableOfBoolean {
 
     public void resize( int newCapacity )
     {
-        if( newCapacity < 0 )
-            throw new IllegalArgumentException( "newCapacity < 0" );
+        if( newCapacity <= 0 )
+            throw new IllegalArgumentException( "newCapacity <= 0" );
 
         m_has_value = Arrays.copyOf( m_has_value, newCapacity );
         m_value = Arrays.copyOf( m_value, newCapacity );
@@ -97,6 +97,7 @@ public class TableOfBoolean {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public final E next()
         {
             return (E) nextEntry();
@@ -162,7 +163,7 @@ public class TableOfBoolean {
 
     /***
      *  Store a value into sparse array.
-     *  Array will resize itself it required to store new value.
+     *  Array will resize itself if required to store new value.
      * @param index from 0 to MAX-1.
      * @param v value to store.
      */
@@ -181,9 +182,9 @@ public class TableOfBoolean {
     //--------------------------  INSTANCE VARS  -------------------------
 
     /*** TRUE means we have a value at this index. */
-    transient boolean[]     m_has_value;
+    protected boolean[]     m_has_value;
 
     /*** Client's value, or false if never set. */
-    transient boolean[]     m_value;
+    protected boolean[]     m_value;
 
 }
