@@ -1,3 +1,12 @@
 /SRC/ERI/build/
 /SRC/ERI/dist/
 /SRC/CrunchNoodlesCommon/nbproject/private/
+/SRC/CrunchNoodlesCommon/build/
+/SRC/CrunchNoodlesCommon/dist/
+
+#  NetBeans support stuff.
+build/*
+dist/*
+
+*.bak
+*~
