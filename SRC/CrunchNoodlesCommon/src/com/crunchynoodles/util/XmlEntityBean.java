@@ -12,7 +12,10 @@ import java.util.List;
  */
 public interface XmlEntityBean
 {
-    /*** Return name of this element, e.g, "pinSetList" */
+    /***
+     *  Return name of this element, e.g, "pinSetList"
+     *  @return string of this XML element.
+     */
     public String getElementName();
 
     /***

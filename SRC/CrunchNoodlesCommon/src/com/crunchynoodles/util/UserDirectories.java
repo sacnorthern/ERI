@@ -14,9 +14,13 @@ import java.util.Properties;
  */
 public class UserDirectories {
 
+    /*** Name of company producing the application.  Must be compatible with file naming. */
     public static String    CompanyName;
+
+    /*** Application name.  Must be compatible with file naming. */
     public static String    ApplicationName;
 
+    /*** File extension ( with dot ) of Java properties files. */
     public final static String  SETTINGS_FILE_EXTENSION = ".properties";
 
     // ----------------------------------------------------------------------------
@@ -28,7 +32,8 @@ public class UserDirectories {
      *
      * <p> TODO: Adjust for Java Web Server and JNLP.
      */
-    private UserDirectories() {
+    private UserDirectories()
+    {
         Properties  p = System.getProperties();
         Map<String,String>  env = System.getenv();
 
@@ -41,6 +46,7 @@ public class UserDirectories {
         else if( env.containsKey("HOME") )
         {
             //  IT IS UNIX/LINUX/SOLARIS
+            //  Create a hidden folder in the home directory.
             _appl_data_folder = ((String) env.get("HOME")) + File.separator + "." + CompanyName + File.separator; // + ApplicationName + File.separator;
         }
         else
@@ -53,6 +59,10 @@ public class UserDirectories {
         _project_data_folder = p.getProperty("user.dir") + File.separator;
     }
 
+    /***
+     *  Return singleton instance.
+     * @return instance reference.
+     */
     public static UserDirectories getInstance() {
         return UserDirectoriesHolder.INSTANCE;
     }
@@ -66,7 +76,7 @@ public class UserDirectories {
     // ----------------------------------------------------------------------------
 
     /**
-     *  Folder of where to store the user's settings, e.g "/users/bwitt/.CrunchyNoodles/ArduWriter/".
+     *  Folder of where to store the user's settings, e.g "/users/bwitt/.Com.CrunchyNoodles/ArduWriter/".
      *  In the worst case, this will be the current directory.
      *
      * @return folder name with trailing {@code File.separator}.
@@ -78,7 +88,10 @@ public class UserDirectories {
 
     /**
      *  Read and store the application's properties in this file for this user.
-     * @return
+     *  File name is valid for all projects of this user.
+     *
+     * @return string concatenation of user-centric application-data-folder, application name,
+     *         along with the appropriate file extension.
      */
     public String getUserApplSettingsPropertiesFilename()
     {
@@ -87,6 +100,13 @@ public class UserDirectories {
 
     // ----------------------------------------------------------------------------
 
+    /**
+     *  Read and store the application's properties in this file for this project.
+     *  File name is valid for this particular project..
+     *
+     * @return string concatenation of project-centric application-data-folder, application name,
+     *         along with the appropriate file extension.
+     */
     public String getProjectApplSettingsFolder()
     {
         return _project_data_folder + ApplicationName + SETTINGS_FILE_EXTENSION;

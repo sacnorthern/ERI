@@ -10,15 +10,19 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 /**
+ *  Collection of useful methods for XML and org.w3c.dom handling. <p>
+ *
+ *  In parsing methods, both element and attribute must be valid references.
+ *  If not, then method throws a null-pointer exception.
  *
  * @author brian
  */
 public class XmlUtils {
 
     /***
-     *  Print the attributes of a node, one line at a time.
-     * @param outs where to send out
-     * @param entry XML node to read from
+     *  Print every attribute and value of a node, one line at a time.
+     * @param outs where to send output
+     * @param entry XML node to examine
      */
     public static void XmlPrintAttrs( PrintStream outs, Node entry )
     {
@@ -37,7 +41,7 @@ public class XmlUtils {
      *
      * @param element XML element
      * @param attrName string name of attribute on element
-     * @return {@code true} if value is "true" or "yes", {@code false} otherwise.
+     * @return {@code true} if value is "true" or "yes" ; {@code false} otherwise.
      */
     public static Boolean ParseBooleanAttribute( Element element, String attrName )
     {
@@ -83,16 +87,16 @@ public class XmlUtils {
     /***
      *  Ask element for the named attribute.  Try and convert the value into an integer.
      *  Uses {@code Integer.parseInt()} for the heavy lifting.
-     *  An empty string returns 0.
+     *  An empty or null attribute-value returns 0.
      *
      * @param element XML element
      * @param attrName string name of attribute of element
      * @param minValue smallest value that is acceptable, OK if {@code Integer.MIN_VALUE}.
-     * @param maxVault largest value that is acceptable, OK if {@code Integer.MIN_VALUE}.
+     * @param maxValue largest value that is acceptable, OK if {@code Integer.MAX_VALUE}.
      *
      * @return {@code int} value, when possible.
      * @throws NumberFormatException Attribute's value is not a valid integer.
-     * @throws AssertionError  If value is outside of min-max range.
+     * @throws AssertionError  If value is outside of given min-max range.
      */
     public static int ParseIntegerAttribute( Element element, String attrName, int minValue, int maxValue )
             throws NumberFormatException

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -26,18 +27,19 @@ import org.xml.sax.SAXParseException;
 
 /**
  *  Provide the direct XML interface to the ERI Layout Configuration specification data file.
- *  This supports only reading.
+ *  This supports only reading. <p>
  *
- *  Start by calling {@code XmlLayoutConfigurationSpecification.load(InputStream in)}.
+ *  Start by calling {@code LayoutConfigurationBean.load(InputStream in)}.
+ *
  * @author brian
  * @see java.util.XMLUtils
+ * @see LayoutConfigurationBean
  * @see http://oak.cs.ucla.edu/cs144/reference/DTD.html
  */
 public class XmlLayoutConfigurationSpecification
 {
-
     // The required DTD URI for exported properties
-    private static final String     LAYOUT_CONFIG_SPEC_DTD_URI =
+    public static final String     LAYOUT_CONFIG_SPEC_DTD_URI =
                 "http://embeddedrailroad.org/eri/dtd/layoutconfiguationspecification.dtd";
 
     private static String LAYOUT_CONFIG_SPEC_DTD;
@@ -65,15 +67,15 @@ public class XmlLayoutConfigurationSpecification
     // ----------------------------------------------------------------------------
 
     /***
-     *  Load a whole board specification XML data file.
+     *  Load a whole layout specification XML data file.
      *  Throws exceptions on failures.
      *
-     * @param in - input stream to read from.
-     * @return BoardSpecificationBean with complete data.
+     * @param in input stream to read from.
+     * @return LayoutConfigurationBean with complete data.
      *
-     * @throws IOException - Troubles reading XML file
-     * @throws SAXException - Troubles parsing the XML file.
-     * @throws SAXParseException - Can't convert NMTOKEN into a number.
+     * @throws IOException Troubles reading XML file
+     * @throws InvalidPropertiesFormatException Troubles parsing the XML file.
+     * @throws SAXParseException Can't convert NMTOKEN into a number.
      */
     static LayoutConfigurationBean load(InputStream in)
         throws IOException, SAXParseException, InvalidPropertiesFormatException
@@ -143,7 +145,7 @@ public class XmlLayoutConfigurationSpecification
             throws SAXParseException
     {
         BankListBean    bl = new BankListBean();
-        List<BankBean>  bank_list = new ArrayList<BankBean>();
+        List<BankBean>  bank_list = new ArrayList<>();
 
         /***  <!ELEMENT bankList (bank*)>   ***/
 
@@ -283,5 +285,7 @@ public class XmlLayoutConfigurationSpecification
             throw x;
         }
     }
+
+    private static final Logger logger = Logger.getLogger( XmlLayoutConfigurationSpecification.class.getName() );
 
 }

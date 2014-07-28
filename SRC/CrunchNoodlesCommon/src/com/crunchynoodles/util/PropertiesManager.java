@@ -19,33 +19,36 @@ import java.util.logging.Logger;
  *
  * @author brian
  */
-public class PropertiesManager {
+public class PropertiesManager
+{
 
-    public final static String FONT_NAME = "font.family";         // e.g. "verdana" or "lucinda console"
-    public final static String SIZE_INT = "font.size";          // e.g. "12"
-    public final static String MAIN_WINDOW = "mainWindow";
+    /**  Key for font-name.  Value might be "verdana" or "lucinda console". */
+    public final static String   FONT_NAME_STR = "font.family";
+    /**  Key for font-size.  Value might "12". */
+    public final static String   FONT_SIZE_INT = "font.size";
+
+    public final static String   MAIN_WINDOW = "mainWindow";
 
     /***
-     *   Used for filename of properties file.  Not used for naming properties in the file.
+     *   Used for creating filename of properties file.  Not used for naming properties in the file.
      */
     public static String    ApplicationName;
 
     /**
-     * *
      * Where on disk to read user's properties, regardless of project.
-     * {@see ApplicationName}
+     * See {@link #ApplicationName}
      */
     public static String    ApplPropertiesFilename;
 
     /***
      * Where on disk to read and write project-specific properties of the application.
-     * {@see ApplicationName}
+     * See {@link #ApplicationName}
      */
     public static String    ProjectPropertiesFilename;
 
     /***
      *  Create property manager for application.  There are no properties until
-     *  loaded with {@code readProperties()} is called.
+     *  loaded with {@link #readProperties()} is called.
      *
      * @param moduleName Prefix for properties stored.
      */
@@ -57,11 +60,11 @@ public class PropertiesManager {
 
     /***
      *  Read properties for this application-type and any project-specific properties.
-     *  If {@code ApplPropertiesFilename} exists, it provides defaults.
-     *  Override values are stored (eventually) into {@codeProjectPropertiesFilename ).
+     *  If {@link #ApplPropertiesFilename} exists, it provides defaults.
+     *  Override values are stored (eventually) into {@link #ProjectPropertiesFilename}.
      *
-     * @param applFilename - Default setting-properties for this application's install file name.
-     * @param projectFilename - Project-specific setting-properties file name.
+     * @param applFilename Default setting-properties for this application's install file name.
+     * @param projectFilename Project-specific setting-properties file name.
      * @return true if found system-wide defaults, false if not found.
      */
     public Boolean readProperties(String applFilename, String projectFilename)
@@ -115,7 +118,7 @@ public class PropertiesManager {
      *  They'll be available the next time application runs and will override default settings.
      *  Does not write the "temp" properties.
      *
-     *  Must have already called {@code readProperties()} to set file names.
+     *  Must have already called {@link #readProperties()} to set file names.
      *
      * @throws FileNotFoundException
      * @throws IOException
@@ -141,9 +144,9 @@ public class PropertiesManager {
     }
 
     /***
-     *  Version of {@code writeProperties()} that does not thrown an exception.
+     *  Version of {@link #writeProperties()} that does not thrown an exception.
      *  Also dumps both long-term and temporary properties.
-     * @param outs
+     * @param outs Output destination for all properties.
      */
     public void dumpAllProperties( OutputStream outs )
     {
@@ -151,7 +154,7 @@ public class PropertiesManager {
             s_props.store( outs, (ApplicationName == null) ? "(all-settings)" : ApplicationName );
         } catch( Exception ex ) {
             //  nothing is possible except maybe logging error.  If 'outs' can't be
-            //  written to, where can the "error writing" message be sent?
+            //  written to, where can the "error in writing" message be sent?
         }
     }
 
@@ -170,7 +173,8 @@ public class PropertiesManager {
     }
 
     /***
-     *  Retrieve key for this module, or {@code null} if key not found
+     *  Retrieve key for this module, or {@code null} if key not found.
+     *
      * @param key property key , within module scope.
      * @return value, or {@code null} if key not found
      */
@@ -180,12 +184,28 @@ public class PropertiesManager {
         return (String) s_props.get( full_key );
     }
 
+    /***
+     *  Look for a key's value, returning a default is key not found.
+     *  The value sought is a "String", even if stored using {@link #putInt()}.
+     *
+     * @param key String name of key.
+     * @param defaultValue Value to return when key not found.
+     * @return Value from key, or {@code defaultValue}.
+     */
     public String get( String key, String defaultValue )
     {
         String full_key = m_module_name + key;
         return (String) s_props.getProperty( full_key, defaultValue );
     }
 
+    /***
+     *  Look for a key's value, returning a default is key not found.
+     *  The value sought is converted to type "int".
+     *
+     * @param key String name of key.
+     * @param defaultValue Value to return when key not found.
+     * @return Value from key, or {@code defaultValue}.
+     */
     public int getInt( String key, int defaultValue )
     {
         String  full_key = m_module_name + key;
@@ -204,8 +224,8 @@ public class PropertiesManager {
     /***
      *   Add property that will NOT be written to disk.
      *   E.g. a property for just this application-run that was set on the command line.
-     * @param key
-     * @param value
+     * @param key Storage key.
+     * @param value String value to store there.
      */
     public void tempPut( String key, String value )
     {
@@ -231,14 +251,14 @@ public class PropertiesManager {
      *  </ul>
      * Once a gap in the sequence is detected, the list has ended.
      * I.e. if {@code file.lastopen.3} were missing, then the list is considered
-     * to end at "2" and not "5".
+     * to end at ".2" and not ".5".  Sequence starts at 1.
      *
-     * @param key
+     * @param key Property key, e.g. "file.lastopen" in above example
      * @return Array of values, in numeric order.
      */
-    public ArrayList<String> getManyList( String key )
+    public List<String> getManyList( String key )
     {
-        ArrayList<String>  list = new ArrayList<String>();
+        ArrayList<String>  list = new ArrayList<>();
 
         for( int j = 1 ; j <= 9999 ; ++j )
         {
@@ -255,7 +275,7 @@ public class PropertiesManager {
 
     /***
      *  Add a new item (to the head of the list) of a list-type property.
-     *  If too many are being stored, then all excess are trimmed away.
+     *  If too many are being stored, then the excess is trimmed away.
      *  E.g. if last time {@code maxCount} was 9 but this time is 4,
      *  then the oldest 6 will be trimmed away with this latest
      *  {@code key} taking over first place.
@@ -284,6 +304,7 @@ public class PropertiesManager {
             list.remove( list.size() - 1 );
         }
         //  Insert caller's 'value' at head of list
+        //  This 0 will change into a 1 in for-loop.
         list.add( 0, value );
 
         //  Now update all the properties ( overwrites previous settings )
@@ -298,7 +319,7 @@ public class PropertiesManager {
 
     private static Properties   s_from_disk;
 
-    /** Place to store temp properties.  Uses {@code s_from_disk} as backing for persistent properties. */
+    /** Place to store temp properties.  Uses {@link #s_from_disk} as backing for persistent properties. */
     private static Properties   s_props;
 
     /** Each instance gets its own module name, used as prefix when storing properties. */

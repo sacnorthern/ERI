@@ -10,11 +10,11 @@ import java.util.Iterator;
 /**
  *  Provides a sparse array of boolean values.
  *  It follows a pseudo-HashMap interface.  By default, asking for an unknown
- *  element will return false.  Calling {@ode containsKey} instead will return
+ *  element will return false.  Calling {@code containsKey} instead will return
  *  {@code null} if no value is present.
  *  Index goes from 0 to MAX-1, MAX can grow but won't shrink.
  *
- *  Built out of frustration at trying to use {@code HashMap&lt;Integer, Boolean&gt;}.
+ *  Built out of frustration at trying to use {@code HashMap<Integer, Boolean>}.
  *  It's easier with C# cuz it boxes primitive types automagically.
  *
  *  Object is not MT-safe.
@@ -30,6 +30,10 @@ public class TableOfBoolean {
         this( 32 );
     }
 
+    /***
+     *  Build a table of {@code Boolean} values to your size.
+     * @param init_size > 0 for indices o to <i>init_size</i> - 1.
+     */
     public TableOfBoolean( int init_size )
     {
         if( init_size <= 0 )

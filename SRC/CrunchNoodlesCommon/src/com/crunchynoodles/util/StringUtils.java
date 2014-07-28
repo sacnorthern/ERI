@@ -16,6 +16,14 @@ public class StringUtils {
     public static final char    CHAR_DQUOTE = '\"';
     public static final char    CHAR_ESCAPE = '\\';
 
+    /***
+     *  Tokenize a string, maybe with quoted tokens.  Tokens are white-space separated.
+     *  If a quoted string is not closed, then the end-of-string implicitly ends token.
+     *  The quotes, which can be single or double, are not stored in token list.
+     *
+     * @param withQuotes String with some quoted-tokens.
+     * @return List of tokens found.
+     */
     public static List<String> tokenizeQuotedStrings( String withQuotes )
     {
         ArrayList<String>  items = new ArrayList<String>();
@@ -58,25 +66,28 @@ public class StringUtils {
     // ----------------------------------------------------------------------------
 
     /***
-     *   Compare two strings for equality.  If both are null, then they are same.
-     *   Uses {@code String.equals()} for equality test.
+     *   Compare two strings for equality.  If both are null, then they never the same.
+     *   Uses {@code String.equals()} for equality test, so case must match.
+     *   This front-end handles null-references.
      *
      * <p> This method could be named {@code equals()} but then it might be confused
      *   with an {@code equals} method for this object-type.
      *
-     * @param lhs
-     * @param rhs
-     * @return true if same (or both null), false when different.
+     * @param lhs one string, or null.
+     * @param rhs other string, or null.
+     * @return true if same, false when different or both null-references.
      */
     public static boolean equal( String lhs, String rhs )
     {
+        //  If both null, then can never be "equal".
         if( lhs == null && rhs == null )
-            return true;
+            return false;
+
         if( (lhs == null && rhs != null) ||
             (lhs != null && rhs == null) )
             return false;
 
-        //  We have two string things, so do the equals() compare.
+        //  We have two string things, so do the String.equals() compare.
         return lhs.equals( rhs );
     }
 

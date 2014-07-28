@@ -51,17 +51,26 @@ public class FileUtils {
         return contents;
     }
 
+    /***
+     *  Converts a {@code FileInputStream} into a big string.
+     *  Handles various input-stream character sets, e.g. Latin-3 or UTF-8.
+     *
+     * @param ins stream to read
+     * @param cs character set for single-byte to Unicode conversion.
+     * @return A big string
+     * @throws IOException
+     */
     public static String readWholeFile( FileInputStream ins, Charset cs )
             throws IOException
     {
         Reader  reader = new BufferedReader( new InputStreamReader(ins, cs) );
         StringBuilder   sb = new StringBuilder(9999);
         char[]      buffer = new char[ 8100 ];
-        int         read;
+        int         cnt;
 
-        while( (read = reader.read(buffer, 0, buffer.length)) > 0 )
+        while( (cnt = reader.read(buffer, 0, buffer.length)) > 0 )
         {
-            sb.append( buffer, 0, read );
+            sb.append( buffer, 0, cnt );
         }
 
         return sb.toString();
@@ -118,7 +127,7 @@ public class FileUtils {
                     if( returnValue[0] != 0 )
                         break;
 
-                    //  should get one line, line #1 {{no arduino in /bin /sbin /usr/bin"
+                    //  should get one line, line #1 {{no arduino in /bin /sbin /usr/bin" ;
                     //  or on success, line #1 {{/usr/bin/arduino}}
                     runcmd = check_output.get(0);
                     if( runcmd == null || runcmd.startsWith( "no " + ARDUINO_APPL_NAME ) )
@@ -230,7 +239,7 @@ public class FileUtils {
     /***
      *  Find-files filter class.
      *  Client provides folder and file-glob pattern.
-     *  Matches are available in {@code FileList}.
+     *  Matches are available in {@code FileList}. <p>
      *
      *  <b>WARNING</b>: {@code PathMatcher} is Java 1.7 !!
      *
@@ -303,9 +312,11 @@ public class FileUtils {
 
     /***
      *  See if host OS matches the caller's kind-of interest.
+     *  It is a braod-stroke, fuzzy match.
      *  E.g. {@code OS_MAC_PPC} and {@code OS_MAC_X86} are equivalent.
-     * @param brand
-     * @return
+     *
+     * @param brand Desired brand to check for.
+     * @return {@code true} on OS brand kind-of matches .
      */
     public static boolean isOsKindOf( int brand )
     {

@@ -20,7 +20,7 @@ public class SignalMastItemChangedEvent extends java.util.EventObject
     /***
      *  Something about a block has changed.
      *  Upon creation, a change-event is generated of {@code CUZ_ADD_TO_MODEL}.
-     * @param block Object of change.
+     * @param signal Object of change.
      * @param changeFlags See CUZ_XXX defines above.
      */
     public SignalMastItemChangedEvent( CtcSignalMastItem signal, int changeFlags )

@@ -101,7 +101,7 @@ public interface CtcTurnoutItem extends CtcModelItem {
     /***
      *  Set the route for turnout.  0 = makes indeterminate.
      *  If any lock-flags are set, change is rejected.
-     * @return -1 if any locks set, else @{code which} when accepted.
+     * @return -1 if any locks set, else {@code which} when accepted.
      */
     public int setRoute( int which );
 

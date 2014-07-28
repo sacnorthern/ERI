@@ -34,7 +34,7 @@ public interface CtcBlockItem extends CtcModelItem {
     public byte getApproximateLength();
 
     /***
-     *  {@code Map[SIG_RIGHT}] is mainline-rightside, {@codeMap[SIG_LEFT]} is mainline-leftside.
+     *  {@code Map[SIG_RIGHT}] is mainline-rightside, {@code Map[SIG_LEFT]} is mainline-leftside.
      *  If there are diverging routes, then use {@code CtcSignalMastItem.ROUTE_ASPECT} to
      *  retrieve any corresponding signal for that route, which could be {@code null}.
      *  Map[0] is invalid.
