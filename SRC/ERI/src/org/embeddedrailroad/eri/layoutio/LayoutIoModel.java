@@ -16,8 +16,11 @@ import java.util.HashMap;
  */
 public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
 
-    /*** @return class-type of address @{code TUnitAddr} thing. */
-    public Object   getUnitAddressType();
+    /***
+     *  Get class-type of address {@code TUnitAddr} thing.
+     * @return class-type of address {@code TUnitAddr} thing.
+     */
+    public Class   getUnitAddressType();
 
     //------------------  STORING SENSED DATA FROM DEVICE  --------------------
 
@@ -46,7 +49,7 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
      *
      * @param device address of device that gave data
      * @param subfunction functional unit on the device
-     * @param blob bunch of bytes to store.
+     * @param blob bunch of bytes to store, or null.
      */
     public void     setSensedBinaryBlob( TUnitAddr device, int subfunction, byte[] blob );
 
@@ -92,8 +95,8 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
     public String   getIoSystemName();
 
     /***
-     *  Return producer / manufacturer of this IO system, e.g. "JLC Enterprises" (spaces OK).
-     * @return
+     *  Return producer / manufacturer of this IO system, e.g. "JLC Enterprises" (spaces likely).
+     * @return string with likely spaces in it.
      */
     public String   getIoSystemManufacturer();
 }

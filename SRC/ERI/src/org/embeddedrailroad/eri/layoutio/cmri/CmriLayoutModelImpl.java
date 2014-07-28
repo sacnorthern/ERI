@@ -32,7 +32,7 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
     //---------------------  Object & Type Properties  --------------------
 
     @Override
-    public Object   getUnitAddressType()
+    public Class   getUnitAddressType()
     {
         return Integer.class;
     }
