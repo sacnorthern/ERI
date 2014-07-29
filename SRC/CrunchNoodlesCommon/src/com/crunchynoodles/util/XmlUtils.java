@@ -37,15 +37,16 @@ public class XmlUtils {
 
     /***
      *  Ask element for the named attribute.  Try and convert the value into a boolean.
-     *  An empty attribute value returns {@code false}.
+     *  An empty or unconvertable attribute string-value returns {@code if_not_present}.
      *
      * @param element XML element
      * @param attrName string name of attribute on element
+     * @param if_not_present Default return value.
      * @return {@code true} if value is "true" or "yes" ; {@code false} otherwise.
      */
-    public static Boolean ParseBooleanAttribute( Element element, String attrName )
+    public static Boolean ParseBooleanAttribute( Element element, String attrName, boolean if_not_present )
     {
-        Boolean  val = Boolean.FALSE;
+        Boolean  val = if_not_present;
         String strval = element.getAttribute( attrName );
 
         if( ! StringUtils.emptyOrNull( strval ) )

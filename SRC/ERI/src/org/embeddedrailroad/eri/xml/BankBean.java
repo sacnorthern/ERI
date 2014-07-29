@@ -33,7 +33,7 @@ public class BankBean
 
     @Override
     public List<String> getAttributeList() {
-        return Arrays.asList( PROP_PROTOCOL, PROP_ADDRESS, PROP_ALIAS );
+        return Arrays.asList( ATTR_PROTOCOL, ATTR_ADDRESS, ATTR_ALIAS );
     }
 
     public BankBean()
@@ -43,9 +43,37 @@ public class BankBean
 
     // ----------------------------------------------------------------------------
 
-    public static final String PROP_PROTOCOL   = "protocol";    // attribute
-    public static final String PROP_ADDRESS    = "address";     // attribute
-    public static final String PROP_ALIAS      = "alias";       // attribute
+    public static final String ELEMENT_COMMS = "comms";
+    protected CommsBean         m_comms_element;
+
+    public CommsBean getComms()
+    {
+        return m_comms_element;
+    }
+
+    public void     setComms( CommsBean comms_ele )
+    {
+        m_comms_element = comms_ele;
+    }
+
+    public static final String ELEMENT_UNIT = "unit";
+    protected UnitBean          m_unit_element;
+
+    public UnitBean  getUnit()
+    {
+        return m_unit_element;
+    }
+
+    public void     setUnit( UnitBean unit_ele )
+    {
+        m_unit_element = unit_ele;
+    }
+
+    // ----------------------------------------------------------------------------
+
+    public static final String ATTR_PROTOCOL   = "protocol";    // attribute
+    public static final String ATTR_ADDRESS    = "address";     // attribute
+    public static final String ATTR_ALIAS      = "alias";       // attribute
 
     public String getProtocol()
     {

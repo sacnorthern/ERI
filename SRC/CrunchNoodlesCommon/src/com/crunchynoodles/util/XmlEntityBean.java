@@ -5,6 +5,7 @@
 package com.crunchynoodles.util;
 
 import java.util.List;
+import java.util.Arrays;
 
 /**
  *
@@ -20,10 +21,10 @@ public interface XmlEntityBean
 
     /***
      *  Return list of attributes for this element, or null if none supported.
-     *  The returned List<> can be one whose size cannot change, i.e. made by
-     *  {@code Arrays.asList()}.
+     *  The returned {@link List} can be one whose size cannot change, i.e. made by
+     *  {@link java.util.Arrays#asList(java.lang.Object...) }.
      *
-     * @return List<String> of attributes, or null if attrs not allowed on element.
+     * @return {@link List} of attributes, or null if attrs not allowed on element.
      */
     public List<String> getAttributeList();
 }

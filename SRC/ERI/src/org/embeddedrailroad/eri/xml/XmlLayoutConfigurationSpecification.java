@@ -105,9 +105,9 @@ public class XmlLayoutConfigurationSpecification
         /***  <!ATTLIST layoutSpecification formatVersion CDATA #REQUIRED > ***/
 
         // Take attributes of <layoutSpecification ...> first.
-        if( rootElement.hasAttribute( LayoutConfigurationBean.PROP_FORMAT_VERSION ) )
+        if( rootElement.hasAttribute( LayoutConfigurationBean.ATTR_FORMAT_VERSION ) )
         {
-            lc.setFormatVersion( rootElement.getAttribute(LayoutConfigurationBean.PROP_FORMAT_VERSION) );
+            lc.setFormatVersion( rootElement.getAttribute(LayoutConfigurationBean.ATTR_FORMAT_VERSION) );
         }
 
         NodeList entries = rootElement.getChildNodes();
@@ -118,7 +118,7 @@ public class XmlLayoutConfigurationSpecification
         elm = (Element) entries.item(start);
         if( elm.getNodeName().equals( LayoutConfigurationBean.PROP_BANK_LIST ) )
         {
-            System.out.printf( "child #%d is \"%s\"\n", start, elm.getNodeName() );
+            System.out.printf( "LayoutConfigurationBean child #%d is \"%s\"\n", start, elm.getNodeName() );
 
             /**  <!ELEMENT bankList (bank*)>  **/
             lc.setBankList( importBankList( elm ) );
@@ -129,7 +129,7 @@ public class XmlLayoutConfigurationSpecification
         elm = (Element) entries.item(start);
         if( elm.getNodeName().equals( LayoutConfigurationBean.PROP_LAYOUT_SENSOR_LIST ) )
         {
-            System.out.printf( "child #%d is \"%s\"\n", start, elm.getNodeName() );
+            System.out.printf( "LayoutConfigurationBean child #%d is \"%s\"\n", start, elm.getNodeName() );
 
             /**  <!ELEMENT layoutSensorList (layoutSensor*)>  **/
             lc.setLayoutSensorList( importLayoutSensorList( elm ) );
@@ -153,12 +153,12 @@ public class XmlLayoutConfigurationSpecification
         Element    elm;
 
         // <bank> is first and is a sequence of 0 or more elements.
-        for( int start = 0 ; entries.getLength() < start ; ++start )
+        for( int start = 0 ; start < entries.getLength() ; ++start )
         {
             elm = (Element) entries.item(start);
             if( elm.getNodeName().equals( BankListBean.PROP_BANK ) )
             {
-                System.out.printf( "child #%d is \"%s\"\n", start, elm.getNodeName() );
+                System.out.printf( "BankListBean child #%d is \"%s\"\n", start, elm.getNodeName() );
 
                 /**  <!ELEMENT bank (comms unit*)>  **/
                 bank_list.add( importBank( elm ) );
@@ -182,37 +182,85 @@ public class XmlLayoutConfigurationSpecification
 
         //    <!ELEMENT bank (comms,unit*)>
         //    <!ATTLIST bank
-        //            protocol   NMTOKEN  #REQUIRED
-        //            address    NMTOKEN  #REQUIRED
+        //            protocol   CDATA    #REQUIRED
+        //            address    CDATA    #REQUIRED
         //            alias      CDATA    "" >
 
-        if( bankElm.hasAttribute( BankBean.PROP_PROTOCOL ) )
+        if( bankElm.hasAttribute( BankBean.ATTR_PROTOCOL ) )
         {
-            bb.setProtocol(bankElm.getAttribute(BankBean.PROP_PROTOCOL) );
+            bb.setProtocol( bankElm.getAttribute(BankBean.ATTR_PROTOCOL) );
         }
         else
         {
-            throw new SAXParseException( "Element \"bank\" missing its \"" + BankBean.PROP_PROTOCOL + "\" attribute", null );
+            throw new SAXParseException( "Element \"" + BankBean.PROP_ELEMENT_NAME + "\" missing its \"" + BankBean.ATTR_PROTOCOL + "\" attribute", null );
         }
 
-        if( bankElm.hasAttribute( BankBean.PROP_ADDRESS ) )
+        if( bankElm.hasAttribute( BankBean.ATTR_ADDRESS ) )
         {
-            bb.setAddress( bankElm.getAttribute(BankBean.PROP_ADDRESS) );
+            bb.setAddress( bankElm.getAttribute(BankBean.ATTR_ADDRESS) );
         }
         else
         {
-            throw new SAXParseException( "Element \"bank\" missing its \"" + BankBean.PROP_ADDRESS + "\" attribute", null );
+            throw new SAXParseException( "Element \"" + BankBean.PROP_ELEMENT_NAME + "\" missing its \"" + BankBean.ATTR_ADDRESS + "\" attribute", null );
         }
 
-        if( bankElm.hasAttribute( BankBean.PROP_ALIAS ) )
+        if( bankElm.hasAttribute( BankBean.ATTR_ALIAS ) )
         {
-            bb.setAlias( bankElm.getAttribute(BankBean.PROP_ALIAS) );
+            bb.setAlias( bankElm.getAttribute(BankBean.ATTR_ALIAS) );
         }
 
+        //  Go looking for "unit" elements.  Each one describes a device in the bank.
+        NodeList entries = bankElm.getChildNodes();
+        Element    elm;
+        int     start = 0;
+
+        // <comms> is first.
+        elm = (Element) entries.item(start);
+        if( elm.getNodeName().equals( BankBean.ELEMENT_COMMS ) )
+        {
+            System.out.printf( "BankBean child #%d is \"%s\"\n", start, elm.getNodeName() );
+
+            /**  <!ELEMENT comms (propertyList,unit*)> **/
+            bb.setComms( importComms( elm ) );
+            ++start;
+        }
+
+        // <unit> is second and is a sequence of 0 or more elements.
+        for( ; start < entries.getLength() ; ++start )
+        {
+            elm = (Element) entries.item(start);
+            if( elm.getNodeName().equals( BankBean.ELEMENT_UNIT ) )
+            {
+                System.out.printf( "BankBean child #%d is \"%s\"\n", start, elm.getNodeName() );
+
+                /**  <!ELEMENT unit ...>  **/
+                //!! bb.add( importBank( elm ) );
+            }
+            else
+            {
+                throw new SAXParseException( "Invalid sub-element of \"" + BankBean.PROP_ELEMENT_NAME + "\" : " + elm.getNodeName(), null );
+            }
+        }
 
         return( bb );
     }
 
+    // ----------------------------------------------------------------------------
+
+    static CommsBean importComms( Element commsElm )
+            throws SAXParseException
+    {
+        CommsBean   cb = new CommsBean();
+
+        /*** <!ELEMENT comms (propertyList)> */
+        /*** <!ATTLIST comms enabled  %Boolean;   "yes">  */
+        boolean  en = XmlUtils.ParseBooleanAttribute( commsElm, CommsBean.ATTR_ENABLED, true );
+        cb.setEnabled( en );
+
+        // TODO: Parse the propertyList element.
+
+        return( cb );
+    }
 
     // ----------------------------------------------------------------------------
 
@@ -274,6 +322,7 @@ public class XmlLayoutConfigurationSpecification
     {
         @Override
         public void error(SAXParseException x) throws SAXException {
+            System.out.printf( "Error on line #%d (inner)\n", x.getLineNumber() );
             throw x;
         }
         @Override

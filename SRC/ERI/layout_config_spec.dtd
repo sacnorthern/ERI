@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!ELEMENT layoutSpecification (bankList,layoutSensorList) >
-<!ATTLIST layoutSpecification
+<!ELEMENT layoutConfiguration (bankList,layoutSensorList) >
+<!ATTLIST layoutConfiguration
         formatVersion	CDATA #REQUIRED
 >
+
+<!-- ================================================ -->
+<!ENTITY % Boolean "(yes | no | true | false)">
 
 <!-- ================================================ -->
 
@@ -16,12 +19,48 @@
         alias      CDATA    ""
 >
 
-<!ELEMENT comms EMPTY>
+<!ELEMENT comms (propertyList)>
+<!ATTLIST comms
+        enabled  %Boolean;   "yes"
+>
 
-<!ELEMENT unit EMPTY>
+
+<!ELEMENT unit (propertyList,inputgroup*,outputgroup*)>
+<!ATTLIST unit
+        address CDATA   #REQUIRED
+        type    CDATA   #REQUIRED
+        alias   CDATA ""
+        protocol CDATA "1">
+
+<!ELEMENT inputgroup EMPTY>
+<!ATTLIST inputgroup
+        format  CDATA   #REQUIRED
+        type    CDATA   #REQUIRED
+        first   CDATA   #REQUIRED
+        last    CDATA   #REQUIRED>
+
+<!ELEMENT outputgroup EMPTY>
+<!ATTLIST outputgroup
+        format  CDATA   #REQUIRED
+        type    CDATA   #REQUIRED
+        first   CDATA   #REQUIRED
+        last    CDATA   #REQUIRED>
+
 
 <!-- ================================================ -->
 
+<!ELEMENT layoutSensorList ANY>
+
+
+<!-- ================================================ -->
+<!-- common “propertyList” -->
+<!ELEMENT propertyList (property*)>
+<!ELEMENT property (#PCDATA)>
+<!ATTLIST property
+        key	NMTOKEN  #REQUIRED
+        type    (bool|boolean|int|float|string|list|hexbytes) "string"
+>
+                <!-- "list" is "this,that,wow" or "33;900;zipper" -->
 
 
 <!-- ================================================ -->
@@ -30,18 +69,6 @@
 <!ATTLIST uiName
         xml:lang  NMTOKEN  "en"
 >
-
-<!-- ================================================ -->
-<!-- common “propertyList” -->
-<!ELEMENT propertyList (add*)>
-<!ELEMENT property #PCDATA>
-<!ATTLIST property
-        key	NMTOKEN  #REQUIRED
-        type    NMTOKEN  #REQUIRED
->
-
-<!-- ================================================ -->
-<!ENTITY % Boolean "(yes | no | true | false)">
 
 <!ELEMENT pinSetList (pinSet+)>
 <!ELEMENT pinSet (uiName+,pin+)>

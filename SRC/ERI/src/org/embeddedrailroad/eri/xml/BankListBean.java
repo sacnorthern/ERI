@@ -11,8 +11,10 @@ import java.util.List;
 
 /***
  *  A <b>bankList</b> holds a list of communications banks.  Each bank has a connection
- *  e.g. TCP on port 12345 or COM1 at 9600,8,E,1&nbsp;.
- *  For a layout, there is usually just one bank, but may be 2.
+ *  e.g. TCP on port 12345 or COM1 at 9600,8,E,1.
+ *  Check element {@code bankList > Bank > comms} for details. <p>
+ *
+ *  For a not-large layout, there is usually just one bank, but may be 2. <p>
  *
  *  {@code <!ELEMENT bankList (bank*) >}
  * @author brian
@@ -54,8 +56,13 @@ public class BankListBean
 
     }
 
+    /***
+     *  Create a copy of our bankList ; however bank elements are shared so be careful.
+     * @return New {@link List} but with shared {@link BankBean} objects.
+     */
     public List<BankBean> getBankList()
     {
+        // Clone the list structure ; however , elements are shared.
         List<BankBean>  bank_list = new ArrayList<BankBean>( m_bank_list.size() );
 
         for( BankBean bb : m_bank_list )

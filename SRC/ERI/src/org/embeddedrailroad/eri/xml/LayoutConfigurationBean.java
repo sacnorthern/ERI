@@ -6,14 +6,18 @@ package org.embeddedrailroad.eri.xml;
 
 import com.crunchynoodles.util.XmlEntityBean;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import org.xml.sax.SAXParseException;
 
 /**
- *  Represents the XML data read from the board specification file.
+ *  Represents all the XML data read from the board specification file.
  *  Built as a bean.
- * {@code !ELEMENT layoutSpecification (bankList,layoutSensorList)}
+ *
+ * <p> {@code <!ELEMENT layoutSpecification (bankList,layoutSensorList)>} <br/>
+ * {@code <!ATTLIST layoutSpecification formatVersion CDATA #REQUIRED>}
  *
  * @author brian
  */
@@ -29,7 +33,7 @@ public class LayoutConfigurationBean
 
     @Override
     public List<String> getAttributeList() {
-        return Arrays.asList( PROP_FORMAT_VERSION );
+        return Arrays.asList( ATTR_FORMAT_VERSION );
     }
 
     public LayoutConfigurationBean()
@@ -45,7 +49,12 @@ public class LayoutConfigurationBean
             ins = new FileInputStream( boardSpecFilename );
             return XmlLayoutConfigurationSpecification.load( ins );
         }
-        catch( Exception ex ) {
+        catch( IOException ex ) {
+            System.out.println( "I/O Error!!" );
+            ex.printStackTrace();
+            return null;
+        } catch( SAXParseException ex ) {
+            System.out.printf( "File trouble, line #%d (outer)\n", ex.getLineNumber() );
             ex.printStackTrace();
             return null;
         }
@@ -57,7 +66,7 @@ public class LayoutConfigurationBean
 
     // ----------------------------------------------------------------------------
 
-    public static final String  PROP_FORMAT_VERSION     = "formatVersion";  // atttribute
+    public static final String  ATTR_FORMAT_VERSION     = "formatVersion";  // atttribute
     public static final String  PROP_BANK_LIST          = "bankList";       // element within
     public static final String  PROP_LAYOUT_SENSOR_LIST = "layoutSensorList"; // element within
 
