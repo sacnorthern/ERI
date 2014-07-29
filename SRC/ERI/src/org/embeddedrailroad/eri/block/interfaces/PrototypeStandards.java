@@ -92,7 +92,7 @@ public interface PrototypeStandards {
      *  Return flags describing all signal styles that can be deployed on the railroad.
      *  These are primary and secondary.
      *  Only these choices are offered to the layout designer.
-     *  {@code getPrimarySignalStyleFlags() &lt;= {@code getEverywhereSignalStyleFlags()]}
+     *  {@code #getPrimarySignalStyleFlags()} is-subset-of {@code #getEverywhereSignalStyleFlags()]}
      *
      * @return one or more of {@code SFF_ZZZ} flags.
      */

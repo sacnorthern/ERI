@@ -18,7 +18,7 @@ public interface CtcTurnoutItemListener extends EventListener {
 
     /***
      *  Ask listeners if they want to veto a turnout change.
-     *  The {@see TurnoutItemChangedEvent} object is not in main Model (but could be in a proxy).
+     *  The {@link TurnoutItemChangedEvent} object is not in main Model (but could be in a proxy).
      *
      * @param evt has detail of the turnout with desired position.
      * @return {@code true} to veto and stop evaluating, {@code false} to continue asking.

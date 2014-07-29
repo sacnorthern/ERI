@@ -15,10 +15,16 @@ import java.util.HashMap;
  */
 public interface LayoutIoProvider
 {
-    /*** @return name of provider, same as IO model's name. */
+    /***
+     *  Return the name of this provider that could include spaces and punctuation.
+     *  @return name of provider, same as IO model's name.
+     */
     public String   getName();
 
-    /*** @return list of transport channels available. */
+    /***
+     *  Return the IoTransports index by their channel number.
+     * @return list of transport channels available.
+     */
     public HashMap<Integer, LayoutIoTransport> getTransportChannelList();
 
     /***
@@ -51,8 +57,8 @@ public interface LayoutIoProvider
 
     /***
      *   Create an address for a single bit, either input or output, or both.
-     * @param addr Parameter to {@link convertUnitAddressString()}.
-     * @param bit Parameter to {@link convertIoBitAddressString()}.
+     * @param addr Parameter to {@link #convertUnitAddressString()}.
+     * @param bit Parameter to {@link #convertIoBitAddressString()}.
      * @param mode read, write or both.  Not all modes are implemented.
      * @return ???
      * @throws IllegalArgumentException Conversion failed.
@@ -66,9 +72,9 @@ public interface LayoutIoProvider
      *  Some devices can support a range of bits as a single I/O unit, e.g. an RFID reader
      *  or a turntable indexing mechanism.
      *
-     * @param addr unit address parameter to {@link convertUnitAddressString()}.
-     * @param bit_start first bit, parameter to {@link convertIoBitAddressString()}.
-     * @param bit_end last bit, parameter to {@link convertIoBitAddressString()}.
+     * @param addr unit address parameter to {@link #convertUnitAddressString()}.
+     * @param bit_start first bit, parameter to {@link #convertIoBitAddressString()}.
+     * @param bit_end last bit, parameter to {@link #convertIoBitAddressString()}.
      * @param mode read, write or both.  Not all modes are implemented.
      * @return ???
      * @throws IllegalArgumentException Conversion failed.

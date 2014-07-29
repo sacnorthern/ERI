@@ -60,7 +60,7 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
      *  The return value is accumulated over all bulk and individual senses.
      *
      * @param device address of device
-     * @param new_bits all bits back to the caller.
+     * @return array of sensed data, indexed by position.
      */
     public boolean[]    getSensedDataAll( TUnitAddr device )
             throws UnknownLayoutUnitException, NullPointerException;

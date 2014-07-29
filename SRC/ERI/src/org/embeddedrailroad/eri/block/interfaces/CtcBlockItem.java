@@ -45,7 +45,7 @@ public interface CtcBlockItem extends CtcModelItem {
 
     /***
      * List of turnouts inside of block, or {@code null} if none.
-     * @return
+     * @return List of turnouts within this block.
      */
     public List<CtcTurnoutItem> getTurnouts();
 }

@@ -22,8 +22,8 @@ public class TurnoutItemChangedEvent extends java.util.EventObject
 
     /***
      *  Something about a turnout has changed.
-     *  Upon creation, a change-event is generated first with {@see CUZ_ADD_TO_MODEL}
-     *  then {@link CUZ_NOW_INDETERMINATE}.
+     *  Upon creation, a change-event is generated first with {@link #CUZ_ADD_TO_MODEL}
+     *  then {@link #CUZ_NOW_INDETERMINATE}.
      * @param turnout Object of change.
      * @param changeFlags See CUZ_XXX defines above.
      */
