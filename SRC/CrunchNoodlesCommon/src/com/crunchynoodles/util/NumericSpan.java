@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.embeddedrailroad.eri.util;
+package com.crunchynoodles.util;
 
 /**
  *  A span of two numbers, inclusive.  There are no gaps in a span.
