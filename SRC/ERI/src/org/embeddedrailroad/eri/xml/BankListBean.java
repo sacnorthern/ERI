@@ -9,8 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- *  {@code &gt; !ELEMENT bankList (bank*) &gt;}
+/***
+ *  A <b>bankList</b> holds a list of communications banks.  Each bank has a connection
+ *  e.g. TCP on port 12345 or COM1 at 9600,8,E,1&nbsp;.
+ *  For a layout, there is usually just one bank, but may be 2.
+ *
+ *  {@code <!ELEMENT bankList (bank*) >}
  * @author brian
  */
 public class BankListBean
@@ -31,7 +35,7 @@ public class BankListBean
 
     public BankListBean()
     {
-        m_bank_list = new ArrayList<BankBean>( 1 );
+        m_bank_list = new ArrayList<BankBean>( 2 );
     }
 
     // ----------------------------------------------------------------------------

@@ -8,12 +8,16 @@ import com.crunchynoodles.util.XmlEntityBean;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- *  {@code &lt; !ELEMENT bank (comms,unit*) &gt;
- *       &lt;!ATTLIST bank
- *               protocol   NMTOKEN  #REQUIRED
- *               address    NMTOKEN  #REQUIRED
- *               alias      CDATA    ""  &gt;}
+/***
+ *  A "bank" is one communication protocol talking with a series of "unit" things.
+ *  There may be several banks with the same protocol.
+ *  All units on bank must have a unique address, though any may receive broadcast messages. <br>
+ *
+ *  <pre> &lt;!ELEMENT bank (comms,unit*)&gt;
+ * &lt;!ATTLIST bank
+ *              protocol   CDATA  #REQUIRED
+ *              address    CDATA  #REQUIRED
+ *              alias      CDATA  ""  &gt;</pre>
  *
  * @author brian
  */

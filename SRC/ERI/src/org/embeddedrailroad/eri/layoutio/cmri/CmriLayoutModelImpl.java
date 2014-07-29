@@ -16,10 +16,10 @@ import org.embeddedrailroad.eri.layoutio.LayoutIoModel;
 import org.embeddedrailroad.eri.layoutio.UnknownLayoutUnitException;
 
 
-/**
+/***
  *
  * @author brian
- * @param <java>
+ * @param <T> Class-type for addressing unit.  CMRI uses an {@code Integer}.
  */
 public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
 {
@@ -62,14 +62,13 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
         m_lock.writeLock().lock();
         try
         {
-            Integer  dev = (Integer) device;
             if( new_bits != null )
             {
-                m_inputs.put( dev, (boolean[]) new_bits.clone() );
+                m_inputs.put( device, (boolean[]) new_bits.clone() );
             }
             else
             {
-                m_inputs.remove( dev );
+                m_inputs.remove( device );
             }
         }
         catch( Throwable ex )
@@ -98,7 +97,6 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
         m_lock.writeLock().lock();
         try
         {
-            Integer  dev = (Integer) device;
 
             //  1.  Determine highest bit number in individual_bits
             Set<Integer>   keys = individual_bits.keySet();
@@ -118,13 +116,13 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
             {
                 //  Nothing there, so make it right size.
                 dev_bits = new boolean[ max ];
-                m_inputs.put( dev, dev_bits );
+                m_inputs.put( device, dev_bits );
             }
             else if( dev_bits.length < max )
             {
                 //  More bits have arrived, extend size.
                 dev_bits = Arrays.copyOf( dev_bits, max );
-                m_inputs.put( dev, dev_bits );
+                m_inputs.put( device, dev_bits );
             }
 
             //  3.  Copy of the changes, not changing if not mentioned in 'individual_bits'.
@@ -136,8 +134,7 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
             {
                 Map.Entry<Integer, Boolean>  entry = everything.next();
 
-                Boolean  there = (Boolean) entry.getValue();
-                dev_bits[ entry.getKey() ] = there.booleanValue();
+                dev_bits[ entry.getKey() ] = entry.getValue();
             }
         }
         catch( Throwable ex )
@@ -155,7 +152,7 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
     public void setSensedBinaryBlob( Integer device, int subfunction, byte[] blob )
     {
         /**
-         *  E.g. device "6.22.19" on subfunction "3" has bytes from an RFID reader,
+         *  E.g. device "6.22.19" on sub-function "3" has bytes from an RFID reader,
          *  bytes "0x56 0x7F 0xA2 0x33 0xFF".  By setting that blob, the previous
          *  blob from the RFID reader is overwritten.
          *
@@ -171,15 +168,14 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
         m_lock.writeLock().lock();
         try
         {
-            Integer  dev = (Integer) device;
-            Integer  subf = (Integer) new java.lang.Integer(subfunction);
+            Integer  subf = new java.lang.Integer(subfunction);
 
             //  1.  Retrieve all blobs for this device, i.e. function
-            if( ! m_blobs.containsKey( dev ) )
+            if( ! m_blobs.containsKey( device ) )
             {
-                m_blobs.put( dev, new  HashMap< Integer, byte[] >() );
+                m_blobs.put( device, new  HashMap< Integer, byte[] >() );
             }
-            HashMap< Integer, byte[] >  funct = m_blobs.get( dev );
+            HashMap< Integer, byte[] >  funct = m_blobs.get( device );
 
             //  2.  Store the sub-function blob.
             if( blob != null )
@@ -215,26 +211,23 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
         if( device == null )
             throw new NullPointerException("device cannot be null");
 
-        Integer  addr = null;
         try
         {
-            addr = (Integer) device;
-
             //  If no matching device is found, then toss cookies.
-            if( ! m_inputs.containsKey( addr ) )
+            if( ! m_inputs.containsKey( device ) )
             {
                 throw new UnknownLayoutUnitException("device not found");
             }
 
         }
-        catch( Throwable ex )
+        catch( UnknownLayoutUnitException ex )
         {
             System.out.println("ERROR in getSensedDataAll(" + device.toString() + "): " + ex.toString() );
             ex.printStackTrace( System.out );
             return new boolean[0];
         }
 
-        return m_inputs.get( addr );
+        return m_inputs.get( device );
     }
 
     @Override
@@ -260,16 +253,13 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
         if( device == null )
             throw new NullPointerException("device cannot be null");
 
-        Integer  dev = null;
-
         m_lock.readLock().lock();
         try
         {
-            dev = (Integer) device;
             if( m_blobs.containsKey( device) )
             {
-                Integer  subf = (Integer) new java.lang.Integer(subfunction);
-                return m_blobs.get( dev ).get( subf );
+                Integer  subf = new java.lang.Integer(subfunction);
+                return m_blobs.get( device ).get( subf );
             }
         }
         catch( Throwable ex )
