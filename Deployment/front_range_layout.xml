@@ -15,12 +15,12 @@
 
       <unit address="1" type="cpNode" protocol="1" alias="Littleton">
         <propertyList>
-          <property key="sn"       type="string">39734</property>
-          <property key="initbytes" type="hexbytes">8F</property>
+          <property key="sn"       type="string">39734</property>  <!-- verified somehow -->
+          <property key="initbytes.1" type="hexbytes">8F</property>
         </propertyList>
-        <inputgroup  format="%d" type="int" first="0" last="31" />
-        <inputgroup  format="%d" type="int" first="96" last="127" />
-        <outputgroup format="%d" type="int" first="0" last="47" />
+        <inputgroup  first="0" last="31" />
+        <inputgroup  first="96" last="127" />
+        <outputgroup first="0" last="47" />
       </unit>
 
     </bank>
