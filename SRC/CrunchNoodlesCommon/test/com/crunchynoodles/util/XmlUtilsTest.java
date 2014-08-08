@@ -11,8 +11,15 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.TypeInfo;
+import org.w3c.dom.UserDataHandler;
 
 /**
  *
@@ -31,17 +38,73 @@ public class XmlUtilsTest {
     public static void tearDownClass() {
     }
 
+    // ----------------------------------------------------------------------------
+
+    /***
+     *  Create a phony XML element.
+     *
+     * @param eleName Name of XML element
+     * @return XML Element.
+     */
+    TestWithXmlElement  makeElement( String eleName )
+    {
+        return new TestWithXmlElement( eleName );
+    }
+
+    /***
+     *  Create a phony XML element with a bunch of attribute name-value pairs.
+     *  If attribute name already exists, it is replaced.
+     *
+     * @param eleName Name of XML element
+     * @param attrName Name of first attribute to add
+     * @param attrValue String value of first attribute
+     * @param args Pairs of strings (optional)
+     * @return new XML element
+     */
+    TestWithXmlElement  makeElement( String eleName, String attrName, String attrValue, String... args)
+    {
+        TestWithXmlElement el = new TestWithXmlElement( eleName );
+        el.setAttribute( attrName, attrValue);
+
+        if( args.length % 2 != 0 )
+        {
+            throw new IllegalArgumentException("must have pairs of attribute name-values");
+        }
+
+        for( int j = args.length ; j > 0 ; j -= 2 )
+        {
+            el.setAttribute( args[j-1], args[j-2] );
+        }
+
+        return( el );
+    }
+
+    // ----------------------------------------------------------------------------
+
     /**
      * Test of XmlPrintAttrs method, of class XmlUtils.
      */
     @Test
     public void testXmlPrintAttrs() {
         System.out.println( "XmlPrintAttrs" );
-        PrintStream outs = null;
-        Node entry = null;
+        PrintStream outs = System.out;
+
+        TestWithXmlElement entry = null;
         XmlUtils.XmlPrintAttrs( outs, entry );
-        // TODO review the generated test code and remove the default call to fail.
-        fail( "The test case is a prototype." );
+
+        entry = makeElement( "first" );
+        XmlUtils.XmlPrintAttrs( outs, entry );
+
+        entry.setAttribute( "attr1", "value1" );
+        XmlUtils.XmlPrintAttrs( outs, entry );
+
+        entry.setAttribute( "attr2", "value2" );
+        XmlUtils.XmlPrintAttrs( outs, entry );
+
+        entry.setAttribute( "attr1", "replacement1" );
+        XmlUtils.XmlPrintAttrs( outs, entry );
+
+        System.out.println( "XmlPrintAttrs - done." );
     }
 
     /**
@@ -50,13 +113,20 @@ public class XmlUtilsTest {
     @Test
     public void testParseBooleanAttribute() {
         System.out.println( "ParseBooleanAttribute" );
-        Element element = null;
-        String attrName = "";
-        Boolean expResult = null;
-        Boolean result = XmlUtils.ParseBooleanAttribute( element, attrName );
+
+        String attrName = "value1";
+        Boolean expResult = false;
+        TestWithXmlElement element = makeElement( "parseIntAttr",
+                                            attrName, new StringBuilder().append( expResult ).toString() );
+        Boolean result = XmlUtils.ParseBooleanAttribute( element, attrName, false );
         assertEquals( expResult, result );
-        // TODO review the generated test code and remove the default call to fail.
-        fail( "The test case is a prototype." );
+
+         attrName = "valueTrue";
+         expResult = true;
+         element = makeElement( "parseIntAttr",
+                                            attrName, new StringBuilder().append( expResult ).toString() );
+         result = XmlUtils.ParseBooleanAttribute( element, attrName, false );
+        assertEquals( expResult, result );
     }
 
     /**
@@ -65,13 +135,14 @@ public class XmlUtilsTest {
     @Test
     public void testParseIntegerAttribute_Element_String() {
         System.out.println( "ParseIntegerAttribute" );
-        Element element = null;
-        String attrName = "";
-        int expResult = 0;
+
+        String attrName = "value1";
+        int expResult = 0333;
+        TestWithXmlElement element = makeElement( "parseIntAttr",
+                                            attrName, new StringBuilder().append( expResult ).toString() );
         int result = XmlUtils.ParseIntegerAttribute( element, attrName );
         assertEquals( expResult, result );
-        // TODO review the generated test code and remove the default call to fail.
-        fail( "The test case is a prototype." );
+
     }
 
     /**
@@ -80,15 +151,24 @@ public class XmlUtilsTest {
     @Test
     public void testParseIntegerAttribute_4args() {
         System.out.println( "ParseIntegerAttribute" );
-        Element element = null;
-        String attrName = "";
+
+        String attrName = "value1";
+        int expResult = 0333;
+        TestWithXmlElement element = makeElement( "parseIntAttr",
+                                            attrName, new StringBuilder().append( expResult ).toString() );
         int minValue = 12;
         int maxValue = 8191;
-        int expResult = 0;
         int result = XmlUtils.ParseIntegerAttribute( element, attrName, minValue, maxValue );
         assertEquals( expResult, result );
-        // TODO review the generated test code and remove the default call to fail.
-        fail( "The test case is a prototype." );
     }
 
+
+    /**
+     * Test of ParseIntegerAttribute method, of class XmlUtils.
+     */
+    @Test
+    public void testParseHexBinaryCData() {
+        System.out.println( "ParseIntegerAttribute" );
+
+    }
 }
