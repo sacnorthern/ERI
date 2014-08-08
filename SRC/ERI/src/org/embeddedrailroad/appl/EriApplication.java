@@ -92,7 +92,7 @@ public class EriApplication
         String  fname = "C:\\Devel\\Java-ERI\\Deployment\\front_range_layout.xml";
 
         try {
-            LayoutConfigurationBean  bs = LayoutConfigurationBean.readFrom( fname );
+            LayoutConfigurationBean  bs = LayoutConfigurationBean.readFromFile( fname );
 
             BankListBean  banklist = bs.getBankList();
             for( BankBean bank : banklist.getBankList() )

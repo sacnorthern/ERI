@@ -42,7 +42,7 @@ public class LayoutConfigurationBean
 
     // ----------------------------------------------------------------------------
 
-    public static LayoutConfigurationBean readFrom( String boardSpecFilename )
+    public static LayoutConfigurationBean readFromFile( String boardSpecFilename )
     {
         FileInputStream ins = null;
         try {
