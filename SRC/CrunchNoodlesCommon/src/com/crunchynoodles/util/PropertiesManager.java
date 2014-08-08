@@ -48,7 +48,7 @@ public class PropertiesManager
 
     /***
      *  Create property manager for application.  There are no properties until
-     *  loaded with {@link #readProperties()} is called.
+     *  loaded with {@link #readProperties(java.lang.String, java.lang.String) } is called.
      *
      * @param moduleName Prefix for properties stored.
      */
@@ -118,7 +118,7 @@ public class PropertiesManager
      *  They'll be available the next time application runs and will override default settings.
      *  Does not write the "temp" properties.
      *
-     *  Must have already called {@link #readProperties()} to set file names.
+     *  Must have already called {@link #readProperties(java.lang.String, java.lang.String)} to set file names.
      *
      * @throws FileNotFoundException
      * @throws IOException
@@ -186,7 +186,7 @@ public class PropertiesManager
 
     /***
      *  Look for a key's value, returning a default is key not found.
-     *  The value sought is a "String", even if stored using {@link #putInt()}.
+     *  The value sought is a "String", even if stored using {@link #putInt(java.lang.String, int) }.
      *
      * @param key String name of key.
      * @param defaultValue Value to return when key not found.

@@ -15,7 +15,7 @@ import com.crunchynoodles.util.AbstractXmlEntityWithPropertiesBean;
  *  Uses {@link AbstractXmlEntityWithPropertiesBean} to hold properties.<p>
  *
  *  {@code <!ELEMENT comms (propertyList)>} <br>
- *  {@code <!ATTLIST comms enabled  %Boolean;   "yes">}
+ *  {@code <!ATTLIST comms enabled  %Boolean;  "yes">}
  * @author brian
  */
 public class CommsBean
