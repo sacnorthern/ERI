@@ -6,6 +6,8 @@ package org.embeddedrailroad.eri.xml;
 
 
 import com.crunchynoodles.util.FileUtils;
+import com.crunchynoodles.util.XmlPropertyListBean;
+import com.crunchynoodles.util.XmlPropertyListUtils;
 import com.crunchynoodles.util.XmlUtils;
 import java.io.*;
 import java.util.ArrayList;
@@ -29,7 +31,10 @@ import org.xml.sax.SAXParseException;
  *  Provide the direct XML interface to the ERI Layout Configuration specification data file.
  *  This supports only reading. <p>
  *
- *  Start by calling {@code LayoutConfigurationBean.load(InputStream in)}.
+ *  Start by calling {@code LayoutConfigurationBean.load(InputStream in)}. <p>
+ *
+ *  For issue on parsing arbitrary JSON, see https://sites.google.com/site/gson/gson-design-document
+ *  All bean objects returned from parsing <em>must</em> have a parameterless constructor.
  *
  * @author brian
  * @see java.util.XMLUtils
@@ -167,7 +172,6 @@ public class XmlLayoutConfigurationSpecification
             {
                 throw new SAXParseException( "Invalid sub-element of \"bankList\" : " + elm.getNodeName(), null );
             }
-
         }
 
         bl.setBankList( bank_list );
@@ -216,16 +220,21 @@ public class XmlLayoutConfigurationSpecification
 
         // <comms> is first.
         elm = (Element) entries.item(start);
-        if( elm.getNodeName().equals( BankBean.ELEMENT_COMMS ) )
+        if( elm != null && elm.getNodeName().equals( BankBean.ELEMENT_COMMS ) )
         {
             System.out.printf( "BankBean child #%d is \"%s\"\n", start, elm.getNodeName() );
 
-            /**  <!ELEMENT comms (propertyList,unit*)> **/
+            /**  <!ELEMENT bank (comms,...)> **/
             bb.setComms( importComms( elm ) );
             ++start;
         }
+        else
+        {
+             throw new SAXParseException( BankBean.PROP_ELEMENT_NAME + " is missing an " + BankBean.ELEMENT_COMMS + " element", null );
+        }
 
         // <unit> is second and is a sequence of 0 or more elements.
+        //  TODO: Should probably be <unitList> <unit> ... </unit> <unit> ... </unit> </unitList>
         for( ; start < entries.getLength() ; ++start )
         {
             elm = (Element) entries.item(start);
@@ -233,8 +242,8 @@ public class XmlLayoutConfigurationSpecification
             {
                 System.out.printf( "BankBean child #%d is \"%s\"\n", start, elm.getNodeName() );
 
-                /**  <!ELEMENT unit ...>  **/
-                //!! bb.add( importBank( elm ) );
+                /**  <!ELEMENT bank (...,unit*)> **/
+                //!! bb.add( importUnit( elm ) );
             }
             else
             {
@@ -258,6 +267,24 @@ public class XmlLayoutConfigurationSpecification
         cb.setEnabled( en );
 
         // TODO: Parse the propertyList element.
+        String  propListName = (new XmlPropertyListBean()).getElementName();
+
+        NodeList  children = commsElm.getChildNodes();
+        if( children.getLength() != 1 )
+        {
+            throw new SAXParseException( CommsBean.PROP_ELEMENT_NAME + " must have one " +
+                        propListName + " child element", null );
+        }
+
+        Element plist = (Element) children.item( 0 );
+        if( ! plist.getTagName().equalsIgnoreCase( propListName ) )
+        {
+            throw new SAXParseException( CommsBean.PROP_ELEMENT_NAME + " must have one " +
+                        propListName + " child element", null );
+        }
+
+        //  Add proporties to comms-bean directly.
+        XmlPropertyListUtils.importPropertyList( plist, cb );
 
         return( cb );
     }

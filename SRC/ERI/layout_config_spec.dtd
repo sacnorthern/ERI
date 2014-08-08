@@ -14,10 +14,11 @@
 
 <!ELEMENT bank (comms,unit*)>
 <!ATTLIST bank
-        protocol   NMTOKEN  #REQUIRED
-        address    NMTOKEN  #REQUIRED
-        alias      CDATA    ""
+        protocol   CDATA   "1"
+        address    CDATA   #REQUIRED
+        alias      CDATA   ""
 >
+<!--  protocol="1"  means the first published version or the base/core protocol. -->
 
 <!ELEMENT comms (propertyList)>
 <!ATTLIST comms
@@ -29,20 +30,16 @@
 <!ATTLIST unit
         address CDATA   #REQUIRED
         type    CDATA   #REQUIRED
-        alias   CDATA ""
-        protocol CDATA "1">
+        alias   CDATA   ""
+        protocol CDATA  "1">
 
 <!ELEMENT inputgroup EMPTY>
 <!ATTLIST inputgroup
-        format  CDATA   #REQUIRED
-        type    CDATA   #REQUIRED
         first   CDATA   #REQUIRED
         last    CDATA   #REQUIRED>
 
 <!ELEMENT outputgroup EMPTY>
 <!ATTLIST outputgroup
-        format  CDATA   #REQUIRED
-        type    CDATA   #REQUIRED
         first   CDATA   #REQUIRED
         last    CDATA   #REQUIRED>
 
@@ -57,8 +54,8 @@
 <!ELEMENT propertyList (property*)>
 <!ELEMENT property (#PCDATA)>
 <!ATTLIST property
-        key	NMTOKEN  #REQUIRED
-        type    (bool|boolean|int|float|string|list|hexbytes) "string"
+        key	CDATA  #REQUIRED
+        type    (bool|boolean|int|float|string|list|hexbytes|hexbinary|base64) "string"
 >
                 <!-- "list" is "this,that,wow" or "33;900;zipper" -->
 
