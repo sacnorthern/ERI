@@ -43,6 +43,68 @@ public class BankBean
 
     // ----------------------------------------------------------------------------
 
+    @Override
+    public int  hashCode()
+    {
+        int  hc = super.hashCode();
+
+        if( m_comms_element != null )   hc ^= m_comms_element.hashCode();
+        if( m_protocol != null )        hc ^= m_protocol.hashCode();
+        if( m_address != null )         hc ^= m_address.hashCode();
+        if( m_alias != null )           hc ^= m_alias.hashCode();
+        if( m_unit_element != null )    hc ^= m_unit_element.hashCode();
+
+        return( hc );
+    }
+
+    @Override
+    public String  toString()
+    {
+        StringBuilder  sb = new StringBuilder( 100 );
+
+        sb.append( "BankBean:[" );
+
+        sb.append( "m_comms_element=" );
+        if( m_comms_element != null )
+            sb.append( m_comms_element.toString() );
+        else
+            sb.append( NULL_OBJECT_REF_STRING );
+
+        sb.append( ",m_protocol=" );
+        if( m_protocol != null )
+            sb.append( m_protocol.toString() );
+        else
+            sb.append( NULL_OBJECT_REF_STRING );
+
+        sb.append( ",m_address=" );
+        if( m_address != null )
+            sb.append( m_address.toString() );
+        else
+            sb.append( NULL_OBJECT_REF_STRING );
+
+        sb.append(  ",alias=" );
+        if( m_alias != null )
+        {
+            sb.append( '"' ).append( m_alias.toString() ).append( '"' );
+        }
+        else
+        {
+            sb.append( NULL_OBJECT_REF_STRING );
+        }
+
+        sb.append( ",m_unit_element={" );
+        if( m_unit_element != null )
+            sb.append( m_unit_element.toString() );
+        else
+            sb.append( NULL_OBJECT_REF_STRING );
+
+        sb.append( "}]" );
+
+        return( sb.toString() );
+    }
+
+    // ----------------------------------------------------------------------------
+
     public static final String ELEMENT_COMMS = "comms";
     protected CommsBean         m_comms_element;
 

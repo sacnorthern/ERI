@@ -37,6 +37,48 @@ public class UnitBean
 
     // ----------------------------------------------------------------------------
 
+    @Override
+    public int hashCode()
+    {
+        int  h = super.hashCode();
+
+        if( null != m_address )    h ^= m_address.hashCode();
+        if( null != m_type )       h ^= m_type.hashCode();
+        if( null != m_protocol )   h ^= m_protocol.hashCode();
+        if( null != m_alias )      h ^= m_alias.hashCode();
+
+        return( h );
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder  sb = new StringBuilder( 80 );
+
+        sb.append( "UnitBean:[address=" );
+        sb.append( m_address );
+        sb.append( ",type=\"" );
+        sb.append( m_type );
+        sb.append( "\",protocol=\"" );
+        sb.append( m_protocol );
+        sb.append( "\",alias=\"" );
+        sb.append( m_alias );
+        sb.append( '"' );
+
+        sb.append( ",m_io_groups=" );
+        if( m_io_groups != null )
+            sb.append( '{' ).append( m_io_groups.toString() ).append( '}' );
+        else
+            sb.append( NULL_OBJECT_REF_STRING );
+        sb.append( ',' );
+
+        sb.append( '{' ).append( super.toString() ).append( '}' );
+
+        return( sb.toString() );
+    }
+
+    // ----------------------------------------------------------------------------
+
     public static final String  ATTR_ADDRESS = "address";
     protected String    m_address;
 

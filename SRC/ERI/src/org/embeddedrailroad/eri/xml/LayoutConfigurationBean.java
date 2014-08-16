@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import org.xml.sax.SAXParseException;
 
@@ -42,7 +43,66 @@ public class LayoutConfigurationBean
 
     // ----------------------------------------------------------------------------
 
-    public static LayoutConfigurationBean readFromFile( String boardSpecFilename )
+    @Override
+    public boolean  equals(Object obj)
+    {
+        if( obj == null )
+            return false;
+        if( getClass() != obj.getClass() )
+            return false;
+
+        final LayoutConfigurationBean   other = (LayoutConfigurationBean) obj;
+        if( !this.m_formatVersion.equals( other.m_formatVersion ) )
+            return false;
+        if( !Objects.equals( this.m_bankList, other.m_bankList ) ) {
+            return false;
+        }
+        if( !Objects.equals( this.m_layoutSensorList, other.m_layoutSensorList ) ) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int  hashCode()
+    {
+        int   hc = super.hashCode();
+
+        if( m_formatVersion != null )    hc ^= m_formatVersion.hashCode();
+        if( m_bankList != null )         hc ^= m_bankList.hashCode();
+        if( m_layoutSensorList != null ) hc ^= m_layoutSensorList.hashCode();
+
+        return( hc );
+    }
+
+    @Override
+    public String  toString()
+    {
+        StringBuilder  sb = new StringBuilder( 200 );
+
+        sb.append( "LayoutConfigurationBean:[formatVersion=\"" );
+        sb.append( m_formatVersion );
+
+        sb.append( "\",bankList={" );
+        if( m_bankList != null )
+            sb.append( m_bankList.toString() );
+        else
+            sb.append( NULL_OBJECT_REF_STRING );
+
+        sb.append( "},layoutSensorList={" );
+        if( m_layoutSensorList != null )
+            sb.append( m_layoutSensorList.toString() );
+        else
+            sb.append( NULL_OBJECT_REF_STRING );
+
+        sb.append( "}]" );
+
+        return( sb.toString() );
+    }
+
+    // ----------------------------------------------------------------------------
+
+    public static LayoutConfigurationBean  readFromFile( String boardSpecFilename )
     {
         FileInputStream ins = null;
         try {

@@ -9,9 +9,11 @@ package com.crunchynoodles.util;
 import com.google.common.io.BaseEncoding;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *  XML Property in a property-list who's value is the PCDATA between start and end elements.
+ *  Properties are not "bound" and so there are no change events when set.
  * For example:
  * <ol>
  *  {@code <propertyList> <property key="initbytes.1" type="hexbytes">8F</property> </propertyList> }
@@ -28,29 +30,35 @@ import java.util.List;
 public class XmlPropertyBean
             implements XmlEntityBean
 {
+    public final String     MAGIC_KEY_DELIM_CHARS = ":=[]{}";
 
     /***
      *  Construct new XmlProperty from parts.
      *  The {@code valuestr} will be decoded from the string into appropriate thing
      *  based on {@code typestr}.
+     *  There are a few chars illegal in {@link key}, see {@link MAGIC_KEY_DELIM_CHARS}.
      *  The types "string" and "list" are left as-is.
      *  A "list" is either comma- or semi-colon-separated values.
      *
-     * @param key Key string for storing.
+     * @param keystr Key string for storing.
      * @param typestr A well-known name, "bool", "int", "float", "hexbytes".
      * @param valuestr String form of value.
      *
      * @throws IllegalArgumentException If any parameter is null.
      * @throws NumberFormatException if {@code valuestr} is null, or zero-length for numeric conversions.
      */
-    public XmlPropertyBean( String key, String typestr, String valuestr )
+    public XmlPropertyBean( String keystr, String typestr, String valuestr )
     {
-        if( typestr == key || typestr == null || valuestr == null )
+        if( keystr == null || typestr == null || valuestr == null )
         {
             throw new IllegalArgumentException( "key, typestr and valuestr cannot be null" );
         }
+        if( keystr.contains( MAGIC_KEY_DELIM_CHARS ) )
+        {
+            throw new IllegalArgumentException( "key CANNOT contain delimiter chars:" + MAGIC_KEY_DELIM_CHARS );
+        }
 
-        this.Key = key;
+        this.Key = keystr;
         this.Type = typestr;
 
         if( typestr.equalsIgnoreCase( "bool") || typestr.equalsIgnoreCase( "boolean") )
@@ -135,18 +143,42 @@ public class XmlPropertyBean
     @Override
     public String toString()
     {
-        return new String( "[Key=" + Key + ",Type=" + Type + ",Value=\"" + Value.toString() + "\"]" );
+        //  TODO: Implement #toString() when Value is an array.
+        return "[Key=\"" + Key + "\",Type=" + Type + ",Value=\"" + Value.toString() + "\"]" ;
     }
 
     @Override
     public int hashCode()
     {
         int   h = super.hashCode() ^ PROP_ELEMENT_NAME.hashCode();
+
         if( Key != null )       h ^= Key.hashCode();
         if( Type != null )      h ^= Type.hashCode();
         if( Value != null )     h ^= Value.hashCode();
 
         return( h );
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if( obj == null ) {
+            return false;
+        }
+        if( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final XmlPropertyBean other = (XmlPropertyBean) obj;
+        if( !this.Key.equals( other.Key ) ) {
+            return false;
+        }
+        if( !this.Type.equals( other.Type ) ) {
+            return false;
+        }
+        if( !Objects.equals( this.Value, other.Value ) ) {
+            return false;
+        }
+        return true;
     }
 
     // ----------------------------------------------------------------------------

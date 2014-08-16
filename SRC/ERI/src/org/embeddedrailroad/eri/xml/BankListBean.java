@@ -7,6 +7,7 @@ package org.embeddedrailroad.eri.xml;
 import com.crunchynoodles.util.XmlEntityBean;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 /***
@@ -38,6 +39,52 @@ public class BankListBean
     public BankListBean()
     {
         m_bank_list = new ArrayList<BankBean>( 2 );
+    }
+
+    // ----------------------------------------------------------------------------
+
+    @Override
+    public int  hashCode()
+    {
+        int  hc = super.hashCode();
+
+        if( m_bank_list != null )   hc ^= m_bank_list.hashCode();
+
+        return( hc );
+    }
+
+    @Override
+    public String  toString()
+    {
+        StringBuilder  sb = new StringBuilder( 100 );
+
+        sb.append( "BankListBean:[" );
+
+        sb.append( "m_bank_list={" );
+        if( m_bank_list != null )
+            sb.append( m_bank_list.toString() );
+        else
+            sb.append( NULL_OBJECT_REF_STRING );
+
+        sb.append( "}]" );
+
+        return( sb.toString() );
+    }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        if( obj == null ) {
+            return false;
+        }
+        if( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final BankListBean other = (BankListBean) obj;
+        if( ! this.m_bank_list.equals( other.m_bank_list ) ) {
+            return false;
+        }
+        return true;
     }
 
     // ----------------------------------------------------------------------------

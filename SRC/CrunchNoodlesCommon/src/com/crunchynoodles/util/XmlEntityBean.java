@@ -5,14 +5,24 @@
 package com.crunchynoodles.util;
 
 import java.util.List;
-import java.util.Arrays;
+
 
 /**
+ *  Interface to XML "bean" elements that have <em>no</em> change-events generated.
+ *  Properties are not "bound" and so there are no change events when set.
+ *  Sub-class objects are for data storage and interchange, not really for use directly
+ *  in an application program.
  *
  * @author brian
  */
 public interface XmlEntityBean
 {
+
+    /**
+     *  String to use in {@link #toString()} when a null-reference is encountered.
+     */
+    public final   String  NULL_OBJECT_REF_STRING = "null";
+
     /***
      *  Return name of this element, e.g, "pinSetList"
      *  @return string of this XML element.
