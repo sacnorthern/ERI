@@ -26,20 +26,20 @@
 >
 
 
-<!ELEMENT unit (propertyList,inputgroup*,outputgroup*)>
+<!ELEMENT unit (propertyList,inputGroup*,outputGroup*)>
 <!ATTLIST unit
         address CDATA   #REQUIRED
         type    CDATA   #REQUIRED
         alias   CDATA   ""
         protocol CDATA  "1">
 
-<!ELEMENT inputgroup EMPTY>
-<!ATTLIST inputgroup
+<!ELEMENT inputGroup EMPTY>
+<!ATTLIST inputGroup
         first   CDATA   #REQUIRED
         last    CDATA   #REQUIRED>
 
-<!ELEMENT outputgroup EMPTY>
-<!ATTLIST outputgroup
+<!ELEMENT outputGroup EMPTY>
+<!ATTLIST outputGroup
         first   CDATA   #REQUIRED
         last    CDATA   #REQUIRED>
 

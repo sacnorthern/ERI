@@ -18,9 +18,9 @@
           <property key="sn"       type="string">39734</property>  <!-- verified somehow -->
           <property key="initbytes.1" type="hexbytes">8F</property>
         </propertyList>
-        <inputgroup  first="0" last="31" />
-        <inputgroup  first="96" last="127" />
-        <outputgroup first="0" last="47" />
+        <inputGroup  first="0" last="31" />
+        <inputGroup  first="96" last="127" />
+        <outputGroup first="0" last="47" />
       </unit>
 
     </bank>

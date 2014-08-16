@@ -213,7 +213,6 @@ public class XmlLayoutConfigurationSpecification
             bb.setAlias( bankElm.getAttribute(BankBean.ATTR_ALIAS) );
         }
 
-        //  Go looking for "unit" elements.  Each one describes a device in the bank.
         NodeList entries = bankElm.getChildNodes();
         Element    elm;
         int     start = 0;
@@ -243,7 +242,7 @@ public class XmlLayoutConfigurationSpecification
                 System.out.printf( "BankBean child #%d is \"%s\"\n", start, elm.getNodeName() );
 
                 /**  <!ELEMENT bank (...,unit*)> **/
-                //!! bb.add( importUnit( elm ) );
+                bb.addUnit( importUnit( elm ) );
             }
             else
             {
@@ -263,10 +262,10 @@ public class XmlLayoutConfigurationSpecification
 
         /*** <!ELEMENT comms (propertyList)> */
         /*** <!ATTLIST comms enabled  %Boolean;   "yes">  */
+
         boolean  en = XmlUtils.ParseBooleanAttribute( commsElm, CommsBean.ATTR_ENABLED, true );
         cb.setEnabled( en );
 
-        // TODO: Parse the propertyList element.
         String  propListName = (new XmlPropertyListBean()).getElementName();
 
         NodeList  children = commsElm.getChildNodes();
@@ -283,13 +282,158 @@ public class XmlLayoutConfigurationSpecification
                         propListName + " child element", null );
         }
 
-        //  Add proporties to comms-bean directly.
+        //  Add properties to comms-bean directly.
         XmlPropertyListUtils.importPropertyList( plist, cb );
 
         return( cb );
     }
 
     // ----------------------------------------------------------------------------
+
+    static UnitBean importUnit( Element unitElm )
+            throws SAXParseException
+    {
+        UnitBean  unit = new UnitBean();
+
+        //  <!ELEMENT unit (propertyList,inputgroup*,outputgroup*)>
+        //  <!ATTLIST unit
+        //          address CDATA   #REQUIRED
+        //          type    CDATA   #REQUIRED
+        //          alias   CDATA   ""
+        //          protocol CDATA  "1"
+
+        if( unitElm.hasAttribute( UnitBean.ATTR_ADDRESS ) )
+        {
+            unit.setAddress( unitElm.getAttribute(UnitBean.ATTR_ADDRESS) );
+        }
+        else
+        {
+            throw new SAXParseException( "Element \"" + UnitBean.PROP_ELEMENT_NAME + "\" missing its \"" + UnitBean.ATTR_ADDRESS + "\" attribute", null );
+        }
+
+        if( unitElm.hasAttribute( UnitBean.ATTR_TYPE ) )
+        {
+            unit.setType( unitElm.getAttribute(UnitBean.ATTR_TYPE) );
+        }
+        else
+        {
+            throw new SAXParseException( "Element \"" + UnitBean.PROP_ELEMENT_NAME + "\" missing its \"" + UnitBean.ATTR_TYPE + "\" attribute", null );
+        }
+
+        //  Check the optional attributes.  The UnitBean creates itself with default values for these.
+        if( unitElm.hasAttribute( UnitBean.ATTR_ALIAS ) )
+        {
+            unit.setAlias(unitElm.getAttribute(UnitBean.ATTR_ALIAS) );
+        }
+
+        if( unitElm.hasAttribute( UnitBean.ATTR_PROTOCOL ) )
+        {
+            unit.setProtocol(unitElm.getAttribute(UnitBean.ATTR_PROTOCOL) );
+        }
+
+        //  Do the <propertyList> group first.
+        String  propListName = (new XmlPropertyListBean()).getElementName();
+
+        NodeList  children = unitElm.getChildNodes();
+        if( children.getLength() == 0 )
+        {
+            throw new SAXParseException( UnitBean.PROP_ELEMENT_NAME + " missing its " +
+                        propListName + " child element", null );
+        }
+
+        Element plist = (Element) children.item( 0 );
+        if( ! plist.getTagName().equalsIgnoreCase( propListName ) )
+        {
+            throw new SAXParseException( CommsBean.PROP_ELEMENT_NAME + " must have one " +
+                        propListName + " child element", null );
+        }
+
+        //  Add properties to unit-bean directly.
+        XmlPropertyListUtils.importPropertyList( plist, unit );
+
+        //  Collect the sub-elements <inputgroup ... />, <outputgroup ... />
+
+        Element  iogroup;
+        AbstractInputOutputGroup  absIo;
+
+        for( int start = 1 ; start < children.getLength() ; ++start )
+        {
+            iogroup = (Element) children.item( start );
+            String  tag_name = iogroup.getTagName();
+            System.out.printf( "   unit child #%d is %s", start, tag_name );
+
+            //  Create inputGroup and outputGroup objects in anticipation.
+            //  Also, the #getElementName() method returns different values for
+            //  each class-type.  Since Java doesn't have class-type interfaces,
+            //  we create the two objects and then ask them what they are named.
+            //
+            //  Only one of the "group" objects is filled with attributes ; the other
+            //  is left to wilt .....
+
+            InputGroupBean  inbean = new InputGroupBean();
+            OutputGroupBean  outbean = new OutputGroupBean();
+
+            if( tag_name.equals( inbean.getElementName() ) )
+            {
+                parseInputOutputGroupAttrs( iogroup, tag_name, inbean );
+                absIo = inbean;
+                outbean = null;
+            }
+            else
+            if( tag_name.equals( outbean.getElementName() ) )
+            {
+                parseInputOutputGroupAttrs( iogroup, tag_name, outbean );
+                absIo = outbean;
+                inbean = null;
+            }
+            else
+            {
+                throw new SAXParseException( UnitBean.PROP_ELEMENT_NAME + " has unknown sub-element \"" +
+                        tag_name + "\"", null );
+            }
+
+            System.out.printf( " ... first=%s, last=%s\n", absIo.getFirst(), absIo.getLast() );
+
+            unit.addInputOutputGroup( absIo );
+        }
+
+        return( unit );
+    }
+
+    /***
+     *  Parse all attributes of an inputGroup or outputGroup element.
+     *  Attributes are same for these two kinds, and all attributes are required.
+     *
+     * @param ioElm XML element to examine for attributes
+     * @param tag_name Name of this element (cuz caller already obtained it)
+     * @param group XML bean to update
+     * @throws SAXParseException If an attribute is missing
+     */
+    static void parseInputOutputGroupAttrs( Element ioElm, String  tag_name, AbstractInputOutputGroup group )
+            throws SAXParseException
+    {
+
+        if( ioElm.hasAttribute( AbstractInputOutputGroup.ATTR_FIRST ) )
+        {
+            group.setFirst( ioElm.getAttribute( AbstractInputOutputGroup.ATTR_FIRST ) );
+        }
+        else
+        {
+            throw new SAXParseException( "Element \"" + group.getElementName() + "\" missing its \"" + AbstractInputOutputGroup.ATTR_FIRST + "\" attribute", null );
+        }
+
+        if( ioElm.hasAttribute( AbstractInputOutputGroup.ATTR_LAST ) )
+        {
+            group.setLast( ioElm.getAttribute( AbstractInputOutputGroup.ATTR_LAST ) );
+        }
+        else
+        {
+            throw new SAXParseException( "Element \"" + group.getElementName() + "\" missing its \"" + AbstractInputOutputGroup.ATTR_LAST + "\" attribute", null );
+        }
+
+    }
+
+    // ========================================================================
 
     static LayoutSensorListBean importLayoutSensorList( Element LayoutSensorElm )
     {

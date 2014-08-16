@@ -7,7 +7,6 @@
 package com.crunchynoodles.util;
 
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
 
@@ -41,8 +40,6 @@ public class XmlPropertyListUtils
         for( int start = 0 ; start < properties.getLength() ; ++start )
         {
             Element  pr = (Element) properties.item( start );
-
-            System.out.printf( "propertyList child #%d is \"%s\"\n", start, pr.getNodeName() );
 
             try {
                 propList.addProperty( parsePropertyBean( pr ) );

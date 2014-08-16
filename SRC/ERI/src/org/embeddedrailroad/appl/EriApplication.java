@@ -94,6 +94,7 @@ public class EriApplication
         try {
             LayoutConfigurationBean  bs = LayoutConfigurationBean.readFromFile( fname );
 
+            Out( "======" );
             BankListBean  banklist = bs.getBankList();
             for( BankBean bank : banklist.getBankList() )
             {
@@ -102,14 +103,15 @@ public class EriApplication
 
             Out( "LayoutConfigurationBean#hashCode() = 0x%X\n", bs.hashCode() );
 
+            Out( bs.toString() );
+
             if( ! bs.equals( bs ) )
             {
                 Out( "ERROR: %s is NOT equal to itself!\n", bs.getClass().getName() );
             }
 
         } catch( Exception ex ) {
-            System.out.printf("LayoutConfigurationBean.readFrom( \"%s\" ) failed ", fname);
-            ex.printStackTrace();
+            Out( ex, "LayoutConfigurationBean.readFrom( \"%s\" ) failed ", fname );
         }
 
     }
