@@ -5,7 +5,9 @@
 package org.embeddedrailroad.eri.xml;
 
 import com.crunchynoodles.util.XmlEntityBean;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /***
@@ -118,17 +120,38 @@ public class BankBean
         m_comms_element = comms_ele;
     }
 
-    public static final String ELEMENT_UNIT = "unit";
-    protected UnitBean          m_unit_element;
+    // ----------------------------------------------------------------------------
 
-    public UnitBean  getUnit()
+    public static final String ELEMENT_UNIT = "unit";
+    protected List<UnitBean>          m_unit_element = new ArrayList<UnitBean>();
+
+    /***
+     *  Return known units in an array, order is arbitrary.
+     * @return array with references to units held by BankBean.
+     */
+    public UnitBean[]  getUnits()
     {
-        return m_unit_element;
+        return (UnitBean[]) m_unit_element.toArray();
     }
 
-    public void     setUnit( UnitBean unit_ele )
+    /***
+     *  Create a modern Java typed iterator with reference to units held by BankBean.
+     * @return Iterator over Unit beans.
+     */
+    public Iterator<UnitBean> getUnitIterator()
     {
-        m_unit_element = unit_ele;
+        return m_unit_element.iterator();
+    }
+
+    /***
+     *  Add another Unit bean to known units.
+     *  Caller's object is stored, not copied, not shaken, and not stirred.
+     *
+     * @param unit_ele Another unit.
+     */
+    public void     addUnit( UnitBean unit_ele )
+    {
+        m_unit_element.add( unit_ele );
     }
 
     // ----------------------------------------------------------------------------

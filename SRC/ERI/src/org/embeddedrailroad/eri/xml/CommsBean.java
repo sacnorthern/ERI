@@ -43,7 +43,11 @@ public class CommsBean
     public static final String  ATTR_ENABLED = "enabled";
     protected boolean    m_enabled;
 
-    public boolean   getEnabled()
+    /**
+     *  Is communication with this bank enabled?
+     * @return true of communication is enabled.
+     */
+    public boolean   isEnabled()
     {
         return m_enabled;
     }

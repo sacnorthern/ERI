@@ -130,17 +130,17 @@ public class LayoutConfigurationBean
     public static final String  PROP_BANK_LIST          = "bankList";       // element within
     public static final String  PROP_LAYOUT_SENSOR_LIST = "layoutSensorList"; // element within
 
-    public String getFormatVersion()
+    public String  getFormatVersion()
     {
         return m_formatVersion;
     }
 
-    public void setFormatVersion(String formatVersion)
+    public void  setFormatVersion(String formatVersion)
     {
         m_formatVersion = new String( formatVersion );
     }
 
-    public BankListBean getBankList()
+    public BankListBean  getBankList()
     {
         return m_bankList;
     }
@@ -159,6 +159,8 @@ public class LayoutConfigurationBean
     {
         m_layoutSensorList = layout_sensors;
     }
+
+    // ----------------------------------------------------------------------------
 
     private String      m_formatVersion;
     private BankListBean    m_bankList;

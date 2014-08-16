@@ -31,14 +31,14 @@ public abstract class AbstractXmlEntityWithPropertiesBean
     /***
      *  Insert a new property into the list, but throws exception if property already known.
      *  The property's value is converted from a string into an internal form.
-     *  If a conversion-exception occurs, then value could not be converted based
-     *  on {@code typestr}'s description.
+     *  If a conversion-exception occurs, then {@link value} could not be converted based
+     *  on {@link typestr}'s description.
      *
      * @param key String name of key
      * @param typestr Encoding and type of value
      * @param value String encoding of value, it will be converted ; must not be null.
      *
-     * @throws DuplicateKeyException
+     * @throws DuplicateKeyException {@link key} already in property-list.
      */
     public void addProperty( String key, String typestr, String value )
             throws DuplicateKeyException
@@ -66,7 +66,26 @@ public abstract class AbstractXmlEntityWithPropertiesBean
      */
     public void addProperty( XmlPropertyBean pb )
     {
-        addProperty( pb.getKey(), pb.getType(), pb.getValue().toString() );
+        if( pb.getValue() == null )
+        {
+            throw new IllegalArgumentException( "property 'value' cannot be null" );
+        }
+        if( hasProperty( pb.getKey() ) )
+        {
+            throw new DuplicateKeyException( pb.getKey(), false );
+        }
+
+        XmlPropertyBean  dup = new XmlPropertyBean( pb );
+
+        m_map.put( dup.Key, dup );
+
+        {
+            //  Property's value has already been parsed and converted.
+            //  Must preserve the object-type of Value.
+            //  For instance (byteArray.parse("8F")).toString() does not make
+            //  "8F" ; the conversion is not round-tripable.  :(
+        }
+
     }
 
     /***
@@ -137,7 +156,7 @@ public abstract class AbstractXmlEntityWithPropertiesBean
     @Override
     public String  toString()
     {
-        return new String( "[" + this.getElementName() + ": " + m_map.toString() + "]" );
+        return new String( this.getElementName() + ": " + m_map.toString() );
     }
 
     // ----------------------------------------------------------------------------
