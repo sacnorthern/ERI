@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 /**
  *   Singleton object that knows about all the physical I/O transports,
  *   i.e. protocols.
- *
- *   REQUIRES JAVA 1.5 OR LATER FOR CORRECT 'static volatile' IMPLEMENTATION.
+ *<p>
+ *   <b>NOTE: REQUIRES JAVA 1.5 OR LATER FOR CORRECT 'static volatile' IMPLEMENTATION.</b>
  *
  * @author brian
  */
@@ -103,7 +103,7 @@ public class IoTransportManager
     /***
      *   Retrieve a provider by name, ignoring string case.
      * @param any_case_name
-     * @return Name ( with proper letter-case ) used by the provider.
+     * @return Name ( with proper letter-case ) used by the provider, or null if no match.
      */
     protected String _findProviderByName( String any_case_name )
     {
@@ -115,7 +115,7 @@ public class IoTransportManager
             }
         }
 
-        //  Oh well, not found.
+        //  Oh well, not found...
         return null;
     }
 
@@ -142,7 +142,7 @@ public class IoTransportManager
         }
     };
 
-    /*** Store mappings of know I/O transports and their providers/keepers. */
+    /*** Store mappings of known I/O transports and their providers/keepers. */
     protected HashMap<String, ProviderTransportStruct>    m_providers = new HashMap<>();
 
     /*** Store singleton of transport manager. */

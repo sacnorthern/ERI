@@ -6,6 +6,7 @@
 
 package com.crunchynoodles.util;
 
+import java.util.logging.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
@@ -26,8 +27,8 @@ public class XmlPropertyListUtils
      * &nbsp;&nbsp;&nbsp;&nbsp; {@code  key CDATA #REQUIRED} <br/>
      * &nbsp;&nbsp;&nbsp;&nbsp; {@code  type  (bool|boolean|int|float|string|list|hexbytes|base64) "string" >}
      *
-     * @param propListElm
-     * @param propList
+     * @param propListElm propertyList element, with little property elements as PCDATA.
+     * @param propList Where to collect/put the property elements.
      * @throws SAXParseException
      */
     public static void importPropertyList( Element propListElm, AbstractXmlEntityWithPropertiesBean propList )
@@ -46,15 +47,23 @@ public class XmlPropertyListUtils
             }
             catch( NumberFormatException ex )
             {
-                throw new SAXParseException("property PCDATA ill-formed", null, ex );
+                throw new SAXParseException( "property PCDATA ill-formed", null, ex );
             }
             catch( IllegalArgumentException ex )
             {
-                throw new SAXParseException("bad property", null, ex );
+                throw new SAXParseException( "bad property", null, ex );
             }
         }
     }
 
+    /***
+     *  Parse an XML property element, with data conversion of cdata to 'type'.
+     *
+     * @param propertyElm element with tags {@link XmlPropertyBean.ATTR_KEY} and {@link XmlPropertyBean.ATTR_TYPE}.
+     * @return {@link XmlPropertyBean} holding key, type-identification, and some data.
+     * @throws IllegalArgumentException from {@code new XmlPropertyBean()}
+     * @throws NumberFormatException Can't convert CDATA into type.
+     */
     public static XmlPropertyBean parsePropertyBean( Element propertyElm )
             throws IllegalArgumentException, NumberFormatException
     {
@@ -67,8 +76,15 @@ public class XmlPropertyListUtils
             cdata = cdata.trim();
         }
 
+        logger.info( "XML parsing  " + type + ": " + key + " = \"" + (cdata != null ? cdata : "(nothing)" ) + "\"" );
+
         XmlPropertyBean   pb = new XmlPropertyBean( key, type, cdata );
 
         return( pb );
     }
+
+    // ----------------------------------------------------------------------------
+
+    private static final Logger     logger = Logger.getLogger( XmlPropertyListUtils.class.getName() );
+
 }

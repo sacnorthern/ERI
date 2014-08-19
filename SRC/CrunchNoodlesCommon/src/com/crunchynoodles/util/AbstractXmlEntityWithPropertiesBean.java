@@ -63,8 +63,10 @@ public abstract class AbstractXmlEntityWithPropertiesBean
      *  Store copy of an {@code XmlPropertyBean} from the caller.
      *
      * @param pb Caller's bean that is shallow-cloned.
+     * @throws DuplicateKeyException if {@code pb.getKey()} already exists for this propertyList.
      */
     public void addProperty( XmlPropertyBean pb )
+            throws DuplicateKeyException
     {
         if( pb.getValue() == null )
         {
