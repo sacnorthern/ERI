@@ -24,14 +24,15 @@ import org.embeddedrailroad.eri.xml.LayoutConfigurationBean;
  */
 public class EriApplication
 {
+    public static String    INI_FILENAME_DEFAULT = "my_eri.ini";
 
-    static PropertiesManager     props = new PropertiesManager("appl");
+    static PropertiesManager     s_props = new PropertiesManager("appl");
 
-    private static final Logger logger = Logger.getLogger( EriApplication.class.getName() );
+    private static final Logger  logger  = Logger.getLogger( EriApplication.class.getName() );
 
-    //! public static LogManager           s_logmgr = LogManager.getLogManager();
-
-    /**
+    /***
+     *  Start up the Embedded Railroad Interface (ERI) server application.
+     *
      * @param args the command line arguments
      */
     public static void main(String[] args)
@@ -47,10 +48,10 @@ public class EriApplication
         while( namelist.hasMoreElements() )
         {
             String  name = namelist.nextElement();
-            System.out.printf( "  logger = %s\n", name );
+            System.out.printf( "  logger = \"%s\"\n", name );
         }
 
-        Logger.getGlobal().setLevel( Level.ALL );
+        Logger.getGlobal().setLevel( Level.CONFIG );
 
         logger.info( "Hello ERI logger!" );
 
@@ -59,7 +60,7 @@ public class EriApplication
         Out( "user-wide properties fname = \"%s\"", propfname);
 
         PropertiesManager.ApplicationName = UserDirectories.ApplicationName;
-        props.readProperties( propfname, UserDirectories.getInstance().getProjectApplSettingsFolder() );
+        s_props.readProperties( propfname, UserDirectories.getInstance().getProjectApplSettingsFolder() );
 
 
         //  Parse command line looking for "/prop:KEY=VALUE" or "/property:KEY=VALUE" and add to our properties.
@@ -88,18 +89,34 @@ public class EriApplication
                 String key = option.substring( after_colon, eq );
                 String val = option.substring( eq +1 );
 
-                props.tempPut( key, val );
+                s_props.tempPut( key, val );
             }
         }
+
+        // ------------------------------------------------------
+        //  Perform a few tests on components...
+        //
 
         logger.info( "Starting tests" );
 
         test2001();
 
-        // Start up the application for real...
+        // ------------------------------------------------------
+        //  Start up the application for real...
+        //
+
         EriCase   eri = EriCase.getInstance();
 
-        eri.doit();
+        try
+        {
+            eri.initialize( INI_FILENAME_DEFAULT );
+        }
+        catch( Exception ex )
+        {
+            ex.printStackTrace( System.out );
+            logger.log(Level.WARNING, "Failed to startup and initialize: {0}", ex.getMessage());
+            System.exit( 2 );
+        }
 
     }
 

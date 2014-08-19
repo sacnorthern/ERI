@@ -56,7 +56,7 @@ public class EriCase {
     //-------------------------  INI LOAD / STORE  ------------------------
 
     public void loadIni( File f )
-            throws IOException
+            throws IOException, InvalidFileFormatException
     {
         synchronized( EriCase.class )
         {
@@ -99,21 +99,58 @@ public class EriCase {
 
     //---------------------------  RUN - DOIT  ----------------------------
 
-    public void doit()
+    /***
+     *  Pre-set the ERI application by loading a INI file that maps protocols to
+     *  particular Java class in some JAR file.
+     *
+     *  Sample INIFile with two transportation providers.  The layout XML file is also specified.
+     * <pre>
+    [providers]
+    provider=cmri
+    provider=cti
+
+    [class.cmri]
+    jar=dist/ERI.jar
+    impl=org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl
+    alias.1=C/MRI
+
+    [class.cti]
+    jar=dist/ERI.jar
+    impl=org.embeddedrailroad.eri.layoutio.cti.CtiLayoutProviderImpl
+
+
+    [startup]
+    layout=front_range_layout.xml
+</pre>
+     *
+     * @param iniFilename INI file name, which must exist.
+     *
+     * @throws FileNotFoundException {@link iniFilename} not found, OR comms JAR file not found.
+     * @throws InvalidFileFormatException Your INI file has a syntax error. :(
+     * @throws ClassNotFoundException Comms Java class not found in JAR.
+     */
+    public void initialize( String iniFilename )
+                throws FileNotFoundException, ClassNotFoundException,
+                        InvalidFileFormatException
     {
         LOG.entering( "EriCase", "doit" );
 
         try
         {
-            loadIni( new File (INI_FILENAME_DEFAULT) );
+            loadIni( new File ( iniFilename ) );
+        }
+        catch( InvalidFileFormatException e2 )
+        {
+            LOG.log( Level.WARNING, "Your INI file has a syntax error", e2 );
+            throw e2;
         }
         catch( IOException ex )
         {
-            LOG.log( Level.WARNING, "Sorry, doit cannot open INI file", ex );
-            return ;
+            LOG.log( Level.WARNING, "Sorry, initialize() cannot read your INI file", ex );
+            throw new FileNotFoundException( ex.getMessage() );
         }
 
-        TransportManager = IoTransportManager.getInstance();
+        theTransportManager = IoTransportManager.getInstance();
 
         Ini.Section  section = Ini.get( INI_SECTION_PROVIDERS_NAME );
         List<String>  provider_list = section.getAll( INI_KEY_PROVIDERS_PROVIDER_NAME );
@@ -121,42 +158,50 @@ public class EriCase {
         System.out.println( "INI uses these providers:" );
         for( String prov : provider_list )
         {
+            String  provider_section_name = "class." + prov;
+            LOG.log( Level.INFO, "Looking for \"{0}\" transport", provider_section_name );
+
+            Ini.Section  prov_sect = Ini.get ( provider_section_name );
+            String  jar_place = prov_sect.get( INI_KEY_CLASS_JAR );
+            String  impl_full_class = prov_sect.get( INI_KEY_CLASS_IMPLMENTATION );
+
             try
             {
-                System.out.printf( "   %s\n", prov );
-                if( TransportManager.findProviderByName( prov ) == null )
+                if( theTransportManager.findProviderByName( prov ) == null )
                 {
-                    if( prov.equalsIgnoreCase( "cmri") )
-                    {
-                        File  myJarFile = new File("dist/ERI.jar");
-                        if (!myJarFile.isFile()) {
-                          throw new FileNotFoundException("Missing required JAR: " + myJarFile.toString());
-                        }
-
-                        final URI  myJarUrl = myJarFile.toURI();
-                        URLClassLoader  cl = URLClassLoader.newInstance(new URL[]{ myJarUrl.toURL() });
-
-                        Class jarred;
-                        jarred = cl.loadClass("org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl");
-
-                        //  This call gets the class-static code-block to run, which causes
-                        //  the provider to register itself.
-                        Object  prov_obj = jarred.newInstance();
-
-                        if( prov_obj instanceof LayoutIoProvider )
-                        {
-                            System.out.println( "YES!" );
-                        }
+                    //  If not yet known, then load it dynamically.
+                    //!! if( prov.equalsIgnoreCase( "cmri") )
+                {
+                    File  myJarFile = new File( jar_place );  //!! ("dist/ERI.jar");
+                    if (!myJarFile.isFile()) {
+                      throw new FileNotFoundException("Missing required JAR: " + myJarFile.toString());
                     }
-                    else
+
+                    final URI  myJarUrl = myJarFile.toURI();
+                    URLClassLoader  cl = URLClassLoader.newInstance(new URL[]{ myJarUrl.toURL() });
+
+                    Class jarred;
+                    jarred = cl.loadClass( impl_full_class );  //!! ("org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl");
+
+                    //  This call gets the class-static code-block to run, which causes
+                    //  the provider to register itself.
+                    Object  prov_obj = jarred.newInstance();
+
+                    if( prov_obj instanceof LayoutIoProvider )
                     {
-                        LOG.log(  Level.WARNING, "\"{0}\" not found.", prov );
+                        System.out.println( "YES!" );
                     }
+                }
+                //!! else
+                //!! {
+                //!!     LOG.log(  Level.WARNING, "\"{0}\" not found.", prov );
+                //!! }
                 }
             }
             catch (ClassNotFoundException e) {
-                            System.out.println("2");
-                            e.printStackTrace();
+                System.out.println("2");
+                e.printStackTrace();
+                throw e;
             }
             catch( Exception ex )
             {
@@ -169,13 +214,16 @@ public class EriCase {
 
     //--------------------------  INSTANCE VARS  --------------------------
 
-    public static String    INI_FILENAME_DEFAULT = "my_eri.ini";
     public static String    INI_SECTION_PROVIDERS_NAME = "providers";
     public static String    INI_KEY_PROVIDERS_PROVIDER_NAME = "provider";
 
+    public static String    INI_KEY_CLASS_JAR = "jar";
+
+    public static String    INI_KEY_CLASS_IMPLMENTATION = "impl";
+
     public Ini      Ini = null;
 
-    public IoTransportManager   TransportManager = null;
+    public IoTransportManager   theTransportManager = null;
 
     //-----------------------  PRIVATE INSTANCE VARS  ---------------------
 

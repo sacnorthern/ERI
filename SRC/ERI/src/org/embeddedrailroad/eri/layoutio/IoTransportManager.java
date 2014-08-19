@@ -55,11 +55,11 @@ public class IoTransportManager
     {
         ProviderTransportStruct  pts = new ProviderTransportStruct( long_descr, prov, trans );
 
-        //  Remove first ~ just in case ~ then add new provider/keeper. */
+        //  Remove it first ~ just in case ~ then add new provider/keeper. */
         removeProviderTransport( name );
         m_providers.put( name, pts );
 
-        LOG.log( Level.INFO, "Transport \"{0}\" now registered", name );
+        LOG.log( Level.INFO, "addProviderTransport() Transport \"{0}\" now registered", name );
     }
 
     public void removeProviderTransport( String any_case_name )
