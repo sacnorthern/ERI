@@ -9,6 +9,7 @@ package org.embeddedrailroad.eri.xml;
 import java.util.Arrays;
 import java.util.List;
 import com.crunchynoodles.util.AbstractXmlEntityWithPropertiesBean;
+import java.util.logging.Logger;
 
 /**
  *  XML element <b>comms</b> that holds a <b>propertyList</b> about how to communicate.
@@ -55,6 +56,9 @@ public class CommsBean
     public void     setEnabled( boolean enabled )
     {
         m_enabled = enabled;
+        logger.info( "XML comm " + ATTR_ENABLED + " = " + (enabled ? "YES" : "NO") );
     }
+
+    private static final Logger     logger = Logger.getLogger( CommsBean.class.getName() );
 
 }
