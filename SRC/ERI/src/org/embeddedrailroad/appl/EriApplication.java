@@ -12,6 +12,8 @@ import java.util.*;
 
 import com.crunchynoodles.util.PropertiesManager;
 import com.crunchynoodles.util.UserDirectories;
+import java.util.logging.Level;
+import org.embeddedrailroad.eri.ctc.EriCase;
 import org.embeddedrailroad.eri.xml.BankBean;
 import org.embeddedrailroad.eri.xml.BankListBean;
 import org.embeddedrailroad.eri.xml.LayoutConfigurationBean;
@@ -34,10 +36,22 @@ public class EriApplication
      */
     public static void main(String[] args)
     {
-        UserDirectories.CompanyName = "CrunchyNoodles";
+        UserDirectories.CompanyName = "org.embeddedrailroad";
         UserDirectories.ApplicationName = "EriApplication";
 
-        //! logger = s_logmgr.getLogger( EriApplication.class.getName() );
+        //  Check out loggers available.
+        LogManager  lm = LogManager.getLogManager();
+        Enumeration<String>  namelist = lm.getLoggerNames();
+
+        System.out.println( "Found these loggers:" );
+        while( namelist.hasMoreElements() )
+        {
+            String  name = namelist.nextElement();
+            System.out.printf( "  logger = %s\n", name );
+        }
+
+        Logger.getGlobal().setLevel( Level.ALL );
+
         logger.info( "Hello ERI logger!" );
 
         String propfname = UserDirectories.getInstance().getUserApplSettingsPropertiesFilename();
@@ -78,9 +92,15 @@ public class EriApplication
             }
         }
 
+        logger.info( "Starting tests" );
+
         test2001();
 
         // Start up the application for real...
+        EriCase   eri = EriCase.getInstance();
+
+        eri.doit();
+
     }
 
     // ----------------------------------------------------------------------------

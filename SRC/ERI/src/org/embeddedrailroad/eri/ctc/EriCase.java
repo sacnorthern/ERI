@@ -13,7 +13,6 @@ import java.net.URI;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import java.net.URL;
@@ -104,19 +103,6 @@ public class EriCase {
     {
         LOG.entering( "EriCase", "doit" );
 
-        LogManager  lm = LogManager.getLogManager();
-        Enumeration<String>  namelist = lm.getLoggerNames();
-
-        System.out.println( "Found these loggers:" );
-        while( namelist.hasMoreElements() )
-        {
-            String  name = namelist.nextElement();
-            System.out.printf( "  logger = %s\n", name );
-
-        }
-
-        Logger.getGlobal().setLevel( Level.ALL );
-
         try
         {
             loadIni( new File (INI_FILENAME_DEFAULT) );
@@ -124,6 +110,7 @@ public class EriCase {
         catch( IOException ex )
         {
             LOG.log( Level.WARNING, "Sorry, doit cannot open INI file", ex );
+            return ;
         }
 
         TransportManager = IoTransportManager.getInstance();
@@ -145,11 +132,11 @@ public class EriCase {
                         if (!myJarFile.isFile()) {
                           throw new FileNotFoundException("Missing required JAR: " + myJarFile.toString());
                         }
-                        URI  myJarUrl = myJarFile.toURI();
 
+                        final URI  myJarUrl = myJarFile.toURI();
                         URLClassLoader  cl = URLClassLoader.newInstance(new URL[]{ myJarUrl.toURL() });
 
-                        Class jarred = null;
+                        Class jarred;
                         jarred = cl.loadClass("org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl");
 
                         //  This call gets the class-static code-block to run, which causes
