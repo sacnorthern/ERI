@@ -12,17 +12,18 @@ import com.crunchynoodles.util.AbstractXmlEntityWithPropertiesBean;
 import java.util.logging.Logger;
 
 /**
- *  XML element <b>comms</b> that holds a <b>propertyList</b> about how to communicate.
+ *  XML element <b>network</b> that holds a <b>propertyList</b> about how to communicate.
+ *  A network is used to move protocol messages between the host-computer and nodes.
  *  Uses {@link AbstractXmlEntityWithPropertiesBean} to hold properties.<p>
  *
- *  {@code <!ELEMENT comms (propertyList)>} <br>
- *  {@code <!ATTLIST comms enabled  %Boolean;  "yes">}
+ *  {@code <!ELEMENT network (propertyList)>} <br>
+ *  {@code <!ATTLIST network enabled  %Boolean;  "yes">}
  * @author brian
  */
-public class CommsBean
+public class NetworkBean
     extends AbstractXmlEntityWithPropertiesBean
 {
-    public static final String PROP_ELEMENT_NAME = "comms";
+    public static final String PROP_ELEMENT_NAME = "network";
 
     @Override
     public String getElementName() {
@@ -34,7 +35,7 @@ public class CommsBean
         return Arrays.asList( ATTR_ENABLED );
     }
 
-    public CommsBean()
+    public NetworkBean()
     {
         super();
     }
@@ -59,6 +60,6 @@ public class CommsBean
         logger.info( "XML comm " + ATTR_ENABLED + " = " + (enabled ? "YES" : "NO") );
     }
 
-    private static final Logger     logger = Logger.getLogger( CommsBean.class.getName() );
+    private static final Logger     logger = Logger.getLogger( NetworkBean.class.getName() );
 
 }

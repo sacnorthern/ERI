@@ -12,7 +12,7 @@
 
 <!ELEMENT bankList (bank*)>
 
-<!ELEMENT bank (comms,unit*)>
+<!ELEMENT bank (network,unit*)>
 <!ATTLIST bank
         protocol   CDATA   "1"
         address    CDATA   #REQUIRED
@@ -20,8 +20,8 @@
 >
 <!--  protocol="1"  means the first published version or the base/core protocol. -->
 
-<!ELEMENT comms (propertyList)>
-<!ATTLIST comms
+<!ELEMENT network (propertyList)>
+<!ATTLIST network
         enabled  %Boolean;   "yes"
 >
 

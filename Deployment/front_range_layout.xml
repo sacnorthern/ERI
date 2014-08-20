@@ -5,13 +5,14 @@
 
   <bankList>
     <bank protocol="cmri" address="1" alias="Layout">
-      <comms enabled="yes">
+      <network enabled="yes">
         <propertyList>
           <property key="timeout"    type="int">2300</property>
           <property key="serialport" type="string">com1</property>   <!-- or "tcpport" or "udpport" -->
           <property key="settings"   type="list">9600,8,e,1</property>
+          <property key="discoverRate" type="float">0.5</property>     <!-- try non-responding after rate/(known#+1) polls -->
         </propertyList>
-      </comms>
+      </network>
 
       <unit address="1" type="cpNode" protocol="1" alias="Littleton">
         <propertyList>

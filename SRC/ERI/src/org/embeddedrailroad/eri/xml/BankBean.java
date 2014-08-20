@@ -108,14 +108,14 @@ public class BankBean
     // ----------------------------------------------------------------------------
 
     public static final String ELEMENT_COMMS = "comms";
-    protected CommsBean         m_comms_element;
+    protected NetworkBean         m_comms_element;
 
-    public CommsBean getComms()
+    public NetworkBean getComms()
     {
         return m_comms_element;
     }
 
-    public void     setComms( CommsBean comms_ele )
+    public void     setNetwork( NetworkBean comms_ele )
     {
         m_comms_element = comms_ele;
     }

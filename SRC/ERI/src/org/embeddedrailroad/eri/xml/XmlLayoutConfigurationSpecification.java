@@ -217,19 +217,19 @@ public class XmlLayoutConfigurationSpecification
         Element    elm;
         int     start = 0;
 
-        // <comms> is first.
+        // <network> is first.
         elm = (Element) entries.item(start);
-        if( elm != null && elm.getNodeName().equals( BankBean.ELEMENT_COMMS ) )
+        if( elm != null && elm.getNodeName().equals( NetworkBean.PROP_ELEMENT_NAME ) )
         {
             System.out.printf( "BankBean child #%d is \"%s\"\n", start, elm.getNodeName() );
 
-            /**  <!ELEMENT bank (comms,...)> **/
-            bb.setComms( importComms( elm ) );
+            /**  <!ELEMENT bank (network,...)> **/
+            bb.setNetwork( importNetwork( elm ) );
             ++start;
         }
         else
         {
-             throw new SAXParseException( BankBean.PROP_ELEMENT_NAME + " is missing an " + BankBean.ELEMENT_COMMS + " element", null );
+             throw new SAXParseException( BankBean.PROP_ELEMENT_NAME + " is missing an " + NetworkBean.PROP_ELEMENT_NAME + " element", null );
         }
 
         // <unit> is second and is a sequence of 0 or more elements.
@@ -255,15 +255,15 @@ public class XmlLayoutConfigurationSpecification
 
     // ----------------------------------------------------------------------------
 
-    static CommsBean importComms( Element commsElm )
+    static NetworkBean importNetwork( Element commsElm )
             throws SAXParseException
     {
-        CommsBean   cb = new CommsBean();
+        NetworkBean   cb = new NetworkBean();
 
-        /*** <!ELEMENT comms (propertyList)> */
-        /*** <!ATTLIST comms enabled  %Boolean;   "yes">  */
+        /*** <!ELEMENT network (propertyList)> */
+        /*** <!ATTLIST network enabled  %Boolean;   "yes">  */
 
-        boolean  en = XmlUtils.ParseBooleanAttribute( commsElm, CommsBean.ATTR_ENABLED, true );
+        boolean  en = XmlUtils.ParseBooleanAttribute( commsElm, NetworkBean.ATTR_ENABLED, true );
         cb.setEnabled( en );
 
         String  propListName = (new XmlPropertyListBean()).getElementName();
@@ -271,18 +271,18 @@ public class XmlLayoutConfigurationSpecification
         NodeList  children = commsElm.getChildNodes();
         if( children.getLength() != 1 )
         {
-            throw new SAXParseException( CommsBean.PROP_ELEMENT_NAME + " must have one " +
+            throw new SAXParseException( NetworkBean.PROP_ELEMENT_NAME + " must have one " +
                         propListName + " child element", null );
         }
 
         Element plist = (Element) children.item( 0 );
         if( ! plist.getTagName().equalsIgnoreCase( propListName ) )
         {
-            throw new SAXParseException( CommsBean.PROP_ELEMENT_NAME + " must have one " +
+            throw new SAXParseException( NetworkBean.PROP_ELEMENT_NAME + " must have one " +
                         propListName + " child element", null );
         }
 
-        //  Add properties to comms-bean directly.
+        //  Add properties to network-bean directly.
         XmlPropertyListUtils.importPropertyList( plist, cb );
 
         return( cb );
@@ -344,7 +344,7 @@ public class XmlLayoutConfigurationSpecification
         Element plist = (Element) children.item( 0 );
         if( ! plist.getTagName().equalsIgnoreCase( propListName ) )
         {
-            throw new SAXParseException( CommsBean.PROP_ELEMENT_NAME + " must have one " +
+            throw new SAXParseException( NetworkBean.PROP_ELEMENT_NAME + " must have one " +
                         propListName + " child element", null );
         }
 
