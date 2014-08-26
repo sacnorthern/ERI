@@ -17,6 +17,7 @@
         protocol   CDATA   "1"
         address    CDATA   #REQUIRED
         alias      CDATA   ""
+        physical   (serial|tcp|udp) "serial"
 >
 <!--  protocol="1"  means the first published version or the base/core protocol. -->
 

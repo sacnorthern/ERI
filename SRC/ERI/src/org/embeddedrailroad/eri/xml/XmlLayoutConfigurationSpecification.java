@@ -188,7 +188,8 @@ public class XmlLayoutConfigurationSpecification
         //    <!ATTLIST bank
         //            protocol   CDATA    #REQUIRED
         //            address    CDATA    #REQUIRED
-        //            alias      CDATA    "" >
+        //            alias      CDATA    ""
+        //            transport  (serial|tcp|udp|loconet|openlcb) #REQUIRED >
 
         if( bankElm.hasAttribute( BankBean.ATTR_PROTOCOL ) )
         {
@@ -197,6 +198,15 @@ public class XmlLayoutConfigurationSpecification
         else
         {
             throw new SAXParseException( "Element \"" + BankBean.PROP_ELEMENT_NAME + "\" missing its \"" + BankBean.ATTR_PROTOCOL + "\" attribute", null );
+        }
+
+        if( bankElm.hasAttribute( BankBean.ATTR_PHYSICAL ) )
+        {
+            bb.setPhysical( bankElm.getAttribute(BankBean.ATTR_PHYSICAL) );
+        }
+        else
+        {
+            throw new SAXParseException( "Element \"" + BankBean.PROP_ELEMENT_NAME + "\" missing its \"" + BankBean.ATTR_PHYSICAL + "\" attribute", null );
         }
 
         if( bankElm.hasAttribute( BankBean.ATTR_ADDRESS ) )
