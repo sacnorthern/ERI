@@ -102,6 +102,14 @@ public class LayoutConfigurationBean
 
     // ----------------------------------------------------------------------------
 
+    /***
+     *  Read an XML Layout Configuration file , that includes the different communcation
+     *  banks and the inputs and outputs therein.
+     *  If there is a syntax error or file-not-found, returns null.
+     *
+     * @param boardSpecFilename file name string, paths Oto file OK.
+     * @return a layout config node holding all elements from the file, or null if an error.
+     */
     public static LayoutConfigurationBean  readFromFile( String boardSpecFilename )
     {
         FileInputStream ins = null;

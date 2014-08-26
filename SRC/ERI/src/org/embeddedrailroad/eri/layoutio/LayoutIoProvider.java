@@ -11,6 +11,8 @@ import org.osgi.annotation.versioning.Version;
  *   Provide interface to a layout IO "provider".  Allows construction of IO-specific
  *   objects in its model, plus access to the IO-specific transport communication
  *   mechanism.
+ *   There is one IO Provider per protocol, it is considered a singleton.
+ *   However, because Java interfaces don't cover static class methods, this is hard to enforce.
  *
  * @author brian
  */
