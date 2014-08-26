@@ -4,11 +4,13 @@
  */
 package org.embeddedrailroad.eri.ctc;
 
+import com.crunchynoodles.util.StringUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Enumeration;
 import java.util.List;
@@ -19,9 +21,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 import org.embeddedrailroad.eri.layoutio.IoTransportManager;
+import org.embeddedrailroad.eri.layoutio.LayoutIoActivator;
 import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
 import org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl;
 import org.ini4j.*;
+import org.osgi.framework.BundleContext;
 
 
 /**
@@ -121,6 +125,7 @@ public class EriCase {
 
     [startup]
     layout=front_range_layout.xml
+    startup=auto
 </pre>
      *
      * @param iniFilename INI file name, which must exist.
@@ -152,21 +157,30 @@ public class EriCase {
 
         theTransportManager = IoTransportManager.getInstance();
 
-        Ini.Section  section = Ini.get( INI_SECTION_PROVIDERS_NAME );
-        List<String>  provider_list = section.getAll( INI_KEY_PROVIDERS_PROVIDER_NAME );
+        Ini.Section  provider_section = Ini.get( INI_SECTION_PROVIDERS_NAME );
+        List<String>  provider_list = provider_section.getAll( INI_KEY_PROVIDERS_PROVIDER_NAME );
 
-        System.out.println( "INI uses these providers:" );
         for( String prov : provider_list )
         {
+            //  Find section e.g. "[class.cti]"
             String  provider_section_name = "class." + prov;
+
+            Ini.Section  provider_sect = Ini.get ( provider_section_name );
+            if( provider_sect == null )
+            {
+                LOG.log( Level.WARNING, "No \"[{0}]\" section in INI file.", provider_section_name );
+                break;
+            }
+
             LOG.log( Level.INFO, "Looking for \"{0}\" transport", provider_section_name );
+            String  jar_place = provider_sect.fetch( INI_KEY_CLASS_JAR );
+            String  impl_full_class = provider_sect.fetch( INI_KEY_BUNDLE_ACTIVATOR );
 
-            Ini.Section  prov_sect = Ini.get ( provider_section_name );
-            String  jar_place = prov_sect.get( INI_KEY_CLASS_JAR );
-            String  impl_full_class = prov_sect.get( INI_KEY_CLASS_IMPLMENTATION );
-
+            URLClassLoader  cl = null;
             try
             {
+                cl = null;
+
                 if( theTransportManager.findProviderByName( prov ) == null )
                 {
                     //  If not yet known, then load it dynamically.
@@ -178,19 +192,29 @@ public class EriCase {
                     }
 
                     final URI  myJarUrl = myJarFile.toURI();
-                    URLClassLoader  cl = URLClassLoader.newInstance(new URL[]{ myJarUrl.toURL() });
+                    cl = URLClassLoader.newInstance(new URL[]{ myJarUrl.toURL() });
 
                     Class jarred;
                     jarred = cl.loadClass( impl_full_class );  //!! ("org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl");
 
-                    //  This call gets the class-static code-block to run, which causes
-                    //  the provider to register itself.
                     Object  prov_obj = jarred.newInstance();
 
-                    if( prov_obj instanceof LayoutIoProvider )
+                    if( prov_obj instanceof LayoutIoActivator )
                     {
+                        // Start it up by calling "void start(BundleContext null)"
+                        Method  m = jarred.getMethod( "start", new Class[]{ BundleContext.class } );
+                        BundleContext  bc = null;
+
+                        Object rv = m.invoke( prov_obj, bc );
+
                         System.out.println( "YES!" );
                     }
+                    else
+                    {
+                        prov_obj = null;
+                        //  UNLOAD THAT CLASS, YUCK!!
+                    }
+
                 }
                 //!! else
                 //!! {
@@ -199,13 +223,36 @@ public class EriCase {
                 }
             }
             catch (ClassNotFoundException e) {
-                System.out.println("2");
-                e.printStackTrace();
-                throw e;
+                //!! System.out.println("2");
+                //!! e.printStackTrace();
+                //!! throw e;
+                LOG.log( Level.WARNING, "Sorry, \"{0}\" is not available.", prov );
             }
             catch( Exception ex )
             {
                 LOG.log( Level.WARNING, "Sorry, can't get \"" + prov + "\" transport loaded", ex );
+            }
+            finally
+            {
+                if( cl != null )
+                {
+                    try {
+                        cl.close();
+                    }
+                    catch( IOException _ignore ) { }
+                    cl = null;
+                }
+            }
+        }
+
+        //  If automatic startup, then get all comms providers polling their units.
+        Ini.Section  startup_section = Ini.get( INI_SECTION_STARTUP_NAME );
+        if( startup_section != null )
+        {
+            String how_startup = startup_section.fetch( INI_KEY_STARTUP_NAME );
+            if( how_startup != null && how_startup.equalsIgnoreCase( "" ) )
+            {
+                ;;;
             }
         }
 
@@ -219,7 +266,17 @@ public class EriCase {
 
     public static String    INI_KEY_CLASS_JAR = "jar";
 
-    public static String    INI_KEY_CLASS_IMPLMENTATION = "impl";
+    /***
+     *  Key to find the implementation class to activate the bundle where the
+     *  communication protocol lives.
+     *  See http://www.jroller.com/habuma/entry/a_dozen_osgi_myths_and , "OSGi is too heavyweight"
+     *
+     */
+    public static String    INI_KEY_BUNDLE_ACTIVATOR = "activator";
+
+    public static String    INI_SECTION_STARTUP_NAME = "startup";
+    public static String    INI_KEY_LAYOUT_NAME = "layout";
+    public static String    INI_KEY_STARTUP_NAME = "startup";
 
     public Ini      Ini = null;
 
@@ -229,5 +286,6 @@ public class EriCase {
 
     private static volatile EriCase  s_instance;
 
+    /***  Logging spigot. */
     private static final Logger LOG = Logger.getLogger( EriCase.class.getName() );
 }

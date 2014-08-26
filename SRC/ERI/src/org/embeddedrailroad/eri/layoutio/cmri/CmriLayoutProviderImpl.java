@@ -11,17 +11,11 @@ import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
 import org.embeddedrailroad.eri.layoutio.LayoutIoTransport;
 
 /**
- *
+ *  Provides instances of
  * @author brian
  */
 public class CmriLayoutProviderImpl implements LayoutIoProvider
 {
-
-    static {
-        System.out.println( "static CmriLayoutProviderImpl" );
-        IoTransportManager  mgr = IoTransportManager.getInstance();
-        mgr.addProviderTransport( "cmri", "The CMRI protocol", new CmriLayoutProviderImpl(), null );
-    }
 
     public CmriLayoutProviderImpl()
     {
@@ -98,6 +92,7 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
 
     protected HashMap<Integer, LayoutIoTransport>   m_channels;
 
+    /***  Logging output spigot. */
     private static final Logger LOG = Logger.getLogger( CmriLayoutProviderImpl.class.getName() );
 
 }

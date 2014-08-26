@@ -5,6 +5,7 @@
 package org.embeddedrailroad.eri.layoutio;
 
 import java.util.HashMap;
+import org.osgi.annotation.versioning.Version;
 
 /**
  *   Provide interface to a layout IO "provider".  Allows construction of IO-specific

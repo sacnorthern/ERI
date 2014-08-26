@@ -4,13 +4,15 @@
  */
 package org.embeddedrailroad.eri.layoutio;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *   Singleton object that knows about all the physical I/O transports,
+ *   Singleton object that knows about all the physical I/O transport providers,
  *   i.e. protocols.
  *<p>
  *   <b>NOTE: REQUIRES JAVA 1.5 OR LATER FOR CORRECT 'static volatile' IMPLEMENTATION.</b>
@@ -44,22 +46,22 @@ public class IoTransportManager
     //----------------------  TRANSPORT ADD/REMOVE  -------------------
 
     /***
-     *    Add a transport IO provider to known list.
+     *    Add a transport IO provider class to known list.
      *
      *   @param name short name of provider / keeper.
-     *   @param long_descr longer descriptive text, in EN_us.
-     *   @param prov Provider of objects to give to transport
-     *   @param trans I/O protocol transport.
+     *   @param longDescr longer descriptive text, in EN_us.
+     *   @param providerClassRef Class ref to provider of objects to give to transport
      */
-    public void addProviderTransport( String name, String long_descr, LayoutIoProvider prov, LayoutIoTransport trans )
+    public void addProvider( String name, String longDescr, Class<? extends LayoutIoProvider> providerClassRef )
     {
-        ProviderTransportStruct  pts = new ProviderTransportStruct( long_descr, prov, trans );
 
-        //  Remove it first ~ just in case ~ then add new provider/keeper. */
+        ProviderTransportStruct  pts = new ProviderTransportStruct( name, longDescr, providerClassRef, null );
+
+        //  Remove it first ~ just in case ~ then add new provider/keeper.
         removeProviderTransport( name );
         m_providers.put( name, pts );
 
-        LOG.log( Level.INFO, "addProviderTransport() Transport \"{0}\" now registered", name );
+        LOG.log( Level.INFO, "addProvider() Transport \"{0}\" now registered", name );
     }
 
     public void removeProviderTransport( String any_case_name )
@@ -71,15 +73,23 @@ public class IoTransportManager
         }
     }
 
+    //-------------------------  LISTING OF PROVIDERS  ------------------------
+
     /***
      *  Create a copy of the provider / keeper mappings.
+     *  The mapping structure is cloned; strings are immutable.
+     *
      * @return copy of known mappings.
      */
     public HashMap< String, ProviderTransportStruct >  getProviderTransportList()
     {
         HashMap< String, ProviderTransportStruct >  ret_map = new HashMap<>();
 
-        m_providers.putAll( ret_map );
+        Collection< ProviderTransportStruct > source = m_providers.values();
+        for( ProviderTransportStruct s : source )
+        {
+            ret_map.put( s.shortName, s );
+        }
 
         return ret_map;
     }
@@ -119,16 +129,21 @@ public class IoTransportManager
         return null;
     }
 
-    //--------------------------  INSTANCE VARS  -------------------------
+    //--------------------------  HELPER CLASS  -------------------------------
 
     public class ProviderTransportStruct
     {
+        public String               shortName;      // key.
         public String               longDescr;
-        public LayoutIoProvider     provider;
+        public Class<? extends LayoutIoProvider>  provider;
         public LayoutIoTransport    transport;
 
-        public ProviderTransportStruct(String longDescr, LayoutIoProvider provider, LayoutIoTransport transport )
+        public ProviderTransportStruct( String shortName,
+                                        String longDescr,
+                                        Class<? extends LayoutIoProvider> provider,
+                                        LayoutIoTransport transport )
         {
+            this.shortName = shortName;
             this.longDescr = longDescr;
             this.provider  = provider;
             this.transport = transport;
@@ -136,17 +151,24 @@ public class IoTransportManager
 
         public ProviderTransportStruct( ProviderTransportStruct other )
         {
+            this.shortName = other.shortName;
             this.longDescr = other.longDescr;
             this.provider  = other.provider;
             this.transport = other.transport;
         }
     };
 
-    /*** Store mappings of known I/O transports and their providers/keepers. */
+    //---------------------------  INSTANCE VARS  -----------------------------
+
+    /***
+     *  Store mappings of known I/O transports and their providers/keepers.
+     *  key = 'shortName'
+     */
     protected HashMap<String, ProviderTransportStruct>    m_providers = new HashMap<>();
 
     /*** Store singleton of transport manager. */
     private static volatile IoTransportManager  s_instance;
 
+    /*** Logging output spigot. */
     private static final Logger LOG = Logger.getLogger( IoTransportManager.class.getName() );
 }
