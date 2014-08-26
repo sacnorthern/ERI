@@ -10,6 +10,7 @@ import org.osgi.framework.*;
 
 /**
  *  Kind of like an OSGi activator class-type, to manage starting and stopping layout "bundle" lifetime.
+ *  There will be only one instance of each protocol-activator created (though not enforced).
  * <p>
  *  See these URLs for more info:
  * <ul>
@@ -41,9 +42,4 @@ public interface LayoutIoActivator
      */
     public String  versionValue();
 
-    /***
-     *  Return the Layout IO Provider class reference.
-     * @return
-     */
-    public Class getIoProvider();
 }

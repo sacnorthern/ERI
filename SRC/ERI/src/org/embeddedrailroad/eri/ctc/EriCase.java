@@ -19,13 +19,28 @@ import java.util.logging.Logger;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Dictionary;
 
 import org.embeddedrailroad.eri.layoutio.IoTransportManager;
 import org.embeddedrailroad.eri.layoutio.LayoutIoActivator;
 import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
+import org.embeddedrailroad.eri.layoutio.cmri.CmriIoActivator;
 import org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl;
 import org.ini4j.*;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.BundleListener;
+import org.osgi.framework.Filter;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceFactory;
+import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceObjects;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 
 
 /**
@@ -38,6 +53,7 @@ public class EriCase {
 
     private EriCase()
     {
+        m_auto_startup = false;
     }
 
     /***
@@ -115,12 +131,12 @@ public class EriCase {
 
     [class.cmri]
     jar=dist/ERI.jar
-    impl=org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl
+    activator=org.embeddedrailroad.eri.layoutio.cmri.CmriIoActivator
     alias.1=C/MRI
 
     [class.cti]
     jar=dist/ERI.jar
-    impl=org.embeddedrailroad.eri.layoutio.cti.CtiLayoutProviderImpl
+    activator=org.embeddedrailroad.eri.layoutio.cti.CtiIoActivator
 
 
     [startup]
@@ -138,7 +154,7 @@ public class EriCase {
                 throws FileNotFoundException, ClassNotFoundException,
                         InvalidFileFormatException
     {
-        LOG.entering( "EriCase", "doit" );
+        LOG.entering( "EriCase", "initialize" );
 
         try
         {
@@ -172,21 +188,17 @@ public class EriCase {
                 break;
             }
 
-            LOG.log( Level.INFO, "Looking for \"{0}\" transport", provider_section_name );
+            LOG.log( Level.INFO, "Looking for \"{0}\" activator", provider_section_name );
             String  jar_place = provider_sect.fetch( INI_KEY_CLASS_JAR );
             String  impl_full_class = provider_sect.fetch( INI_KEY_BUNDLE_ACTIVATOR );
 
             URLClassLoader  cl = null;
             try
             {
-                cl = null;
-
                 if( theTransportManager.findProviderByName( prov ) == null )
                 {
                     //  If not yet known, then load it dynamically.
-                    //!! if( prov.equalsIgnoreCase( "cmri") )
-                {
-                    File  myJarFile = new File( jar_place );  //!! ("dist/ERI.jar");
+                    File  myJarFile = new File( jar_place );
                     if (!myJarFile.isFile()) {
                       throw new FileNotFoundException("Missing required JAR: " + myJarFile.toString());
                     }
@@ -194,32 +206,35 @@ public class EriCase {
                     final URI  myJarUrl = myJarFile.toURI();
                     cl = URLClassLoader.newInstance(new URL[]{ myJarUrl.toURL() });
 
-                    Class jarred;
-                    jarred = cl.loadClass( impl_full_class );  //!! ("org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl");
+                    Class  jarred = cl.loadClass( impl_full_class );
 
                     Object  prov_obj = jarred.newInstance();
 
                     if( prov_obj instanceof LayoutIoActivator )
                     {
-                        // Start it up by calling "void start(BundleContext null)"
-                        Method  m = jarred.getMethod( "start", new Class[]{ BundleContext.class } );
-                        BundleContext  bc = null;
+                        final LayoutIoActivator  activator = (LayoutIoActivator) prov_obj;
 
-                        Object rv = m.invoke( prov_obj, bc );
+                        //  Create a fake/place-holder bundle context.
+                        FakeOSGiBundleContext fake_bc = new FakeOSGiBundleContext( activator );
+
+                        // Start it up by calling "void start(BundleContext fake_ctx)"
+                        Method  m = jarred.getMethod( "start", new Class[]{ BundleContext.class } );
+
+                        Object rv = m.invoke( activator, fake_bc );
 
                         System.out.println( "YES!" );
+
+                        //  Remember it, so we'll keep reference to activator.
+                        ActivationStruct  as = new ActivationStruct( activator, fake_bc, provider_section_name );
+                        m_activatorList.add( as );
                     }
                     else
                     {
-                        prov_obj = null;
-                        //  UNLOAD THAT CLASS, YUCK!!
-                    }
+                        //  YUCK, UNLOAD THAT CLASS!!
 
-                }
-                //!! else
-                //!! {
-                //!!     LOG.log(  Level.WARNING, "\"{0}\" not found.", prov );
-                //!! }
+                        prov_obj = null;
+                        jarred = null;
+                    }
                 }
             }
             catch (ClassNotFoundException e) {
@@ -230,7 +245,7 @@ public class EriCase {
             }
             catch( Exception ex )
             {
-                LOG.log( Level.WARNING, "Sorry, can't get \"" + prov + "\" transport loaded", ex );
+                LOG.log( Level.WARNING, "Sorry, can't get \"" + prov + "\" provider loaded", ex );
             }
             finally
             {
@@ -245,18 +260,34 @@ public class EriCase {
             }
         }
 
-        //  If automatic startup, then get all comms providers polling their units.
+        //  If there were classes we don't want any more, finalize and GC.
+        //  The Squeeze Inn.
+        Runtime.getRuntime().runFinalization();
+        Runtime.getRuntime().gc();
+
+        //  If automatic startup, then set for all comms providers polling their units.
+        m_auto_startup = false;
         Ini.Section  startup_section = Ini.get( INI_SECTION_STARTUP_NAME );
         if( startup_section != null )
         {
             String how_startup = startup_section.fetch( INI_KEY_STARTUP_NAME );
             if( how_startup != null && how_startup.equalsIgnoreCase( "" ) )
             {
-                ;;;
+                m_auto_startup = true;
             }
         }
 
-        LOG.exiting("EriCase", "doit" );
+        LOG.exiting( "EriCase", "initialize" );
+    }
+
+    public void doit()
+    {
+        LOG.entering( "EriCase", "doit" );
+        if( m_auto_startup )
+        {
+            // TODO: Tell all providers to start running their transport IO banks.
+        }
+        LOG.exiting( "EriCase", "doit" );
     }
 
     //--------------------------  INSTANCE VARS  --------------------------
@@ -282,9 +313,189 @@ public class EriCase {
 
     public IoTransportManager   theTransportManager = null;
 
+    //-----------------------  FAKE OSGi BUNDLE CONTEXT  ----------------------
+
+    class FakeOSGiBundleContext implements BundleContext
+    {
+        public  Object  m_reference;
+
+        public FakeOSGiBundleContext( Object obj )
+        {
+            m_reference = obj;
+        }
+
+        @Override
+        public String getProperty( String string ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Bundle getBundle() {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Bundle installBundle( String string, InputStream in )
+                throws BundleException {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Bundle installBundle( String string )
+                throws BundleException {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Bundle getBundle( long l ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Bundle[] getBundles() {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void addServiceListener( ServiceListener sl, String string )
+                throws InvalidSyntaxException {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void addServiceListener( ServiceListener sl ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void removeServiceListener( ServiceListener sl ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void addBundleListener( BundleListener bl ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void removeBundleListener( BundleListener bl ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void addFrameworkListener( FrameworkListener fl ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void removeFrameworkListener( FrameworkListener fl ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public ServiceRegistration<?> registerService( String[] strings, Object o, Dictionary<String, ?> dctnr ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public ServiceRegistration<?> registerService( String string, Object o, Dictionary<String, ?> dctnr ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public <S> ServiceRegistration<S> registerService( Class<S> type, S s, Dictionary<String, ?> dctnr ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public <S> ServiceRegistration<S> registerService( Class<S> type, ServiceFactory<S> sf, Dictionary<String, ?> dctnr ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public ServiceReference<?>[] getServiceReferences( String string, String string1 )
+                throws InvalidSyntaxException {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public ServiceReference<?>[] getAllServiceReferences( String string, String string1 )
+                throws InvalidSyntaxException {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public ServiceReference<?> getServiceReference( String string ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public <S> ServiceReference<S> getServiceReference( Class<S> type ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public <S> Collection<ServiceReference<S>> getServiceReferences( Class<S> type, String string )
+                throws InvalidSyntaxException {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public <S> S getService( ServiceReference<S> sr ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public boolean ungetService( ServiceReference<?> sr ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public <S> ServiceObjects<S> getServiceObjects( ServiceReference<S> sr ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public File getDataFile( String string ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Filter createFilter( String string )
+                throws InvalidSyntaxException {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public Bundle getBundle( String string ) {
+            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+        }
+
+    }
+
+    //-----------------------  PRIVATE INSTANCE VARS  ---------------------
+
+    class ActivationStruct
+    {
+        public LayoutIoActivator    m_activator;
+        public BundleContext        m_context;
+        public String               m_class;
+
+        public ActivationStruct( LayoutIoActivator act, BundleContext bc, String className )
+        {
+            this.m_activator = act;
+            this.m_context   = bc;
+            this.m_class     = className;
+        }
+    }
+
     //-----------------------  PRIVATE INSTANCE VARS  ---------------------
 
     private static volatile EriCase  s_instance;
+
+    protected List<ActivationStruct>   m_activatorList = new ArrayList<ActivationStruct>();
+
+    protected boolean               m_auto_startup;
 
     /***  Logging spigot. */
     private static final Logger LOG = Logger.getLogger( EriCase.class.getName() );

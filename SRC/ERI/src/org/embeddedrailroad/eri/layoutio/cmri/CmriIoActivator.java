@@ -16,6 +16,7 @@ import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
 
 /**
  *  Starts up or stops a layout communications CMRI provider.
+ *  There will be only one instance of each protocol-activator created (though not enforced).
  *  Starting registers with {@link IoTransportManager}.
  *  Modeled after OSGi framework.
  * <br/>
@@ -37,12 +38,16 @@ public class CmriIoActivator implements LayoutIoActivator
 
         LOG.log( Level.INFO, "in CmriIoActivator#start(BC)" );
         IoTransportManager  mgr = IoTransportManager.getInstance();
-        mgr.addProvider( "cmri", "The CMRI protocol", getIoProvider() );
+        m_the_provider = new CmriLayoutProviderImpl();
+        mgr.addProvider( "cmri", "The CMRI protocol", m_the_provider );
     }
 
     @Override
     public void stop( BundleContext context )
     {
+        // TODO: Close down all transports.
+
+        m_the_provider = null;
         IoTransportManager  mgr = IoTransportManager.getInstance();
         mgr.removeProviderTransport( "cmri" );
         LOG.log( Level.INFO, "in CmriIoActivator#stop(BC)" );
@@ -56,12 +61,6 @@ public class CmriIoActivator implements LayoutIoActivator
         return "0.0.1 build 1";
     }
 
-    @Override
-    public Class getIoProvider()
-    {
-        return CmriLayoutProviderImpl.class;
-    }
-
     //-----------------------------  INSTANCE VARS  ---------------------------
 
     /****
@@ -73,6 +72,11 @@ public class CmriIoActivator implements LayoutIoActivator
      *   only valid within the Framework that created them."
      */
     private BundleContext       m_bc;
+
+    /***
+     *  Provider is a singleton.
+     */
+    private CmriLayoutProviderImpl   m_the_provider;
 
     /***  Logging output spigot. */
     private static final Logger LOG = Logger.getLogger( CmriIoActivator.class.getName() );

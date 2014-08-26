@@ -17,7 +17,7 @@ import org.embeddedrailroad.eri.layoutio.LayoutIoTransport;
 public class CmriLayoutProviderImpl implements LayoutIoProvider
 {
 
-    public CmriLayoutProviderImpl()
+    /* package only */ CmriLayoutProviderImpl()
     {
         m_io_model = new CmriLayoutModelImpl();
         m_channels = new HashMap<Integer, LayoutIoTransport>();

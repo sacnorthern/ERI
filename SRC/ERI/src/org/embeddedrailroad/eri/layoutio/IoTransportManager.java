@@ -12,8 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *   Singleton object that knows about all the physical I/O transport providers,
- *   i.e. protocols.
+ *   Singleton object that knows about all the I/O transport providers, i.e. protocols.
+ *   Each provider is considered a singleton.
  *<p>
  *   <b>NOTE: REQUIRES JAVA 1.5 OR LATER FOR CORRECT 'static volatile' IMPLEMENTATION.</b>
  *
@@ -50,12 +50,12 @@ public class IoTransportManager
      *
      *   @param name short name of provider / keeper.
      *   @param longDescr longer descriptive text, in EN_us.
-     *   @param providerClassRef Class ref to provider of objects to give to transport
+     *   @param providerSingleton Provider of transport objects.
      */
-    public void addProvider( String name, String longDescr, Class<? extends LayoutIoProvider> providerClassRef )
+    public void addProvider( String name, String longDescr, LayoutIoProvider providerSingleton )
     {
 
-        ProviderTransportStruct  pts = new ProviderTransportStruct( name, longDescr, providerClassRef, null );
+        ProviderTransportStruct  pts = new ProviderTransportStruct( name, longDescr, providerSingleton, null );
 
         //  Remove it first ~ just in case ~ then add new provider/keeper.
         removeProviderTransport( name );
@@ -135,12 +135,12 @@ public class IoTransportManager
     {
         public String               shortName;      // key.
         public String               longDescr;
-        public Class<? extends LayoutIoProvider>  provider;
+        public LayoutIoProvider     provider;       // singleton.
         public LayoutIoTransport    transport;
 
         public ProviderTransportStruct( String shortName,
                                         String longDescr,
-                                        Class<? extends LayoutIoProvider> provider,
+                                        LayoutIoProvider provider,
                                         LayoutIoTransport transport )
         {
             this.shortName = shortName;
