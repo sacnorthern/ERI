@@ -19,9 +19,9 @@ import java.util.logging.Logger;
  *
  * @author brian
  */
-public class IoTransportManager
+public class LayoutIoProviderManager
 {
-    private IoTransportManager()
+    private LayoutIoProviderManager()
     {
         LOG.setLevel( Level.ALL );
     }
@@ -31,12 +31,12 @@ public class IoTransportManager
      * @return singleton instance of manager
      * @see http://stackoverflow.com/questions/18093735/double-checked-locking-in-singleton
      */
-    public static IoTransportManager getInstance()
+    public static LayoutIoProviderManager getInstance()
     {
         if (s_instance == null) { // first time lock
-            synchronized (IoTransportManager.class) {
+            synchronized (LayoutIoProviderManager.class) {
                 if (s_instance == null) {  // second time lock
-                    s_instance = new IoTransportManager();
+                    s_instance = new LayoutIoProviderManager();
                 }
             }
         }
@@ -167,8 +167,8 @@ public class IoTransportManager
     protected HashMap<String, ProviderTransportStruct>    m_providers = new HashMap<>();
 
     /*** Store singleton of transport manager. */
-    private static volatile IoTransportManager  s_instance;
+    private static volatile LayoutIoProviderManager  s_instance;
 
     /*** Logging output spigot. */
-    private static final Logger LOG = Logger.getLogger( IoTransportManager.class.getName() );
+    private static final Logger LOG = Logger.getLogger( LayoutIoProviderManager.class.getName() );
 }

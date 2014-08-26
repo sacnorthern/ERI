@@ -6,7 +6,7 @@ package org.embeddedrailroad.eri.layoutio.cmri;
 
 import java.util.HashMap;
 import java.util.logging.Logger;
-import org.embeddedrailroad.eri.layoutio.IoTransportManager;
+import org.embeddedrailroad.eri.layoutio.LayoutIoProviderManager;
 import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
 import org.embeddedrailroad.eri.layoutio.LayoutIoTransport;
 

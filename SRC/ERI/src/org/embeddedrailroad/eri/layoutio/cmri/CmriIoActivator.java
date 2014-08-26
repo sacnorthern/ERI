@@ -8,7 +8,7 @@ package org.embeddedrailroad.eri.layoutio.cmri;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.embeddedrailroad.eri.layoutio.IoTransportManager;
+import org.embeddedrailroad.eri.layoutio.LayoutIoProviderManager;
 import org.osgi.framework.BundleContext;
 
 import org.embeddedrailroad.eri.layoutio.LayoutIoActivator;
@@ -17,7 +17,7 @@ import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
 /**
  *  Starts up or stops a layout communications CMRI provider.
  *  There will be only one instance of each protocol-activator created (though not enforced).
- *  Starting registers with {@link IoTransportManager}.
+ *  Starting registers with {@link LayoutIoProviderManager}.
  *  Modeled after OSGi framework.
  * <br/>
  *      http://www.osgi.org/javadoc/r4v43/core/org/osgi/framework/BundleActivator.html
@@ -37,7 +37,7 @@ public class CmriIoActivator implements LayoutIoActivator
         m_bc = context;
 
         LOG.log( Level.INFO, "in CmriIoActivator#start(BC)" );
-        IoTransportManager  mgr = IoTransportManager.getInstance();
+        LayoutIoProviderManager  mgr = LayoutIoProviderManager.getInstance();
         m_the_provider = new CmriLayoutProviderImpl();
         mgr.addProvider( "cmri", "The CMRI protocol", m_the_provider );
     }
@@ -48,7 +48,7 @@ public class CmriIoActivator implements LayoutIoActivator
         // TODO: Close down all transports.
 
         m_the_provider = null;
-        IoTransportManager  mgr = IoTransportManager.getInstance();
+        LayoutIoProviderManager  mgr = LayoutIoProviderManager.getInstance();
         mgr.removeProviderTransport( "cmri" );
         LOG.log( Level.INFO, "in CmriIoActivator#stop(BC)" );
 
