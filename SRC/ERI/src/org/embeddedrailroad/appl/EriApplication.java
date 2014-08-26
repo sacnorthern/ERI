@@ -9,10 +9,11 @@ package org.embeddedrailroad.appl;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.*;
+import java.util.logging.Level;
 
 import com.crunchynoodles.util.PropertiesManager;
 import com.crunchynoodles.util.UserDirectories;
-import java.util.logging.Level;
+
 import org.embeddedrailroad.eri.ctc.EriCase;
 import org.embeddedrailroad.eri.xml.BankBean;
 import org.embeddedrailroad.eri.xml.BankListBean;

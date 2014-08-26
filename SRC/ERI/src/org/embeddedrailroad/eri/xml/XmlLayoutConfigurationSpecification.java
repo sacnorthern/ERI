@@ -184,7 +184,7 @@ public class XmlLayoutConfigurationSpecification
     {
         BankBean    bb = new BankBean();
 
-        //    <!ELEMENT bank (comms,unit*)>
+        //    <!ELEMENT bank (network,unit*)>
         //    <!ATTLIST bank
         //            protocol   CDATA    #REQUIRED
         //            address    CDATA    #REQUIRED

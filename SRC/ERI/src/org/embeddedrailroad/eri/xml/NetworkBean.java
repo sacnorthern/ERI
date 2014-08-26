@@ -9,6 +9,7 @@ package org.embeddedrailroad.eri.xml;
 import java.util.Arrays;
 import java.util.List;
 import com.crunchynoodles.util.AbstractXmlEntityWithPropertiesBean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -18,6 +19,7 @@ import java.util.logging.Logger;
  *
  *  {@code <!ELEMENT network (propertyList)>} <br>
  *  {@code <!ATTLIST network enabled  %Boolean;  "yes">}
+ *
  * @author brian
  */
 public class NetworkBean
@@ -54,12 +56,22 @@ public class NetworkBean
         return m_enabled;
     }
 
+    /***
+     *  Change whether or not communication in this bank is enabled.
+     * <p>
+     * TODO: Should generate a change event.
+     *
+     * @param enabled true to enable, false to stop.
+     */
     public void     setEnabled( boolean enabled )
     {
         m_enabled = enabled;
-        logger.info( "XML comm " + ATTR_ENABLED + " = " + (enabled ? "YES" : "NO") );
+        logger.log( Level.INFO, "XML network attr " + ATTR_ENABLED + " = {0}" , (enabled ? "YES" : "NO") );
     }
 
+    // ----------------------------------------------------------------------------
+
+    /***  Logging output spigot. */
     private static final Logger     logger = Logger.getLogger( NetworkBean.class.getName() );
 
 }

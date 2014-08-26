@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Logger;
 import org.embeddedrailroad.eri.layoutio.LayoutIoModel;
 import org.embeddedrailroad.eri.layoutio.UnknownLayoutUnitException;
 
@@ -152,7 +153,7 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
     public void setSensedBinaryBlob( Integer device, int subfunction, byte[] blob )
     {
         /**
-         *  E.g. device "6.22.19" on sub-function "3" has bytes from an RFID reader,
+         *  E.g. device "6.22.19" has sub-function "3" has bytes from an RFID reader,
          *  bytes "0x56 0x7F 0xA2 0x33 0xFF".  By setting that blob, the previous
          *  blob from the RFID reader is overwritten.
          *
@@ -290,5 +291,13 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
      */
     private HashMap< Integer, boolean[] >   m_inputs;
 
+    /***
+     *  Recorded data-blobs from different units: primary index = unit, secondary index = device therein.
+     *  Data blobs are as big as given to use, and can vary in size.
+     */
     private HashMap< Integer, HashMap< Integer, byte[] > >  m_blobs;
+
+    /***  Logging output spigot. */
+    private static final Logger LOG = Logger.getLogger( CmriLayoutModelImpl.class.getName() );
+
 }

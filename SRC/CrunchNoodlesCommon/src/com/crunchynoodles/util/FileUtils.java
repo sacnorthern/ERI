@@ -5,32 +5,42 @@
 package com.crunchynoodles.util;
 
 import java.io.*;
-import java.lang.String;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.io.*;
+
 //  These are for the directory search method:
-import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.*;
 import static java.nio.file.FileVisitResult.*;
-import static java.nio.file.FileVisitOption.*;
-import java.util.*;
 
 
 /**
- *  Utilities for files.
+ *  Utilities for files; requires Java 1.7 support.
+ *
  * @author brian
  */
-public class FileUtils {
+public class FileUtils
+{
+
+    /***
+     *  Returns an output stream where written bytes are simply discarded.
+     *
+     * @return writable stream, hahahahaha...
+     */
+    public static OutputStream  getNullOutputStream( )
+    {
+        return ByteStreams.nullOutputStream();
+    }
 
     /***
      *  Reads whole file in and returns it as a string, even if file is binary.
      *
      * @param filename filename
-     * @param charSet "UTF-8"
+     * @param charSet E.g. "UTF-8" or "ISO-8859-1"
      * @return file as whole string, with line endings in tack.
      * @throws FileNotFoundException
      * @throws IOException
@@ -52,13 +62,14 @@ public class FileUtils {
     }
 
     /***
-     *  Converts a {@code FileInputStream} into a big string.
+     *  Converts a {@link FileInputStream} into a big string.
      *  Handles various input-stream character sets, e.g. Latin-3 or UTF-8.
      *
      * @param ins stream to read
      * @param cs character set for single-byte to Unicode conversion.
      * @return A big string
      * @throws IOException
+     * @see java.nio.charset.StandardCharsets
      */
     public static String readWholeFile( FileInputStream ins, Charset cs )
             throws IOException
@@ -262,7 +273,7 @@ public class FileUtils {
         public void doIt()
                 throws IOException
         {
-            Files.walkFileTree( m_starting_dir, this );
+            java.nio.file.Files.walkFileTree( m_starting_dir, this );
         }
 
         @Override
@@ -409,9 +420,10 @@ public class FileUtils {
      *  instead of string-array.
      *
      * @param startFolder Initial working directory, or null for user's home-dir.
-     * @param args
+     * @param args array of tokens to pass, where {@code args[0]} is name of program to run.
      * @param cmdReturnValue - int[0] is return value of process
-     * @return captured output as string on successful exec, else null if troubles.
+     * @return captured output as string-list on successful exec, else null if troubles.
+     *
      * @see http://stackoverflow.com/questions/1410741/want-to-invoke-a-linux-shell-command-from-java
      */
     public static List<String> runCommandGetOutput( String startFolder, String[] args, int[] cmdReturnValue )
@@ -426,7 +438,7 @@ public class FileUtils {
             startFolder = System.getProperty( "user.home" );
         }
 
-        //  Run program, gathering all its output.
+        //  Run program, gathering all its output.  Combnes STDOUT and STDERR together.
         ProcessBuilder pb = new ProcessBuilder(commands);
         pb.directory(new File(startFolder));
         pb.redirectErrorStream(true);

@@ -23,9 +23,10 @@ public class XmlUtils {
 
     /***
      *  Print every attribute and value of a node, one line at a time.
-     *  If {code entry} is null, then outputs "<null/>"
+     *  If {@link entry} is null, then outputs "&lt;null/&gt;".
+     *
      * @param outs where to send output, cannot be null.
-     * @param entry XML node to examine
+     * @param entry XML node to examine, OK if null.
      */
     public static void XmlPrintAttrs( PrintStream outs, Node entry )
     {
@@ -57,7 +58,7 @@ public class XmlUtils {
      * @param element XML element, must not be {@code null}.
      * @param attrName string name of attribute on element to parse.
      * @param if_not_present Default return value.
-     * @return {@code true} if value is "true" or "yes" ; {@code false} otherwise.
+     * @return {@code true} if value is "ok", "true" or "yes" ; {@code false} otherwise.
      */
     public static Boolean ParseBooleanAttribute( Element element, String attrName, boolean if_not_present )
     {
@@ -67,7 +68,8 @@ public class XmlUtils {
         if( ! StringUtils.emptyOrNull( strval ) )
         {
             if( strval.equalsIgnoreCase( "true") ||
-                strval.equalsIgnoreCase( "yes" ) )
+                strval.equalsIgnoreCase( "yes" ) ||
+                strval.equalsIgnoreCase( "ok" ) )
             {
                 val = Boolean.TRUE;
             }
@@ -78,7 +80,8 @@ public class XmlUtils {
 
     /***
      *  Ask element for the named attribute, then try and convert the value into an integer.
-     *  Uses {@code Integer.parseInt()} for the heavy lifting.
+     *  Uses {@link Integer#parseInt(java.lang.String)} for the heavy lifting.
+     *  Assumes base 10 unless value starts with "0x" which means hex.
      *  An empty string returns 0.
      *
      * @param element XML element, must not be null.
@@ -94,7 +97,14 @@ public class XmlUtils {
 
         if( ! StringUtils.emptyOrNull( strval ) )
         {
-            val = Integer.parseInt( strval );
+            int  radix = 10;
+            if( strval.length() > 2 && strval.startsWith( "0x" ) )
+            {
+                radix = 16;
+                strval = strval.substring( 2 );
+            }
+
+            val = Integer.parseInt( strval, radix );
         }
 
         return val;
@@ -103,6 +113,7 @@ public class XmlUtils {
     /***
      *  Ask element for the named attribute, then try and convert the value into an integer.
      *  Uses {@code Integer.parseInt()} for the heavy lifting.
+     *  Assumes base 10 unless value starts with "0x" which means hex.
      *  An empty or null attribute-value returns 0.
      *
      * @param element XML element, must not be {@code null}.
@@ -122,7 +133,14 @@ public class XmlUtils {
 
         if( ! StringUtils.emptyOrNull( strval ) )
         {
-            val = Integer.parseInt( strval );
+            int  radix = 10;
+            if( strval.length() > 2 && strval.startsWith( "0x" ) )
+            {
+                radix = 16;
+                strval = strval.substring( 2 );
+            }
+
+            val = Integer.parseInt( strval, radix );
 
             if( minValue != Integer.MIN_VALUE && val < minValue )
                 throw new AssertionError( "parsed value too small", null );
@@ -134,10 +152,13 @@ public class XmlUtils {
     }
 
     /***
-     *  Parse the binary data that is the CDaTA for an element.
+     *  Parse the binary data that is the CDATA for an element.
      *  Various "text" formats are accepted, e.g. "hexbinary" and "base64".
+     *  Binary-hex may have an optional "0x" prefix to the CDATA.
+     *  Upper-case and lower-case letters are equivalent for "hexbinary" but not "base64".
+     * <p>
      *  If there is no CDATA, then throws {@link MissingDataException}.
-     *  If data is poorly formatted,
+     *  If CDATA string is poorly formatted,
      *  then throws {@link NumberFormatException}.
      *
      * @param element Element holding some CDATA, must not be {@code null}.
@@ -162,35 +183,45 @@ public class XmlUtils {
 
         if( format.equalsIgnoreCase( "hexbytes" ) || format.equalsIgnoreCase( "hexbinary" ) )
         {
+            //  Remove a gratiditous "0x" prefix.
+            if( cdata_str.length() > 2 && cdata_str.startsWith( "0x" ) )
+            {
+                cdata_str = cdata_str.substring( 2 );
+            }
+
+            //  Odd length gets a "0" on the front.  E.g. "3D0" instead of "03D0".
+            if( (cdata_str.length() & 1) != 0 )
+            {
+                cdata_str = "0" + cdata_str;
+            }
+
             byte[]   data = new byte[ cdata_str.length() / 2 ];
             byte     by;
 
             // Not using BaseEncoding.base64().decode() here since its input alphabet is strict,
             // i.e. it wants all upper-case letters.  Here, want to be more flexible.
 
-            for( int j = 0 ; j < cdata_str.length() ; j+= 2 )
+            for( int j = 0 ; j < cdata_str.length() ; j += 2 )
             {
                 try {
                     by = Byte.parseByte( cdata_str.substring( j, j + 2) );
                 }
                 catch( IndexOutOfBoundsException ex )
                 {
-                    //  Occcurs when CDATA is an odd length.  One recovery is to reparse
-                    //  after adding a ")" to the front of the string.  E.g. "3F0" instead of "03F0".
-                    //  This code isn't factored well for that sort of thing. (BWitt, Aug 2014).
+                    //  Occcurs when CDATA is an odd length, which should never happen.
                     throw new NumberFormatException( "bad CDATA length for element \"" + element.getNodeName() + "\"" );
                 }
 
-                data[ j ] = by;
+                data[ j / 2 ] = by;
             }
 
             return( data );
-        }   // end format is hex-bytes..
+        }   // end if format is hex-bytes..
 
         if( format.equalsIgnoreCase( "base64" ) )
         {
             return BaseEncoding.base64().decode( cdata_str );
-        }   // end format is base-64..
+        }   // end if format is base-64..
 
         throw new IllegalArgumentException( "Unknown encoding format: " + format );
     }
