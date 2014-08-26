@@ -42,15 +42,15 @@ public class EriApplication
         UserDirectories.ApplicationName = "EriApplication";
 
         //  Check out loggers available.
-        LogManager  lm = LogManager.getLogManager();
-        Enumeration<String>  namelist = lm.getLoggerNames();
-
-        System.out.println( "Found these loggers:" );
-        while( namelist.hasMoreElements() )
-        {
-            String  name = namelist.nextElement();
-            System.out.printf( "  logger = \"%s\"\n", name );
-        }
+//        LogManager  lm = LogManager.getLogManager();
+//        Enumeration<String>  namelist = lm.getLoggerNames();
+//
+//        System.out.println( "Found these loggers:" );
+//        while( namelist.hasMoreElements() )
+//        {
+//            String  name = namelist.nextElement();
+//            System.out.printf( "  logger = \"%s\"\n", name );
+//        }
 
         Logger.getGlobal().setLevel( Level.CONFIG );
 
@@ -58,7 +58,7 @@ public class EriApplication
 
         String propfname = UserDirectories.getInstance().getUserApplSettingsPropertiesFilename();
 
-        Out( "user-wide properties fname = \"%s\"", propfname);
+        logger.log( Level.INFO, "user-wide properties fname = \"{0}\"", propfname);
 
         PropertiesManager.ApplicationName = UserDirectories.ApplicationName;
         s_props.readProperties( propfname, UserDirectories.getInstance().getProjectApplSettingsFolder() );
@@ -131,6 +131,11 @@ public class EriApplication
 
         try {
             LayoutConfigurationBean  bs = LayoutConfigurationBean.readFromFile( fname );
+            if( null == bs )
+            {
+                Out( "Sorry, file read failed.");
+                return ;
+            }
 
             Out( "======" );
             BankListBean  banklist = bs.getBankList();
