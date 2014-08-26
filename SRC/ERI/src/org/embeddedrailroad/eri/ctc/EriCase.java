@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
 
-import org.embeddedrailroad.eri.layoutio.IoTransportManager;
+import org.embeddedrailroad.eri.layoutio.LayoutIoProviderManager;
 import org.embeddedrailroad.eri.layoutio.LayoutIoActivator;
 import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
 import org.embeddedrailroad.eri.layoutio.cmri.CmriIoActivator;
@@ -171,7 +171,7 @@ public class EriCase {
             throw new FileNotFoundException( ex.getMessage() );
         }
 
-        theTransportManager = IoTransportManager.getInstance();
+        theTransportManager = LayoutIoProviderManager.getInstance();
 
         Ini.Section  provider_section = Ini.get( INI_SECTION_PROVIDERS_NAME );
         List<String>  provider_list = provider_section.getAll( INI_KEY_PROVIDERS_PROVIDER_NAME );
@@ -311,7 +311,7 @@ public class EriCase {
 
     public Ini      Ini = null;
 
-    public IoTransportManager   theTransportManager = null;
+    public LayoutIoProviderManager   theTransportManager = null;
 
     //-----------------------  FAKE OSGi BUNDLE CONTEXT  ----------------------
 
