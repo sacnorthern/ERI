@@ -307,7 +307,7 @@ public class EriCase {
         if( startup_section != null )
         {
             String how_startup = startup_section.fetch( INI_KEY_STARTUP_NAME );
-            if( how_startup != null && how_startup.equalsIgnoreCase( "" ) )
+            if( how_startup != null && how_startup.equalsIgnoreCase( "auto" ) )
             {
                 m_auto_startup = true;
             }
