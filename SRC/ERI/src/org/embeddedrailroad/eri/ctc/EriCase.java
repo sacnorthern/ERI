@@ -5,6 +5,7 @@
 package org.embeddedrailroad.eri.ctc;
 
 import com.crunchynoodles.util.StringUtils;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.util.logging.Logger;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
@@ -178,6 +180,12 @@ public class EriCase {
 
         for( String prov : provider_list )
         {
+            //  Skip duplicate transport providers in user's INI file.
+            if( theTransportManager.findProviderByName( prov ) != null )
+            {
+                continue;
+            }
+
             //  Find section e.g. "[class.cti]"
             String  provider_section_name = "class." + prov;
 
@@ -185,29 +193,50 @@ public class EriCase {
             if( provider_sect == null )
             {
                 LOG.log( Level.WARNING, "No \"[{0}]\" section in INI file.", provider_section_name );
-                break;
+                continue;
             }
 
             LOG.log( Level.INFO, "Looking for \"{0}\" activator", provider_section_name );
             String  jar_place = provider_sect.fetch( INI_KEY_CLASS_JAR );
             String  impl_full_class = provider_sect.fetch( INI_KEY_BUNDLE_ACTIVATOR );
 
-            URLClassLoader  cl = null;
+            ClassLoader  cl = null;
+            Class    jarred = null;
             try
             {
-                if( theTransportManager.findProviderByName( prov ) == null )
+                cl = ClassLoader.getSystemClassLoader();
+                try
                 {
-                    //  If not yet known, then load it dynamically.
+                    if( (jarred = cl.loadClass( impl_full_class )) != null )
+                    {
+                        LOG.log( Level.INFO, "Good news, class \"{0}\" is built-in!", impl_full_class );
+                    }
+                }
+                catch( ClassNotFoundException ex )
+                {
+                    //  'impl_full_class' not found, which means clas isn't compiled-in.
+                    //  No worried, 'jarred' is null and will search the provided JAR file.
+                }
+
+                if( jarred == null )
+                {
+                    //  If not yet connected, then load it dynamically.
                     File  myJarFile = new File( jar_place );
                     if (!myJarFile.isFile()) {
                       throw new FileNotFoundException("Missing required JAR: " + myJarFile.toString());
                     }
 
+                    //  Feed reference to a new class-loader.  'cl' is the ref-count anchor point for
+                    //  the loaded class.  It and the BundleContext keep it from being GC'ed.
+                    //  http://stackoverflow.com/questions/148681/unloading-classes-in-java
                     final URI  myJarUrl = myJarFile.toURI();
                     cl = URLClassLoader.newInstance(new URL[]{ myJarUrl.toURL() });
 
-                    Class  jarred = cl.loadClass( impl_full_class );
+                    jarred = cl.loadClass( impl_full_class );
+                }
 
+                if( jarred != null )
+                {
                     Object  prov_obj = jarred.newInstance();
 
                     if( prov_obj instanceof LayoutIoActivator )
@@ -218,14 +247,17 @@ public class EriCase {
                         FakeOSGiBundleContext fake_bc = new FakeOSGiBundleContext( activator );
 
                         // Start it up by calling "void start(BundleContext fake_ctx)"
+                        @SuppressWarnings("unchecked")
                         Method  m = jarred.getMethod( "start", new Class[]{ BundleContext.class } );
 
                         Object rv = m.invoke( activator, fake_bc );
+                        // see http://frankkieviet.blogspot.com/2006/10/classloader-leaks-dreaded-permgen-space.html
+                        // see http://frankkieviet.blogspot.com/2006/10/how-to-fix-dreaded-permgen-space.html
 
                         System.out.println( "YES!" );
 
-                        //  Remember it, so we'll keep reference to activator.
-                        ActivationStruct  as = new ActivationStruct( activator, fake_bc, provider_section_name );
+                        //  Remember it, so we'll keep reference to class-loaer and activator.
+                        ActivationStruct  as = new ActivationStruct( cl, activator, fake_bc, provider_section_name );
                         m_activatorList.add( as );
                     }
                     else
@@ -234,6 +266,10 @@ public class EriCase {
 
                         prov_obj = null;
                         jarred = null;
+
+                        if( cl instanceof Closeable )
+                            ((Closeable)cl).close();
+                        cl = null;
                     }
                 }
             }
@@ -249,14 +285,14 @@ public class EriCase {
             }
             finally
             {
-                if( cl != null )
+                if( cl != null && cl instanceof Closeable )
                 {
                     try {
-                        cl.close();
+                        ((Closeable)cl).close();
                     }
                     catch( IOException _ignore ) { }
-                    cl = null;
                 }
+                cl = null;
             }
         }
 
@@ -292,22 +328,33 @@ public class EriCase {
 
     //--------------------------  INSTANCE VARS  --------------------------
 
-    public static String    INI_SECTION_PROVIDERS_NAME = "providers";
-    public static String    INI_KEY_PROVIDERS_PROVIDER_NAME = "provider";
+    public static final String    INI_SECTION_PROVIDERS_NAME = "providers";
+    public static final String    INI_KEY_PROVIDERS_PROVIDER_NAME = "provider";
 
-    public static String    INI_KEY_CLASS_JAR = "jar";
+    /***
+     *  In "[class.cmri]" section, the optional "jar=" clause specifies an named file whereupon
+     *  the Activator class can be found.
+     *  However, if class is built-in to the ERI application, this clause is ignored.
+     */
+    public static final String    INI_KEY_CLASS_JAR = "jar";
 
     /***
      *  Key to find the implementation class to activate the bundle where the
      *  communication protocol lives.
-     *  See http://www.jroller.com/habuma/entry/a_dozen_osgi_myths_and , "OSGi is too heavyweight"
+     *  The class binary-name can be built-in (ignoring <tt>jar=</tt>) or outside in a file.
+     *
+     *  <p> See http://www.jroller.com/habuma/entry/a_dozen_osgi_myths_and , "OSGi is too heavyweight"
      *
      */
-    public static String    INI_KEY_BUNDLE_ACTIVATOR = "activator";
+    public static final String    INI_KEY_BUNDLE_ACTIVATOR = "activator";
 
-    public static String    INI_SECTION_STARTUP_NAME = "startup";
-    public static String    INI_KEY_LAYOUT_NAME = "layout";
-    public static String    INI_KEY_STARTUP_NAME = "startup";
+    /***
+     *  Section about what to do once system initialized, e.g. (1) start polling immediately
+     *  and (2) which layout description to load otherwise prompt user.
+     */
+    public static final String    INI_SECTION_STARTUP_NAME = "startup";
+    public static final String    INI_KEY_LAYOUT_NAME = "layout";
+    public static final String    INI_KEY_STARTUP_NAME = "startup";
 
     public Ini      Ini = null;
 
@@ -477,12 +524,14 @@ public class EriCase {
 
     class ActivationStruct
     {
+        public ClassLoader          m_class_loader;
         public LayoutIoActivator    m_activator;
         public BundleContext        m_context;
         public String               m_class;
 
-        public ActivationStruct( LayoutIoActivator act, BundleContext bc, String className )
+        public ActivationStruct( ClassLoader cl, LayoutIoActivator act, BundleContext bc, String className )
         {
+            this.m_class_loader = cl;
             this.m_activator = act;
             this.m_context   = bc;
             this.m_class     = className;
