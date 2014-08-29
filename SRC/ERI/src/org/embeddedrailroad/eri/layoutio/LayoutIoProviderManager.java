@@ -6,7 +6,6 @@ package org.embeddedrailroad.eri.layoutio;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,10 +42,10 @@ public class LayoutIoProviderManager
         return s_instance;
     }
 
-    //----------------------  TRANSPORT ADD/REMOVE  -------------------
+    //----------------------  PROVIDER ADD/REMOVE  -------------------
 
     /***
-     *    Add a transport IO provider class to known list.
+     *    Add an IO provider singleton to known list.
      *
      *   @param name short name of provider / keeper.
      *   @param longDescr longer descriptive text, in EN_us.
@@ -55,13 +54,13 @@ public class LayoutIoProviderManager
     public void addProvider( String name, String longDescr, LayoutIoProvider providerSingleton )
     {
 
-        ProviderTransportStruct  pts = new ProviderTransportStruct( name, longDescr, providerSingleton, null );
+        ProviderTransportStruct  pts = new ProviderTransportStruct( name, longDescr, providerSingleton );
 
         //  Remove it first ~ just in case ~ then add new provider/keeper.
         removeProviderTransport( name );
         m_providers.put( name, pts );
 
-        LOG.log( Level.INFO, "addProvider() Transport \"{0}\" now registered", name );
+        LOG.log( Level.INFO, "addProvider() \"{0}\" now registered", name );
     }
 
     public void removeProviderTransport( String any_case_name )
@@ -136,17 +135,14 @@ public class LayoutIoProviderManager
         public String               shortName;      // key.
         public String               longDescr;
         public LayoutIoProvider     provider;       // singleton.
-        public LayoutIoTransport    transport;
 
         public ProviderTransportStruct( String shortName,
                                         String longDescr,
-                                        LayoutIoProvider provider,
-                                        LayoutIoTransport transport )
+                                        LayoutIoProvider provider )
         {
             this.shortName = shortName;
             this.longDescr = longDescr;
             this.provider  = provider;
-            this.transport = transport;
         }
 
         public ProviderTransportStruct( ProviderTransportStruct other )
@@ -154,7 +150,6 @@ public class LayoutIoProviderManager
             this.shortName = other.shortName;
             this.longDescr = other.longDescr;
             this.provider  = other.provider;
-            this.transport = other.transport;
         }
     };
 

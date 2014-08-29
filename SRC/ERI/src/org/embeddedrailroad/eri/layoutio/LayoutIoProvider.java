@@ -31,12 +31,16 @@ public interface LayoutIoProvider
     public HashMap<Integer, LayoutIoTransport> getTransportChannelList();
 
     /***
-     *  Opens a numbered transport channel.
+     *  Creates a numbered transport channel using a physical media.
      *  If already opened / existing, then polling will stop.
+     *
+     * @param physical Kind of physical hookup, e.g. "serial", "tcp", or "udp".
      * @param channel number that IO model-specific.
      * @return
      */
-    public boolean openChannel( Integer channel );
+    public LayoutIoTransport makeChannel( String physical, Integer channel );
+
+    //--------------------  Addressing Conversion  --------------------
 
     /***
      *  Convert a string-form of a unit's address into native object-type.
