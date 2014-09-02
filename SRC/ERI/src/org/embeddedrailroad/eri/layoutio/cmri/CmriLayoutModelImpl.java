@@ -18,6 +18,10 @@ import org.embeddedrailroad.eri.layoutio.UnknownLayoutUnitException;
 
 
 /***
+ *  Layout Model for one bank of CMRI units, maintained by one CmriLayoutTransport object;
+ *  they are paired.
+ *  CMRI units are addressed with a single number, from 0 to 32.  One the wire, 65 is added
+ *  to the address, e.g. unit #0 address is encoded as 'A', unit #1 address is 'B', etc.
  *
  * @author brian
  * @param <T> Class-type for addressing unit.  CMRI uses an {@code Integer}.
@@ -105,8 +109,8 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
 
             for( java.lang.Integer itemp : keys )
             {
-                if( max  < itemp.intValue() )
-                    max = itemp.intValue();
+                if( max  < itemp )
+                    max = itemp;
             }
             max += 1;
 
@@ -169,7 +173,7 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
         m_lock.writeLock().lock();
         try
         {
-            Integer  subf = new java.lang.Integer(subfunction);
+            Integer  subf = subfunction;
 
             //  1.  Retrieve all blobs for this device, i.e. function
             if( ! m_blobs.containsKey( device ) )
@@ -259,7 +263,7 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
         {
             if( m_blobs.containsKey( device) )
             {
-                Integer  subf = new java.lang.Integer(subfunction);
+                Integer  subf = subfunction;
                 return m_blobs.get( device ).get( subf );
             }
         }
@@ -273,7 +277,7 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
             m_lock.readLock().unlock();
         }
 
-        //  An unknown devices return null instead of an exception.
+        //  An unknown device returns null instead of an exception.
         return null;
     }
 
@@ -283,21 +287,21 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
      *  Data access READER/WRITER lock.
      *  @see https://www.obsidianscheduler.com/blog/java-concurrency-part-2-reentrant-locks/
      */
-    private ReadWriteLock   m_lock = new ReentrantReadWriteLock();
+    transient private final ReadWriteLock   m_lock = new ReentrantReadWriteLock();
 
     /***
      *  HashMap of boolean input bits, indexed by device address.
      *  {@code m_inputs.get()} returns the whole array for one device.
      */
-    private HashMap< Integer, boolean[] >   m_inputs;
+    transient private HashMap< Integer, boolean[] >   m_inputs;
 
     /***
      *  Recorded data-blobs from different units: primary index = unit, secondary index = device therein.
      *  Data blobs are as big as given to use, and can vary in size.
      */
-    private HashMap< Integer, HashMap< Integer, byte[] > >  m_blobs;
+    transient private HashMap< Integer, HashMap< Integer, byte[] > >  m_blobs;
 
     /***  Logging output spigot. */
-    private static final Logger LOG = Logger.getLogger( CmriLayoutModelImpl.class.getName() );
+    transient private static final Logger LOG = Logger.getLogger( CmriLayoutModelImpl.class.getName() );
 
 }

@@ -9,8 +9,26 @@ import java.util.HashMap;
 /**
  *  Interface of all layout IO models; these hold state of inputs and allow setting of
  *  outputs in a form the underlying IO systems prefers.
- *  Assumes there is an addressing scheme for devices, and that devices have individual bits
+ *  A model is owned and maintained by a single {@link LayoutIoTransport} object.
+ *  Assumes there is an addressing scheme for devices, and that units have individual bits
  *  that can be sensed or controlled.
+ *
+ *  <p> Methods like {@link #setSensedBinaryData(java.lang.Comparable, boolean[]) }
+ *  are used by the transport-object to populate the model.
+ *  Parts of the array of bits can be read one bit at a time, or as a block.
+ *
+ *  <p> Units can also have structured data, the are referred to as "blobs" here,
+ *  since the model itself imposes no meaning and structure upon them.
+ *  Each unit's blob has a unique index (might not be consectutive),
+ *  and writing a new blob to an existing index changes the blob's value atomically.
+ *  The previous blob's value is gone.
+ *  An example of a blob is the 64-bit RFID reader response.
+ *
+ *  <p> Generally speaking, a layout model is totally "transient".
+ *  No values are saved from one program-run to another.
+ *  For some things, e.g. turnouts with no feedback, there should be some
+ *  long-term, non-volatile storage of values.
+ *  That effort is for another day.....
  *
  * @author brian
  */
