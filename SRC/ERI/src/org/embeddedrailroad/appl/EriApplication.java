@@ -27,9 +27,9 @@ public class EriApplication
 {
     public static String    INI_FILENAME_DEFAULT = "my_eri.ini";
 
-    static PropertiesManager     s_props = new PropertiesManager("appl");
+    static transient PropertiesManager     s_props = new PropertiesManager("appl");
 
-    private static final Logger  logger  = Logger.getLogger( EriApplication.class.getName() );
+    private static transient final Logger  logger  = Logger.getLogger( EriApplication.class.getName() );
 
     /***
      *  Start up the Embedded Railroad Interface (ERI) server application.
@@ -95,6 +95,22 @@ public class EriApplication
         }
 
         // ------------------------------------------------------
+        //  Turn on assertion checking?  Good for strict debugging.
+        //  Not on by default, must be explicit about value being "on".
+
+        if( s_props.get( "assertions", "NOPE" ).equalsIgnoreCase( "on" ) )
+        {
+            ClassLoader  dcl = ClassLoader.getSystemClassLoader();
+            dcl.setDefaultAssertionStatus( true );
+            dcl.setClassAssertionStatus( "com.crunchynoodles", true );
+            dcl.setClassAssertionStatus( "org.embeddedrailroad", true );
+        }
+
+
+        // TODO: If cmd-ine is "makeini", then create a sample INI file
+        //      based on Activators built-in to the ERI executable.
+
+        // ------------------------------------------------------
         //  Perform a few tests on components...
         //
 
@@ -118,6 +134,8 @@ public class EriApplication
             logger.log(Level.WARNING, "Failed to startup and initialize: {0}", ex.getMessage());
             System.exit( 2 );
         }
+
+        eri.doit();
 
     }
 

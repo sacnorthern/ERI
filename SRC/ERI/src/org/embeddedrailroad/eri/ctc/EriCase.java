@@ -125,7 +125,12 @@ public class EriCase {
      *  Pre-set the ERI application by loading a INI file that maps protocols to
      *  particular Java class in some JAR file.
      *
-     *  Sample INIFile with two transportation providers.  The layout XML file is also specified.
+     * <p> Some protocol transports providers are compiled in.
+     *  However, if "{@code jar=} is provided, then the compiled-in code not looked at,
+     *  instead using the external code.  Note, it is a failure if same-classes are overridden
+     *  but not found.
+     *
+     * <p> Sample INIFile with two transportation providers.  The layout XML file is also specified.
      * <pre>
     [providers]
     provider=cmri
@@ -204,23 +209,10 @@ public class EriCase {
             Class    jarred = null;
             try
             {
-                cl = ClassLoader.getSystemClassLoader();
-                try
+                //  Check externally if "jar=" specified.
+                if( jarred == null && !StringUtils.emptyOrNull( jar_place ) )
                 {
-                    if( (jarred = cl.loadClass( impl_full_class )) != null )
-                    {
-                        LOG.log( Level.INFO, "Good news, class \"{0}\" is built-in!", impl_full_class );
-                    }
-                }
-                catch( ClassNotFoundException ex )
-                {
-                    //  'impl_full_class' not found, which means clas isn't compiled-in.
-                    //  No worried, 'jarred' is null and will search the provided JAR file.
-                }
-
-                if( jarred == null )
-                {
-                    //  If not yet connected, then load it dynamically.
+                    //  Dynamically loading can override compile-in classes.
                     File  myJarFile = new File( jar_place );
                     if (!myJarFile.isFile()) {
                       throw new FileNotFoundException("Missing required JAR: " + myJarFile.toString());
@@ -235,6 +227,25 @@ public class EriCase {
                     jarred = cl.loadClass( impl_full_class );
                 }
 
+                //  If not found yet and no "jar=" clause, then try internally.
+                //  Note, it is an error if a built-in provider is overridden but *.code file not found.
+                if( jarred == null && StringUtils.emptyOrNull( jar_place ) )
+                {
+                    cl = ClassLoader.getSystemClassLoader();
+                    try
+                    {
+                        if( (jarred = cl.loadClass( impl_full_class )) != null )
+                        {
+                            LOG.log( Level.INFO, "Good news, class \"{0}\" is built-in!", impl_full_class );
+                        }
+                    }
+                    catch( ClassNotFoundException ex )
+                    {
+                        //  'impl_full_class' not found, which means clas isn't compiled-in.
+                    }
+                }
+
+                //  Did any search succeed?  If yes, then start Activator.
                 if( jarred != null )
                 {
                     Object  prov_obj = jarred.newInstance();
@@ -274,14 +285,13 @@ public class EriCase {
                 }
             }
             catch (ClassNotFoundException e) {
-                //!! System.out.println("2");
-                //!! e.printStackTrace();
-                //!! throw e;
-                LOG.log( Level.WARNING, "Sorry, \"{0}\" is not available.", prov );
+                LOG.log( Level.WARNING, "Sorry, \"{0}\" is not available, can't find Activator class", prov );
             }
             catch( Exception ex )
             {
-                LOG.log( Level.WARNING, "Sorry, can't get \"" + prov + "\" provider loaded", ex );
+                String  base_class_name = ex.getMessage();
+                LOG.log( Level.WARNING, String.format( "Sorry, can't get \"%1$s\" provider loaded: %2$s",
+                                                        prov, base_class_name ) );
             }
             finally
             {
@@ -290,7 +300,9 @@ public class EriCase {
                     try {
                         ((Closeable)cl).close();
                     }
-                    catch( IOException _ignore ) { }
+                    catch( IOException _ignore ) {
+                        LOG.log( Level.WARNING, "cl.close() failed: {0}", _ignore.getMessage() );
+                    }
                 }
                 cl = null;
             }
@@ -332,7 +344,7 @@ public class EriCase {
     public static final String    INI_KEY_PROVIDERS_PROVIDER_NAME = "provider";
 
     /***
-     *  In "[class.cmri]" section, the optional "jar=" clause specifies an named file whereupon
+     *  In "[class.cmri]" section, the optional "jar=" clause specifies a named file wherefore
      *  the Activator class can be found.
      *  However, if class is built-in to the ERI application, this clause is ignored.
      */
@@ -540,12 +552,12 @@ public class EriCase {
 
     //-----------------------  PRIVATE INSTANCE VARS  ---------------------
 
-    private static volatile EriCase  s_instance;
+    private static volatile EriCase    s_instance;
 
     protected List<ActivationStruct>   m_activatorList = new ArrayList<ActivationStruct>();
 
-    protected boolean               m_auto_startup;
+    transient protected boolean        m_auto_startup;
 
     /***  Logging spigot. */
-    private static final Logger LOG = Logger.getLogger( EriCase.class.getName() );
+    private static transient final Logger LOG = Logger.getLogger( EriCase.class.getName() );
 }
