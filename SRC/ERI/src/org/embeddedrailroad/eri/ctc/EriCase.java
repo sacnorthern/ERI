@@ -206,7 +206,7 @@ public class EriCase {
             String  impl_full_class = provider_sect.fetch( INI_KEY_BUNDLE_ACTIVATOR );
 
             ClassLoader  cl = null;
-            Class    jarred = null;
+            Class<?>  jarred = null;
             try
             {
                 //  Check externally if "jar=" specified.
@@ -232,14 +232,23 @@ public class EriCase {
                 //  Note, it is an error if a built-in provider is overridden but *.code file not found.
                 if( jarred == null && StringUtils.emptyOrNull( jar_place ) )
                 {
-                    //  Use SystemClassLoader, therefore support classes located within base application..
-                    cl = ClassLoader.getSystemClassLoader();
+//                    //  Use SystemClassLoader, therefore support classes located within base application..
+//                    cl = ClassLoader.getSystemClassLoader();
+//                    try
+//                    {
+//                        if( (jarred = cl.loadClass( impl_full_class )) != null )
+//                        {
+//                            LOG.log( Level.INFO, "Good news, class \"{0}\" is built-in!", impl_full_class );
+//                        }
+//                    }
+//                    catch( ClassNotFoundException ex )
+//                    {
+//                        //  'impl_full_class' not found, which means clas isn't compiled-in.
+//                    }
+
                     try
                     {
-                        if( (jarred = cl.loadClass( impl_full_class )) != null )
-                        {
-                            LOG.log( Level.INFO, "Good news, class \"{0}\" is built-in!", impl_full_class );
-                        }
+                        jarred = Class.forName( impl_full_class );
                     }
                     catch( ClassNotFoundException ex )
                     {
