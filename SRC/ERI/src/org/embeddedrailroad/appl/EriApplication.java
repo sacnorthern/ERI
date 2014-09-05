@@ -6,7 +6,6 @@
 
 package org.embeddedrailroad.appl;
 
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.*;
 import java.util.logging.Level;
@@ -15,6 +14,7 @@ import com.crunchynoodles.util.PropertiesManager;
 import com.crunchynoodles.util.UserDirectories;
 
 import org.embeddedrailroad.eri.ctc.EriCase;
+import org.embeddedrailroad.eri.layoutio.LayoutIoProviderManager;
 import org.embeddedrailroad.eri.xml.BankBean;
 import org.embeddedrailroad.eri.xml.BankListBean;
 import org.embeddedrailroad.eri.xml.LayoutConfigurationBean;
@@ -63,6 +63,7 @@ public class EriApplication
         PropertiesManager.ApplicationName = UserDirectories.ApplicationName;
         s_props.readProperties( propfname, UserDirectories.getInstance().getProjectApplSettingsFolder() );
 
+        String  fname = "C:\\Devel\\Java-ERI\\Deployment\\front_range_layout.xml";
 
         //  Parse command line looking for "/prop:KEY=VALUE" or "/property:KEY=VALUE" and add to our properties.
         for( String option : args )
@@ -116,7 +117,9 @@ public class EriApplication
 
         logger.info( "Starting tests" );
 
-        test2001();
+        test2001( fname );
+
+        test3001();
 
         // ------------------------------------------------------
         //  Start up the application for real...
@@ -127,6 +130,8 @@ public class EriApplication
         try
         {
             eri.initialize( INI_FILENAME_DEFAULT );
+
+            eri.createTransports( fname );
         }
         catch( Exception ex )
         {
@@ -141,11 +146,9 @@ public class EriApplication
 
     // ----------------------------------------------------------------------------
 
-    static void test2001()
+    static void test2001( String fname )
     {
         OutTestHeader( "Test2001" );
-
-        String  fname = "C:\\Devel\\Java-ERI\\Deployment\\front_range_layout.xml";
 
         try {
             LayoutConfigurationBean  bs = LayoutConfigurationBean.readFromFile( fname );
@@ -178,6 +181,22 @@ public class EriApplication
     }
 
     // ----------------------------------------------------------------------------
+
+    static void test3001()
+    {
+        OutTestHeader( "Test3001" );
+
+        Out( "These providers are available:%n------------------------------" );
+
+        Collection<LayoutIoProviderManager.ProviderTransportStruct>  values = LayoutIoProviderManager.getInstance().getProviderTransportList().values();
+        for( LayoutIoProviderManager.ProviderTransportStruct prov : values )
+        {
+            Out( "%13s : %s , version \"%s\"%n<description>%s%n</description>",
+                    prov.shortName, prov.provider.getName(), prov.provider.getVersionString(),
+                    prov.longDescr );
+        }
+        Out( "" );
+    }
 
     // ----------------------------------------------------------------------------
 

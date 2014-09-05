@@ -5,6 +5,7 @@
 package org.embeddedrailroad.eri.ctc;
 
 import com.crunchynoodles.util.StringUtils;
+import com.crunchynoodles.util.exceptions.UnsupportedKeyException;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -13,23 +14,22 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
 
 import org.embeddedrailroad.eri.layoutio.LayoutIoProviderManager;
 import org.embeddedrailroad.eri.layoutio.LayoutIoActivator;
-import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
-import org.embeddedrailroad.eri.layoutio.cmri.CmriIoActivator;
-import org.embeddedrailroad.eri.layoutio.cmri.CmriLayoutProviderImpl;
+import org.embeddedrailroad.eri.layoutio.LayoutIoTransport;
+import org.embeddedrailroad.eri.xml.BankBean;
+import org.embeddedrailroad.eri.xml.BankListBean;
+import org.embeddedrailroad.eri.xml.LayoutConfigurationBean;
 import org.ini4j.*;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -213,6 +213,7 @@ public class EriCase {
                 if( jarred == null && !StringUtils.emptyOrNull( jar_place ) )
                 {
                     //  Dynamically loading can override compile-in classes.
+                    //  Uses URLClassLoader, therefore it leaves external to base application.
                     File  myJarFile = new File( jar_place );
                     if (!myJarFile.isFile()) {
                       throw new FileNotFoundException("Missing required JAR: " + myJarFile.toString());
@@ -231,6 +232,7 @@ public class EriCase {
                 //  Note, it is an error if a built-in provider is overridden but *.code file not found.
                 if( jarred == null && StringUtils.emptyOrNull( jar_place ) )
                 {
+                    //  Use SystemClassLoader, therefore support classes located within base application..
                     cl = ClassLoader.getSystemClassLoader();
                     try
                     {
@@ -245,7 +247,7 @@ public class EriCase {
                     }
                 }
 
-                //  Did any search succeed?  If yes, then start Activator.
+                //  Did any class-file search succeed?  If yes, then start its Activator.
                 if( jarred != null )
                 {
                     Object  prov_obj = jarred.newInstance();
@@ -259,9 +261,9 @@ public class EriCase {
 
                         // Start it up by calling "void start(BundleContext fake_ctx)"
                         @SuppressWarnings("unchecked")
-                        Method  m = jarred.getMethod( "start", new Class[]{ BundleContext.class } );
+                        Method   m = jarred.getMethod( "start", new Class[]{ BundleContext.class } );
 
-                        Object rv = m.invoke( activator, fake_bc );
+                        Object  rv = m.invoke( activator, fake_bc );
                         // see http://frankkieviet.blogspot.com/2006/10/classloader-leaks-dreaded-permgen-space.html
                         // see http://frankkieviet.blogspot.com/2006/10/how-to-fix-dreaded-permgen-space.html
 
@@ -278,20 +280,24 @@ public class EriCase {
                         prov_obj = null;
                         jarred = null;
 
-                        if( cl instanceof Closeable )
-                            ((Closeable)cl).close();
-                        cl = null;
+                        // Allow 'finally' block to close class-loader...
                     }
                 }
             }
-            catch (ClassNotFoundException e) {
+            catch (ClassNotFoundException e1) {
                 LOG.log( Level.WARNING, "Sorry, \"{0}\" is not available, can't find Activator class", prov );
+            }
+            catch( NoSuchMethodException|InstantiationException e2 )
+            {
+                LOG.log( Level.WARNING, "Sorry, \"{0}\" is not available, can't run #start() method", prov );
             }
             catch( Exception ex )
             {
-                String  base_class_name = ex.getMessage();
+                //  LOG.log() will use "{0}" to pick up one parameter, but "{1}" means nothing.
+                //  If have two parmaters to message-string, use String.format().  It don't seem correct.
+                //  -- BWitt, Sept 2014
                 LOG.log( Level.WARNING, String.format( "Sorry, can't get \"%1$s\" provider loaded: %2$s",
-                                                        prov, base_class_name ) );
+                                                        prov, ex.getMessage() ) );
             }
             finally
             {
@@ -328,6 +334,51 @@ public class EriCase {
         LOG.exiting( "EriCase", "initialize" );
     }
 
+    /***
+     *  Create all transports as specified in the train-layout XML file, utilizing the
+     *  providers given in our INI file.
+     *  On success, returns ; otherwise throws an exception with explanation of trouble.
+     *
+     * @param layoutXmlFilename file name for XML bank and layout description.
+     * @throws java.lang.Exception trouble.
+     */
+    public void createTransports( String layoutXmlFilename )
+            throws Exception
+    {
+        LayoutConfigurationBean  bs;
+        try
+        {
+            bs = LayoutConfigurationBean.readFromFile( layoutXmlFilename );
+            if( null == bs )
+            {
+                throw new Exception( "empty Layout Configuratio" );
+            }
+
+            final LayoutIoProviderManager mgr = LayoutIoProviderManager.getInstance();
+            LayoutIoProviderManager.ProviderTransportStruct  tranStruct;
+            LayoutIoTransport  trans;
+
+            BankListBean  banklist = bs.getBankList();
+            for( BankBean bank : banklist.getBankList() )
+            {
+                tranStruct = mgr.findProviderByName( bank.getProtocol() );
+                // Out( "... bank #%s %s = \"%s\"", bank.getAddress(), BankBean.ATTR_PROTOCOL, bank.getProtocol() );
+                trans = tranStruct.provider.makeChannel( bank.getPhysical(), Integer.parseInt( bank.getAddress() ) );
+
+                trans.setProperties( bank.getComms().values() );
+            }
+        }
+        catch( UnsupportedKeyException ex )
+        {
+            LOG.log( Level.SEVERE, "Transport rejects property key \"{0}\"", ex.getMessage() );
+            throw ex;
+        }
+
+    }
+
+    /***
+     *  Run the transports and let the models be alive!
+     */
     public void doit()
     {
         LOG.entering( "EriCase", "doit" );
