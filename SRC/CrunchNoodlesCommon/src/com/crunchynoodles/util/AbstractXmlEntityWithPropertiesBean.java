@@ -7,8 +7,10 @@
 package com.crunchynoodles.util;
 
 import com.crunchynoodles.util.exceptions.DuplicateKeyException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -124,6 +126,20 @@ public abstract class AbstractXmlEntityWithPropertiesBean
     public Set<String>   keyPropertyListSet()
     {
         return m_map.keySet();
+    }
+
+    /***
+     *  Return all the property beans as a list.
+     *  List has references to the property beans, so please don't change unless you really need to.
+     * @return New list with references to existing properties.
+     */
+    public List< XmlPropertyBean >  values()
+    {
+        ArrayList< XmlPropertyBean >  prop_list = new ArrayList<>( getPropertyListSize() );
+
+        prop_list.addAll( this.m_map.values() );
+
+        return prop_list;
     }
 
     /***

@@ -72,6 +72,6 @@ public class NetworkBean
     // ----------------------------------------------------------------------------
 
     /***  Logging output spigot. */
-    private static final Logger     logger = Logger.getLogger( NetworkBean.class.getName() );
+    private transient static final Logger     logger = Logger.getLogger( NetworkBean.class.getName() );
 
 }

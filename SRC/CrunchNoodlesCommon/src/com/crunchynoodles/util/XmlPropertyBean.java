@@ -14,6 +14,7 @@ import java.util.Objects;
 /**
  *  XML Property in a property-list who's value is the PCDATA between start and end elements.
  *  Properties are not "bound" and so there are no change events when set.
+ *  The "type=" attribute can imply the value's format, e.g. hex-bytes.
  * For example:
  * <ol>
  *  {@code <propertyList> <property key="initbytes.1" type="hexbytes">8F</property> </propertyList> }
@@ -30,7 +31,7 @@ import java.util.Objects;
 public class XmlPropertyBean
             implements XmlEntityBean
 {
-    public final String     MAGIC_KEY_DELIM_CHARS = ":=[]{}";
+    public final String     MAGIC_KEY_DELIM_CHARS = ":;=[]{}" ;
 
     /***
      *  Construct new XmlProperty from parts.
@@ -55,7 +56,7 @@ public class XmlPropertyBean
         }
         if( keystr.contains( MAGIC_KEY_DELIM_CHARS ) )
         {
-            throw new IllegalArgumentException( "key CANNOT contain delimiter chars:" + MAGIC_KEY_DELIM_CHARS );
+            throw new IllegalArgumentException( "key CANNOT contain delimiter chars: " + MAGIC_KEY_DELIM_CHARS );
         }
 
         this.Key = keystr;
@@ -107,6 +108,20 @@ public class XmlPropertyBean
     }
 
     /***
+     *  Adopt an already-converted type-object.
+     *
+     * @param keystr key string (name)
+     * @param typestr Permitted type valueObj was converted from.
+     * @param valueObj already-converted value.
+     */
+    public XmlPropertyBean( String keystr, String typestr, Object valueObj )
+    {
+        this.Key = keystr;
+        this.Type = typestr;
+        this.Value = valueObj;
+    }
+
+    /***
      *  Copy constructor, a shallow copy.
      * @param other Thing to copy
      */
@@ -135,7 +150,7 @@ public class XmlPropertyBean
 
     @Override
     public List<String> getAttributeList() {
-        return Arrays.asList( ATTR_KEY, ATTR_TYPE, ATTR_VALUE );
+        return Arrays.asList( ATTR_KEY, ATTR_TYPE );
     }
 
     // ----------------------------------------------------------------------------
@@ -187,7 +202,6 @@ public class XmlPropertyBean
 
     public static final String ATTR_KEY        = "key";    // attribute
     public static final String ATTR_TYPE       = "type";     // attribute
-    public static final String ATTR_VALUE      = "value";       // attribute
 
     public String   getKey() { return Key; }
     // NO - public void     setKey(String k ) { Key = k; }
