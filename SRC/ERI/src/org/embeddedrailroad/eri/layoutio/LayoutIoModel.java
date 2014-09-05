@@ -30,6 +30,8 @@ import java.util.HashMap;
  *  long-term, non-volatile storage of values.
  *  That effort is for another day.....
  *
+ * <p> See http://www.onjava.com/pub/a/onjava/2004/07/07/genericmvc.html
+ *
  * @author brian
  */
 public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
@@ -104,17 +106,4 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
     public byte[]       getSensedBlob( TUnitAddr device, int subfunction )
             throws UnknownLayoutUnitException, NullPointerException, ArrayIndexOutOfBoundsException;
 
-    //--------------------------  DESIGNER  ---------------------------
-
-    /***
-     *  Return the name of this IO system, e.g. "C/MRI" (punctuation is OK).
-     * @return string of IO system.
-     */
-    public String   getIoSystemName();
-
-    /***
-     *  Return producer / manufacturer of this IO system, e.g. "JLC Enterprises" (spaces likely).
-     * @return string with likely spaces in it.
-     */
-    public String   getIoSystemManufacturer();
 }

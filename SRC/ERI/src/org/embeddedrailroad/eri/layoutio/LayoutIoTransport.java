@@ -4,7 +4,9 @@
  */
 package org.embeddedrailroad.eri.layoutio;
 
+import com.crunchynoodles.util.XmlPropertyBean;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -13,12 +15,12 @@ import java.util.Properties;
  */
 public interface LayoutIoTransport
 {
-    /*** @return same name as IO model. */
+    /*** @return same name as Layout IO Provider. */
     public String getName();
 
     /***
      *  Given channel setup properties, attempt to connect and use transport channel.
-     *  If successful, call needs to invoke {@code setPolling(true)} to start running.
+     *  If successful, caller needs to invoke {@code setPolling(true)} to start running.
      *
      * @return {@code true} if attachment successful, {@code false} otherwise.
      */
@@ -31,8 +33,11 @@ public interface LayoutIoTransport
      */
     public void detach();
 
-    /*** Control polling of units via this single transport channel. */
-    public void setPolling( boolean run_polling );
+    /***
+     *  Control polling of units via this single transport channel.
+     * @param runPolling true to start polling, false to stop.
+     */
+    public void setPolling( boolean runPolling );
 
     /*** @return {@code true} if polling is active, {@code false} otherwise. */
     public boolean isPolling();
@@ -40,7 +45,20 @@ public interface LayoutIoTransport
 
     public void setProperty( String prop_name, Object value );
 
+    /***
+     *  Set a bunch of properties, not atomic but in a batch.
+     *
+     * @param propList List of property (beans) to use.
+     */
+    public void setProperties( List< XmlPropertyBean >  propList );
+
     public Object getProperty( String prop_name );
 
-    public Properties   getAllProperties();
+    /***
+     *  Return all properties of transport and their values (with type-spec).
+     *  Some properties may be default values not set by application.
+     *
+     * @return  List of XML properties
+     */
+    public List< XmlPropertyBean >   getAllProperties();
 }

@@ -18,11 +18,38 @@ import org.osgi.annotation.versioning.Version;
  */
 public interface LayoutIoProvider
 {
+
+    //--------------------------  DESIGNER  ---------------------------
+
     /***
      *  Return the name of this provider that could include spaces and punctuation.
+     *  E.g. "C/MRI" (punctuation is OK).
      *  @return name of provider, same as IO model's name.
      */
     public String   getName();
+
+    /***
+     *  Return a version string for this bundle, where "build" is an optional keyword.
+     *  The "public version" is all chars before the first space.
+     *  Do not put double-quotes into this string.
+     *
+     * @return String, e.g. "1.0.0 build 34838"
+     */
+    public String   getVersionString();
+
+    /***
+     *  Return producer / manufacturer of this IO system, e.g. "JLC Enterprises" (spaces likely).
+     * @return string with likely spaces in it.
+     */
+    public String   getSystemManufacturer();
+
+    /***
+     *  Return a verbose and long string describing this protocol.
+     *  If first is "<html>" then string is HTML formatted.
+     *
+     * @return A long string, ala short paragraph.
+     */
+    public String   getLongDescription();
 
     /***
      *  Return the IoTransports index by their channel number.
