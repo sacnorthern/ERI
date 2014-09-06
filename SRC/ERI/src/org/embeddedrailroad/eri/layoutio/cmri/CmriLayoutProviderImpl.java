@@ -5,13 +5,15 @@
 package org.embeddedrailroad.eri.layoutio.cmri;
 
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.embeddedrailroad.eri.layoutio.LayoutIoProviderManager;
+
 import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
 import org.embeddedrailroad.eri.layoutio.LayoutIoTransport;
 
 /**
- *  Provides instances of
+ *  Provides instances of protocol transports; this object is effectively a singleton.
+ *
  * @author brian
  */
 public class CmriLayoutProviderImpl implements LayoutIoProvider
@@ -20,17 +22,33 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
     /* package only */ CmriLayoutProviderImpl()
     {
         m_io_model = new CmriLayoutModelImpl();
-        m_channels = new HashMap<Integer, LayoutIoTransport>();
+        m_channels = new HashMap<Integer, CmriSerialLayoutTransport>();
     }
 
     @Override
     public String   getName()
     {
-        return m_io_model.getIoSystemName();
+        return "C/MRI" ;
     }
 
+    @Override
+    public String   getVersionString()
+    {
+        return "0.0.1 build 1" ;
+    }
 
-    //-------------------------  TRANSPORTS  --------------------------
+    @Override
+    public String getSystemManufacturer() {
+        return "JLC Enterprises" ;
+    }
+
+    @Override
+    public String   getLongDescription()
+    {
+        return "The CMRI protocol by Dr. Bruce Chubb" ;
+    }
+
+    //-----------------------------  TRANSPORTS  ------------------------------
 
     @Override
     public HashMap<Integer, LayoutIoTransport> getTransportChannelList()
@@ -40,20 +58,28 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
     }
 
     @Override
-    public boolean openChannel( Integer channel )
+    public LayoutIoTransport makeChannel( String physical, Integer channel )
     {
-        //  If already open, then good.
-        if( m_channels.containsKey( channel ) )
+        LOG.log( Level.INFO, "CmriLayoutProviderImpl#makeChannel() as {0}", physical );
+
+        //  This is interesting way to manage sub-class creation without the
+        //  sub-class knowing it will be created:
+        //  http://stackoverflow.com/questions/3001490/creating-an-instance-of-a-subclass-extending-an-abstract-class-java
+
+        //  If don't already got that channel running, make it first.
+        CmriSerialLayoutTransport  transport = m_channels.get( channel );
+        if( transport == null )
         {
-            m_channels.get( channel ).setPolling( false );
-            return true;
+            transport = new CmriSerialLayoutTransport( this );
+
+            m_channels.put( channel, transport );
         }
 
-        return false;
+        return( transport );
     }
 
 
-    //--------------------  Addressing Conversion  --------------------
+    //------------------------  Addressing Conversion  ------------------------
 
     @Override
     public Object   convertUnitAddressString(String addr)
@@ -86,13 +112,13 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
         return null;
     }
 
-    //------------------------  INSTANCE VARS  ------------------------
+    //----------------------------  INSTANCE VARS  ----------------------------
 
     protected CmriLayoutModelImpl   m_io_model;
 
-    protected HashMap<Integer, LayoutIoTransport>   m_channels;
+    protected HashMap<Integer, CmriSerialLayoutTransport>   m_channels;
 
     /***  Logging output spigot. */
-    private static final Logger LOG = Logger.getLogger( CmriLayoutProviderImpl.class.getName() );
+    private transient static final Logger LOG = Logger.getLogger( CmriLayoutProviderImpl.class.getName() );
 
 }

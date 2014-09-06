@@ -23,6 +23,8 @@ import org.embeddedrailroad.eri.layoutio.UnknownLayoutUnitException;
  *  CMRI units are addressed with a single number, from 0 to 32.  One the wire, 65 is added
  *  to the address, e.g. unit #0 address is encoded as 'A', unit #1 address is 'B', etc.
  *
+ * <p> See http://www.onjava.com/pub/a/onjava/2004/07/07/genericmvc.html
+ *
  * @author brian
  * @param <T> Class-type for addressing unit.  CMRI uses an {@code Integer}.
  */
@@ -40,16 +42,6 @@ public class CmriLayoutModelImpl<T> implements LayoutIoModel<Integer>
     public Class   getUnitAddressType()
     {
         return Integer.class;
-    }
-
-    @Override
-    public String getIoSystemName() {
-        return "C/MRI";
-    }
-
-    @Override
-    public String getIoSystemManufacturer() {
-        return "JLC Enterprises";
     }
 
     //--------------------------  DATA SETTORS  --------------------------
