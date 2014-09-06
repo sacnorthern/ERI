@@ -19,6 +19,8 @@ import com.crunchynoodles.util.exceptions.UnsupportedKeyException;
 
 /**
  *  Abstract class with partial implementation of {@link LayoutIoTransport}.
+ *  Methods to control polling but no instance-var for it.  LIkely it is state information
+ *  of some deep-down polling state-machine engine object.
  * <p>
  *  See: http://tutorials.jenkov.com/java/abstract-classes.html
  *
@@ -28,12 +30,11 @@ public abstract class AbstractLayoutIoTransport implements LayoutIoTransport
 {
     private AbstractLayoutIoTransport()
     {
-        // who will actually the no-args constructor?
+        // who will actually use the no-args constructor?
     }
 
     protected AbstractLayoutIoTransport( LayoutIoProvider owner )
     {
-        m_is_polling = false;
         m_is_opened  = false;
         m_owner      = owner;
     }
@@ -41,7 +42,7 @@ public abstract class AbstractLayoutIoTransport implements LayoutIoTransport
     //------------------------  PROPERTY MANAGEMENT  --------------------------
 
     @Override
-    public Object getProperty( String prop_name )
+    public XmlPropertyBean getProperty( String prop_name )
     {
         return m_properties.get( prop_name );
     }
@@ -130,8 +131,6 @@ public abstract class AbstractLayoutIoTransport implements LayoutIoTransport
      *  @see https://www.obsidianscheduler.com/blog/java-concurrency-part-2-reentrant-locks/
      */
     transient protected final ReadWriteLock   m_lock = new ReentrantReadWriteLock();
-
-    transient protected boolean       m_is_polling;
 
     transient protected boolean       m_is_opened;
 
