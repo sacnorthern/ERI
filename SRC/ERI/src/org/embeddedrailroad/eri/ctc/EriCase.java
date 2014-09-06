@@ -23,6 +23,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
+import java.util.HashMap;
 
 import org.embeddedrailroad.eri.layoutio.LayoutIoProviderManager;
 import org.embeddedrailroad.eri.layoutio.LayoutIoActivator;
@@ -150,6 +151,8 @@ public class EriCase {
     layout=front_range_layout.xml
     startup=auto
 </pre>
+     * <br>
+     *  For INI4J help see: http://ini4j.sourceforge.net/tutorial/IniTutorial.java.html
      *
      * @param iniFilename INI file name, which must exist.
      *
@@ -375,6 +378,8 @@ public class EriCase {
                 trans = tranStruct.provider.makeChannel( bank.getPhysical(), Integer.parseInt( bank.getAddress() ) );
 
                 trans.setProperties( bank.getComms().values() );
+
+                trans.attach();
             }
         }
         catch( UnsupportedKeyException ex )
@@ -386,15 +391,55 @@ public class EriCase {
     }
 
     /***
+     *  At shutdown time, stop all the protocol-transports and detach/release their comms-channel.
+     */
+    public void destoryTransports()
+    {
+        final LayoutIoProviderManager mgr = LayoutIoProviderManager.getInstance();
+
+        Collection<LayoutIoProviderManager.ProviderTransportStruct>  transList = mgr.getProviderTransportList().values();
+        for( LayoutIoProviderManager.ProviderTransportStruct  tranStruct : transList )
+        {
+            Collection<LayoutIoTransport>  provList = tranStruct.provider.getTransportChannelList().values();
+            for( LayoutIoTransport trans : provList )
+            {
+                try
+                {
+                    LOG.log( Level.INFO, String.format( "Stopping %1$s #%2$d ...", trans.getName(), 1 ) );
+
+                    trans.setPolling( false );
+                    trans.detach();
+                }
+                catch( Exception ex )
+                {
+                    LOG.log( Level.WARNING, "transport shutdown aborted.", ex );
+                }
+            }
+        }
+    }
+
+    /***
      *  Run the transports and let the models be alive!
      */
     public void doit()
     {
         LOG.entering( "EriCase", "doit" );
+
         if( m_auto_startup )
         {
-            // TODO: Tell all providers to start running their transport IO banks.
+            final LayoutIoProviderManager mgr = LayoutIoProviderManager.getInstance();
+
+            Collection<LayoutIoProviderManager.ProviderTransportStruct>  transList = mgr.getProviderTransportList().values();
+            for( LayoutIoProviderManager.ProviderTransportStruct  tranStruct : transList )
+            {
+                Collection<LayoutIoTransport>  provList = tranStruct.provider.getTransportChannelList().values();
+                for( LayoutIoTransport trans : provList )
+                {
+                    trans.setPolling( true );
+                }
+            }
         }
+
         LOG.exiting( "EriCase", "doit" );
     }
 

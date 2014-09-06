@@ -12,6 +12,7 @@ import java.util.logging.Level;
 
 import com.crunchynoodles.util.PropertiesManager;
 import com.crunchynoodles.util.UserDirectories;
+import java.io.IOException;
 
 import org.embeddedrailroad.eri.ctc.EriCase;
 import org.embeddedrailroad.eri.layoutio.LayoutIoProviderManager;
@@ -142,6 +143,19 @@ public class EriApplication
 
         eri.doit();
 
+        // ------------------------------------------------------
+        //  The party is over.  Time for everyone to go home...
+        //
+
+        try {
+            System.out.print( "Hit return to shutdown: " );
+            System.in.read( new byte[] { 1 } );
+        }
+        catch( IOException ignored ) { }
+
+        eri.destoryTransports();
+
+        logger.log( Level.WARNING, "Application exits...");
     }
 
     // ----------------------------------------------------------------------------
