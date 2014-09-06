@@ -10,7 +10,7 @@
           <property key="timeout"    type="int">2300</property>
           <property key="port"       type="string">com1</property>   <!-- TCP / UDP is port# -->
           <property key="settings"   type="list">9600,8,e,1</property>
-          <property key="discoverRate" type="float">0.5</property>     <!-- try non-responding after rate/(known#+1) polls -->
+          <property key="discoverRate" type="float">0.334</property>     <!-- try non-responding after rate/(known#+1) polls -->
         </propertyList>
       </network>
 

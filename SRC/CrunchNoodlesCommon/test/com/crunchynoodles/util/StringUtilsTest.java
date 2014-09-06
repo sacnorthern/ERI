@@ -7,6 +7,7 @@
 package com.crunchynoodles.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -40,7 +41,7 @@ public class StringUtilsTest {
         System.out.println( "tokenizeQuotedStrings" );
 
         String withQuotes = "   First  \"Second has   Quotes\"  last";
-        List<String> expResult = new ArrayList<String>() { "" };
+        List<String> expResult = Arrays.asList( "First", "\"Second has   Quotes\"", "last" );
         List<String> result = StringUtils.tokenizeQuotedStrings( withQuotes );
         if( result.size() != 3 )
             fail( "StringUtils.tokenizeQuotedStrings() --> List.size != 3" );

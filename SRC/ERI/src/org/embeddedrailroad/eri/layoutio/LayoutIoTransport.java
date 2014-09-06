@@ -52,7 +52,12 @@ public interface LayoutIoTransport
      */
     public void setProperties( List< XmlPropertyBean >  propList );
 
-    public Object getProperty( String prop_name );
+    /***
+     *  Return a property as an XML bean, or null if property is unset.
+     * @param prop_name String name of property, which must match letter-case.
+     * @return bean if found, or {@code null} if no match.
+     */
+    public XmlPropertyBean getProperty( String prop_name );
 
     /***
      *  Return all properties of transport and their values (with type-spec).
