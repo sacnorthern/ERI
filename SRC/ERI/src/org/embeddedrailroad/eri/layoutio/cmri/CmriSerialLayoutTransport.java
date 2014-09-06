@@ -10,15 +10,24 @@ import java.util.logging.Logger;
 
 import gnu.io.*;        // use RXTX, version 2.2+
 import java.util.*;
-import java.io.*;
+import java.util.logging.Level;
 
 import com.crunchynoodles.util.StringUtils;
-import java.util.logging.Level;
+import com.crunchynoodles.util.XmlPropertyBean;
 import org.embeddedrailroad.eri.layoutio.AbstractLayoutIoTransport;
 import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
-import org.embeddedrailroad.eri.layoutio.LayoutIoTransport;
 
-/**
+
+/***
+ *
+ * <p>
+ *  Java RXTX library, see: http://users.frii.com/jarvi/rxtx/download.html
+ * <p>
+ *   To install the libraries (instructions from <a href="http://www.jcontrol.org/download/readme_rxtx_en.html">JControl</a>):
+ * <ol>
+ *     <li> Copy rxtxSerial.dll to %JAVA_HOME%\bin, (%JAVA_HOME% is the folder where JRE is installed on your system; e.g. c:\Program Files\Java\j2re1.4.1_01)
+ *     <li> Copy RXTXcomm.jar to %JAVA_HOME%\lib\ext
+ * </ol>
  *
  * @author brian
  */
@@ -38,20 +47,33 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
     @Override
     public void setPolling( boolean runPolling )
     {
-        this.m_is_polling = runPolling;
+        if( this.m_poller != null )
+            this.m_poller.setPolling( runPolling );
     }
 
     @Override
     public boolean isPolling()
     {
-        return this.m_is_polling;
+        if( this.m_poller != null )
+            return this.m_poller.isPolling();
+
+        return false;
     }
 
+    /***
+     *
+     * @return
+     * @throws java.lang.ClassCastException if wrong type in property bean.
+     * @throws java.lang.UnsatisfiedLinkError if OS-specifc "rxtxSerial.dll" not found.
+     */
     @Override
     public boolean attach()
     {
-        String  wantedPortName = (String) this.getProperty( PROP_PORT );
-        String  settings_all = (String) this.getProperty( PROP_SETTINGS );
+        XmlPropertyBean  wantedPortBean = this.getProperty( PROP_PORT );
+        String  wantedPortName = (String) wantedPortBean.getValue();
+
+        XmlPropertyBean  settings_all_bean = this.getProperty( PROP_SETTINGS );
+        String  settings_all = (String) settings_all_bean.getValue();
 
         if( StringUtils.emptyOrNull( wantedPortName ) || StringUtils.emptyOrNull( settings_all ) )
         {
@@ -59,6 +81,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         }
 
         //  Hunt for matching com-port.
+        //  see http://stackoverflow.com/questions/6924516/open-and-close-serial-ports
         //  see http://www.codeproject.com/Questions/450480/How-communicate-with-serial-port-in-Java
         Enumeration  portIdentifiers  = CommPortIdentifier.getPortIdentifiers();
 
@@ -95,7 +118,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
                                     3000        // Wait max. 3 sec. to acquire port
                                     );
         } catch(PortInUseException ex) {
-            LOG.log( Level.WARNING, String.format( "Serial port \"{0}\" already in use.", wantedPortName ), ex );
+            LOG.log( Level.WARNING, String.format( "Serial port \"%1$s\" already in use.", wantedPortName ), ex );
             return false;
         }
         //
@@ -110,47 +133,56 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         //
         try {
             port.setSerialPortParams(
-                            Integer.parseInt(settings[0]),   // first is baud rate.
-                            SerialPort.DATABITS_8,
+                            Integer.parseInt(settings[0]),  // first is baud rate.
+                            SerialPort.DATABITS_8,          // always 8 bit.
                             SerialPort.STOPBITS_1,
-                            SerialPort.PARITY_NONE );
+                            SerialPort.PARITY_NONE );       // always NO parity.
         }
         catch( NumberFormatException | UnsupportedCommOperationException ex )
         {
-            LOG.log( Level.WARNING, String.format( "Serial port \"{0}\" can't be set.", wantedPortName ), ex );
+            LOG.log( Level.WARNING, String.format( "Serial port \"%1$s\" can't be set.", wantedPortName ), ex );
             port.close();
             return false;
         }
 
+        //  Port now open. :)  Only reason to keep it around is to close on shutdown.
         m_port = port;
+
+        this.m_poller = new CmriPollMachine( m_port );
+
+        XmlPropertyBean  rateBean = this.getProperty( PROP_DISCOVERY_RATE );
+        if( rateBean != null )
+        {
+            try
+            {
+                float  rate = (float) rateBean.getValue();
+
+                this.m_poller.setRecoveryRate( rate );
+            }
+            catch( Exception ex )
+            {
+                LOG.log( Level.WARNING, "Unable to set discovery rate." );
+            }
+        }
 
         return true;
     }
 
     @Override
-    public void detach()
+    public synchronized void detach()
     {
         setPolling( false );
 
-        try
+        if( m_port != null )
         {
-            m_lock.writeLock().wait();
-            if( m_port != null )
+            if( m_poller != null )
             {
-                m_port.close();
-                m_port = null;
+                m_poller.shutdown();
+                m_poller = null;
             }
-            m_lock.writeLock().unlock();
-        }
-        catch( InterruptedException ex )
-        {
-            // while waiting control-C hit, so lock never obtained.
-            //  Rrety the operation unsafely, oh well.
-            if( m_port != null )
-            {
-                m_port.close();
-                m_port = null;
-            }
+
+            m_port.close();
+            m_port = null;
         }
 
     }
@@ -173,6 +205,8 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
     //---------------------------  INSTANCE VARS  -----------------------------
 
     transient protected SerialPort  m_port;
+
+    transient protected CmriPollMachine  m_poller;
 
     /***  Logging output spigot. */
     transient private static final Logger LOG = Logger.getLogger( CmriLayoutModelImpl.class.getName() );
