@@ -4,6 +4,7 @@
  */
 package org.embeddedrailroad.eri.layoutio;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -19,7 +20,7 @@ import java.util.HashMap;
  *
  *  <p> Units can also have structured data, the are referred to as "blobs" here,
  *  since the model itself imposes no meaning and structure upon them.
- *  Each unit's blob has a unique index (might not be consectutive),
+ *  Each unit's blob has a unique index (might not be consecutive),
  *  and writing a new blob to an existing index changes the blob's value atomically.
  *  The previous blob's value is gone.
  *  An example of a blob is the 64-bit RFID reader response.
@@ -42,16 +43,53 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
      */
     public Class   getUnitAddressType();
 
+    //-------------------  UNIT INITIALIZATION AND SETUP  ---------------------
+
+    /***
+     *  Store the initialization messages for some unit in the bank.
+     *  If {@link mesgs} is null, then the transport revive logic cannot determine
+     *  if a unit is present or not.
+     *
+     * @param unit Address of unit.
+     * @param mesgs array of strings, or null if nothing to send.
+     */
+    public void    setUnitInitializationStrings( TUnitAddr unit, ArrayList<byte[]> mesgs );
+
+    /***
+     *  Retrieve the initialization strings for some unit in the bank.
+     *  For speed, the {@link ArrayList} is a new reference to same bytes as set.
+     *
+     * @param unit Address of unit.
+     * @return array of messages to send, or null if nothing to send.
+     */
+    public ArrayList<byte[]>  getUnitInitializationStrings( TUnitAddr unit );
+
+    /***
+     *  Store message to send to unit for querying.
+     * @param unit Address of unit.
+     * @param query Query message, cannot be null or zero-length.
+     */
+    public void     setUnitQueryMessage( TUnitAddr unit, byte[] query );
+
+    /***
+     *  Retrieve the query message for a unit, which is same array as in set.
+     *  Please do not modify the returned byte array.
+     *
+     * @param unit Address of unit.
+     * @return array of bytes
+     */
+    public byte[]   getUnitQueryMessage( TUnitAddr unit );
+
     //------------------  STORING SENSED DATA FROM DEVICE  --------------------
 
     /***
      *  Received an update of all input bits from a device.
-     *  If {@code new_bits} is null, then it is removed.
+     *  If {@code newBits} is null, then it is removed.
      *
      * @param device address of device that gave data.
-     * @param new_bits array of them bits.
+     * @param newBits array of them bits.
      */
-    public void     setSensedBinaryData( TUnitAddr device, boolean[] new_bits );
+    public void     setSensedBinaryData( TUnitAddr device, boolean[] newBits );
 
     /***
      *  Received an updated of some input bits from a device.
@@ -65,7 +103,7 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
     /***
      *  A complex functional-unit on the device reported back a bunch of bytes.
      *  This could be an RFID reader.
-     *  If {@code blob} is null, then the subfunction is removed.
+     *  If {@code blob} is null, then the sub-function is removed.
      *
      * @param device address of device that gave data
      * @param subfunction functional unit on the device
@@ -89,11 +127,11 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
      *  Return the value of just one sensor.
      *
      * @param device address of device
-     * @param bit_number the input sense to retrieve.
-     * @return {@code true} if one, else {@code false} if off.
-     * @exception ArrayIndexOutOfBoundsException if {@code bit_number} out-of-bounds.
+     * @param bitNumber the input sense to retrieve.
+     * @return {@code true} if on, else {@code false} if off.
+     * @exception ArrayIndexOutOfBoundsException if {@code bitNumber} out-of-bounds.
      */
-    public boolean      getSensedDataOne( TUnitAddr device, int bit_number )
+    public boolean      getSensedDataOne( TUnitAddr device, int bitNumber )
             throws UnknownLayoutUnitException, NullPointerException, ArrayIndexOutOfBoundsException;
 
     /***
