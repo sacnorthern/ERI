@@ -15,11 +15,13 @@ import java.util.logging.Level;
 import com.crunchynoodles.util.StringUtils;
 import com.crunchynoodles.util.XmlPropertyBean;
 import org.embeddedrailroad.eri.layoutio.AbstractLayoutIoTransport;
+import org.embeddedrailroad.eri.layoutio.LayoutIoController;
 import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
 
 
 /***
- *
+ *   Create connection to an IO port and make the {@link LayoutIoController} object with our
+ *   own C/MRI model (database).
  * <p>
  *  Java RXTX library, see: http://users.frii.com/jarvi/rxtx/download.html
  * <p>
@@ -37,6 +39,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
     /* package */ CmriSerialLayoutTransport( LayoutIoProvider owner )
     {
         super(owner);
+        m_model = new CmriLayoutModelImpl();
     }
 
     @Override
@@ -61,13 +64,15 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
     }
 
     /***
+     *  Open up the port in PROP_PORT using PROP_SETTINGS values.
      *
-     * @return
+     * @return true on success, false when failed.
+     *
      * @throws java.lang.ClassCastException if wrong type in property bean.
-     * @throws java.lang.UnsatisfiedLinkError if OS-specifc "rxtxSerial.dll" not found.
+     * @throws java.lang.UnsatisfiedLinkError if OS-specific "rxtxSerial.dll" or "rxtxSerial.so" not found.
      */
     @Override
-    public boolean attach()
+    public synchronized boolean attach()
     {
         XmlPropertyBean  wantedPortBean = this.getProperty( PROP_PORT );
         String  wantedPortName = (String) wantedPortBean.getValue();
@@ -83,6 +88,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         //  Hunt for matching com-port.
         //  see http://stackoverflow.com/questions/6924516/open-and-close-serial-ports
         //  see http://www.codeproject.com/Questions/450480/How-communicate-with-serial-port-in-Java
+
         Enumeration  portIdentifiers  = CommPortIdentifier.getPortIdentifiers();
 
         //
@@ -114,16 +120,16 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         SerialPort  port = null;
         try {
             port = (SerialPort) portId.open(
-                                    getName(),  // Name of the application asking for the port
-                                    3000        // Wait max. 3 sec. to acquire port
+                                    getName(),  // Use name of the application asking for the port.
+                                    3000        // Wait max. 3 sec. to acquire port.
                                     );
         } catch(PortInUseException ex) {
             LOG.log( Level.WARNING, String.format( "Serial port \"%1$s\" already in use.", wantedPortName ), ex );
             return false;
         }
         //
-        // Now we are granted exclusive access to the particular serial
-        // port. We can configure it and obtain input and output streams.
+        // Now we are granted exclusive access to the particular serial port.
+        // We can configure it and obtain input and output streams.
         //
         final String[]  settings = settings_all.split( "[,;]" );
 
@@ -148,7 +154,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         //  Port now open. :)  Only reason to keep it around is to close on shutdown.
         m_port = port;
 
-        this.m_poller = new CmriPollMachine( m_port );
+        this.m_poller = new CmriPollMachine( m_port, m_model );
 
         XmlPropertyBean  rateBean = this.getProperty( PROP_DISCOVERY_RATE );
         if( rateBean != null )
@@ -181,19 +187,24 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
                 m_poller = null;
             }
 
+            m_port.notifyOnDataAvailable(false);
+            m_port.removeEventListener();
+
             m_port.close();
             m_port = null;
         }
 
     }
 
-    //---------------------------  INSTANCE VARS  -----------------------------
+    //------------------------  NON-PUBLIC METHODS  ---------------------------
 
     @Override
     protected String[] _getKnownPropertyKeys()
     {
         return m_key_list;
     }
+
+    //---------------------------  INSTANCE VARS  -----------------------------
 
     public final static String  PROP_TIMEOUT = "timeout";
     public final static String  PROP_PORT    = "port";
@@ -207,6 +218,9 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
     transient protected SerialPort  m_port;
 
     transient protected CmriPollMachine  m_poller;
+
+    protected final CmriLayoutModelImpl   m_model;
+
 
     /***  Logging output spigot. */
     transient private static final Logger LOG = Logger.getLogger( CmriLayoutModelImpl.class.getName() );

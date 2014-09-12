@@ -6,39 +6,57 @@
 
 package org.embeddedrailroad.eri.layoutio.cmri;
 
-import com.google.common.collect.Queues;
-import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.common.collect.Queues;
+import gnu.io.SerialPort;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+
+
 /***
  *   Provides a state-machine to poll units on a CMRI bank via some comms-channel.
+ *   Model provides initialize strings for units, and a place to dump input-data updates.
  *   Instance has a little worker-thread running in a local-class-instance.
+ * <p>
+ *   Almost all the public methods are {@code synchronized}.  Happily, these
+ *   methods can call other {@code synchronized} methods of the same class.
+ *   That said, please don't use instances for locking in a client class.
+ *   The {@code synchronized} methods already to that!
  *
  * @author brian
  */
 public class CmriPollMachine
             implements UncaughtExceptionHandler
 {
-    public CmriPollMachine( SerialPort serial )
+    public CmriPollMachine( SerialPort serial, CmriLayoutModelImpl model )
     {
+        this.m_model = model;
         this.m_recovery_rate = 0.5f;
         this.m_port = serial;
+
+        // ``"Synchronized" [collection] classes can be useful when you need to prevent all access to
+        //   a collection via a single lock, at the expense of poorer scalability.''
         this.m_active_queue = Queues.synchronizedQueue( new java.util.LinkedList<Integer>() );
         this.m_revive_queue = Queues.synchronizedQueue( new java.util.LinkedList<Integer>() );
     }
 
     //----------------------------  BEAN THINGS  ------------------------------
 
-    public boolean isPolling()
-    {
-        return this.m_polling;
-    }
-
+    /***
+     *  Maximum time, in milliseconds, to wait for first char in response from a unit after
+     *  a query message has been sent out.
+     *  If the first char isn't received in said microseconds, the unit is declared "non-responding."
+     *
+     * @param millisecs max wait time after transmitting query.
+     */
     public void setTimeout( int millisecs )
     {
         m_response_wait = millisecs;
@@ -49,12 +67,19 @@ public class CmriPollMachine
         return this.m_response_wait;
     }
 
-    public void setRecoveryRate( float rr )
+    /***
+     *  Set recovery rate to re-try units that are not responding.
+     *  After every poll cycle, the recovery rate is added to an accumulator.
+     *  Once 1.0 is reached ( or exceeded ), communication with a unit is attempted.
+     *
+     * @param rr value more than 0.0 but not above 1.0.
+     */
+    public void setRecoveryRate( double rr )
     {
-        if( rr <= 0.0f || rr > 1.0f )
+        if( rr <= 0.0 || rr > 1.0 )
             throw new IllegalArgumentException( "recovery rate must be (0.0 .. 1.0]" );
 
-        this.m_recovery_rate = rr;
+        this.m_recovery_rate = (float) rr;
     }
 
     public float getRecoveryRate()
@@ -67,7 +92,7 @@ public class CmriPollMachine
      *  If currently polling, then unit is demoted to re-initialization.
      * @param unitAddr
      */
-    public void addUnitToPollingList( int unitAddr )
+    public synchronized void addUnitToPollingList( int unitAddr )
     {
         if( m_active_queue.contains( unitAddr ) )
         {
@@ -83,7 +108,7 @@ public class CmriPollMachine
      *  Stop talking with some unit in the bank.
      * @param unitAddr which to remove
      */
-    public void removeUnitFromPollingList( int unitAddr )
+    public synchronized void removeUnitFromPollingList( int unitAddr )
     {
         m_active_queue.remove( unitAddr );
         m_revive_queue.remove( unitAddr );
@@ -96,7 +121,7 @@ public class CmriPollMachine
      * @param includeNonResponding include those not responding
      * @return Set of unit addresses.
      */
-    public Set<Integer>  getKnownUnits( boolean includeNonResponding )
+    public synchronized Set<Integer>  getKnownUnits( boolean includeNonResponding )
     {
         HashSet<Integer>  known = new HashSet<Integer>();
 
@@ -112,6 +137,11 @@ public class CmriPollMachine
 
     //------------------------  WORKER THREAD SUPPORT  ------------------------
 
+    public boolean isPolling()
+    {
+        return this.m_polling;
+    }
+
     /***
      *  Start or stop polling, on first start creates the worker thread.
      *  Creation is automatic; however, for worker-thread exit-join, the client must call {@link #shutdown()}
@@ -119,8 +149,9 @@ public class CmriPollMachine
      *
      * @param goPoll true to start, false to stop.
      */
-    public void setPolling( boolean goPoll )
+    public synchronized void setPolling( boolean goPoll )
     {
+
         if( goPoll != m_polling )
         {
             //  On change, either start or stop the worker thread that does the polling.
@@ -155,12 +186,13 @@ public class CmriPollMachine
     }
 
     /***
+     *  Stop polling and kill the polling thread, which shuts down this transport.
      *  Stop any worker thread from polling and then do {@link Thread.join()} to reclaim it.
      *  Will wait just a few seconds for worker-thread to exit itself before returning to caller.
      */
     public synchronized void shutdown()
     {
-        //  Stop it, just in case...
+        //  Stop polling, just in case...
         if( m_polling == true )
         {
             setPolling( false );
@@ -170,7 +202,15 @@ public class CmriPollMachine
         {
             try {
                 m_worker.stopSelf();
-                m_thread.join( 5000 );      // 5000 = 5 seconds.
+                m_thread.join( 3500 );      // 3500 = 3.5 seconds.
+
+                if( m_thread.isAlive() )
+                {
+                    //  Hmmm... it didn't stop for use gently, so send INTR and wait again.
+                    //  See http://docs.oracle.com/javase/tutorial/essential/concurrency/simple.html
+                    m_thread.interrupt();
+                    m_thread.join( 3000 );
+                }
             }
             catch( InterruptedException ex ) {
                 m_thread.interrupt();
@@ -179,6 +219,7 @@ public class CmriPollMachine
             m_worker = null;
             m_thread = null;
         }
+
     }
 
     /***
@@ -202,6 +243,11 @@ public class CmriPollMachine
 
     //---------------------  POLLING MACHINE (INTERNAL)  ----------------------
 
+    /***
+     *  Class-type that runs state-machine to poll units in a bank.
+     *
+     *  See http://docs.oracle.com/javase/tutorial/essential/concurrency/runthread.html
+     */
     class CmriSerialPollingWorker
             implements SerialPortEventListener , Runnable
     {
@@ -224,8 +270,24 @@ public class CmriPollMachine
         {
             LOG.log( Level.INFO, "Thread #{0} starting...", Long.toString( Thread.currentThread().getId() ) );
 
-            // See http://docs.oracle.com/javase/tutorial/essential/concurrency/runthread.html
+            //
+            // Open the input Reader and output stream. The choice of a
+            // Reader and Stream are arbitrary and need to be adapted to
+            // the actual application. Typically one would use Streams in
+            // both directions, since they allow for binary data transfer,
+            // not only character data transfer.
+            //
+            try
+            {
+                m_instr = m_port.getInputStream();
+                m_outstr = m_port.getOutputStream();
+            }
+            catch( IOException ex )
+            {
+                throw new RuntimeException( "Cannot get inputStream or outputStream on COM-port.", ex );
+            }
 
+            //  With accumulation, once level reaches 1.0, then try one revive.
             float   recovering = 0.0f;
 
             try
@@ -305,6 +367,28 @@ public class CmriPollMachine
          */
         protected boolean recoverUnit( int addr )
         {
+            ArrayList<byte[]>  inits = m_model.getUnitInitializationStrings( addr );
+
+            if( inits == null )
+            {
+                LOG.log( Level.WARNING, "Want to revive unit {0} but have no init-message", addr );
+                return false;
+            }
+
+            try
+            {
+                drainInPort();
+
+                for( byte[] m : inits )
+                {
+                    sendMessage( addr, m );
+                }
+            }
+            catch( IOException ex )
+            {
+                throw new RuntimeException( "COM-port fail during recoverUnit().", ex );
+            }
+
             return false;
         }
 
@@ -318,6 +402,28 @@ public class CmriPollMachine
         protected boolean queryResponseUnit( int addr )
         {
             return true;
+        }
+
+        //-------------------------  MESSAGES METHODS  ------------------------
+
+        protected void sendMessage( int addr, byte[] mesg )
+                throws IOException
+        {
+            m_outstr.write( CMRI_HEADER_BYTES );
+
+            m_outstr.write( CMRI_TRAILER_BYTES );
+        }
+
+        protected void receiveMessage( )
+        {
+
+        }
+
+        protected void drainInPort()
+                throws IOException
+        {
+            while( m_instr.available() > 0 )
+                m_instr.read();
         }
 
         //--------------------------  HELPER METHODS  -------------------------
@@ -360,6 +466,16 @@ public class CmriPollMachine
 
         protected volatile boolean      m_do_thread_exit = false;
 
+        protected InputStream           m_instr;
+
+        protected OutputStream          m_outstr;
+
+        public final byte   CMRI_ESCAPE      = (byte) 0x1f;
+        public final byte   CMRI_ADDR_OFFSET = (byte) 0x40;
+
+        public final byte[] CMRI_HEADER_BYTES = new byte[] { (byte) 0xff, (byte) 0xff };
+        public final byte[] CMRI_TRAILER_BYTES = new byte[] { (byte) 0xff };
+
     }   // end class CmriSerialPollingWorker ..
 
     //----------------------  CONFIGURATION CONSTANTS  ------------------------
@@ -373,25 +489,27 @@ public class CmriPollMachine
 
     //---------------------------  INSTANCE VARS  -----------------------------
 
-    transient boolean           m_polling;
+    protected final CmriLayoutModelImpl   m_model;
 
-    /***  Fractional addition until reaching 1.0, at then a revival will occur. */
-    transient float             m_recovery_rate;
+    private boolean             m_polling;
+
+    /***  Fractional addition until reaching 1.0, then a revival will occur. */
+    protected float             m_recovery_rate;
 
     /*** Time to wait for a first char of response before giving up, in milliseconds. */
-    transient int               m_response_wait;
+    protected int               m_response_wait;
 
     /*** Synchronized queue of units actively responding. */
-    transient Queue<Integer>    m_active_queue;
+    protected Queue<Integer>    m_active_queue;
 
     /*** Synchronized queue of known units that are NOT responding. */
-    transient Queue<Integer>    m_revive_queue;
+    protected Queue<Integer>    m_revive_queue;
 
-    transient protected SerialPort  m_port;
+    transient protected SerialPort      m_port;
 
-    transient CmriSerialPollingWorker   m_worker;
+    transient protected CmriSerialPollingWorker   m_worker;
 
-    transient protected Thread      m_thread;
+    transient protected Thread          m_thread;
 
     /***  Logging output spigot. */
     transient private static final Logger LOG = Logger.getLogger( CmriPollMachine.class.getName() );
