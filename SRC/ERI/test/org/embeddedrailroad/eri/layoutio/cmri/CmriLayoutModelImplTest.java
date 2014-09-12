@@ -48,31 +48,6 @@ public class CmriLayoutModelImplTest {
             }
 	}
 
-
-    /**
-     * Test of getIoSystemName method, of class CmriLayoutModelImpl.
-     */
-    @Test
-    public void testGetIoSystemName() {
-        System.out.println( "getIoSystemName" );
-        CmriLayoutModelImpl instance = new CmriLayoutModelImpl();
-        String expResult = "C/MRI";
-        String result = instance.getIoSystemName();
-        assertEquals( expResult, result );
-    }
-
-    /**
-     * Test of getIoSystemManufacturer method, of class CmriLayoutModelImpl.
-     */
-    @Test
-    public void testGetIoSystemManufacturer() {
-        System.out.println( "getIoSystemManufacturer" );
-        CmriLayoutModelImpl instance = new CmriLayoutModelImpl();
-        String expResult = "JLC Enterprises";
-        String result = instance.getIoSystemManufacturer();
-        assertEquals( expResult, result );
-    }
-
     /**
      * Test of setSensedBinaryData method, of class CmriLayoutModelImpl.
      */
