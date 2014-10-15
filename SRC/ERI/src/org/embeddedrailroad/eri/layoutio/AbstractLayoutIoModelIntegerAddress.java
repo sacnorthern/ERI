@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.embeddedrailroad.eri.layoutio.cmri;
+package org.embeddedrailroad.eri.layoutio;
 
 // import java.lang.Integer;
 import java.util.ArrayList;
@@ -14,8 +14,6 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
-import org.embeddedrailroad.eri.layoutio.LayoutIoModel;
-import org.embeddedrailroad.eri.layoutio.UnknownLayoutUnitException;
 
 
 /***
@@ -25,9 +23,9 @@ import org.embeddedrailroad.eri.layoutio.UnknownLayoutUnitException;
  *
  * @author brian
  */
-public class AbstractLayoutIoControllerInteger implements LayoutIoModel<Integer>
+public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Integer>
 {
-    public AbstractLayoutIoControllerInteger()
+    public AbstractLayoutIoModelIntegerAddress()
     {
         m_inputs = new HashMap<>();
         m_blobs = new HashMap<>();
@@ -324,6 +322,6 @@ public class AbstractLayoutIoControllerInteger implements LayoutIoModel<Integer>
     transient private HashMap< Integer, HashMap< Integer, byte[] > >  m_blobs;
 
     /***  Logging output spigot. */
-    transient private static final Logger LOG = Logger.getLogger( AbstractLayoutIoControllerInteger.class.getName() );
+    transient private static final Logger LOG = Logger.getLogger( AbstractLayoutIoModelIntegerAddress.class.getName() );
 
 }

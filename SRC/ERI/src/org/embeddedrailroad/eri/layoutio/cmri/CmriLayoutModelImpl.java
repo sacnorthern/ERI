@@ -5,16 +5,8 @@
 package org.embeddedrailroad.eri.layoutio.cmri;
 
 // import java.lang.Integer;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
-import org.embeddedrailroad.eri.layoutio.LayoutIoModel;
-import org.embeddedrailroad.eri.layoutio.UnknownLayoutUnitException;
+import org.embeddedrailroad.eri.layoutio.AbstractLayoutIoModelIntegerAddress;
 
 
 /***
@@ -27,7 +19,7 @@ import org.embeddedrailroad.eri.layoutio.UnknownLayoutUnitException;
  *
  * @author brian
  */
-public class CmriLayoutModelImpl extends AbstractLayoutIoControllerInteger
+public class CmriLayoutModelImpl extends AbstractLayoutIoModelIntegerAddress
 {
     public CmriLayoutModelImpl()
     {
