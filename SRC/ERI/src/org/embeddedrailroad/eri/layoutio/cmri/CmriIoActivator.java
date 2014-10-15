@@ -38,8 +38,8 @@ public class CmriIoActivator implements LayoutIoActivator
     @Override
     public void start( BundleContext context )
     {
-        LOG.log( Level.INFO, "in CmriIoActivator#start(BC)" );
-        LOG.log( Level.INFO, ".. our class loader is {0}", this.getClass().getClassLoader().getClass().getName() );
+        LOG.log( Level.INFO,   "in CmriIoActivator#start(BC)" );
+        LOG.log( Level.CONFIG, ".. our class loader is {0}", this.getClass().getClassLoader().getClass().getName() );
 
         m_bc = context;
 
