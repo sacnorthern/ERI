@@ -70,6 +70,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
      *
      * @throws java.lang.ClassCastException if wrong type in property bean.
      * @throws java.lang.UnsatisfiedLinkError if OS-specific "rxtxSerial.dll" or "rxtxSerial.so" not found.
+     * @throws IllegalArgumentException if discoveryRate less-than or equal to 0, or above 1.0
      */
     @Override
     public synchronized boolean attach()
@@ -132,14 +133,16 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         // We can configure it and obtain input and output streams.
         //
         final String[]  settings = settings_all.split( "[,;]" );
+        int     baud_rate = 1000;
 
         //
         // Set all the params.
         // This may need to go in a try/catch block which throws UnsupportedCommOperationException
         //
         try {
+            baud_rate = Integer.parseInt( settings[0] );
             port.setSerialPortParams(
-                            Integer.parseInt(settings[0]),  // first is baud rate.
+                            baud_rate,                      // first is baud rate.
                             SerialPort.DATABITS_8,          // always 8 bit.
                             SerialPort.STOPBITS_1,
                             SerialPort.PARITY_NONE );       // always NO parity.
@@ -154,21 +157,23 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         //  Port now open. :)  Only reason to keep it around is to close on shutdown.
         m_port = port;
 
-        this.m_poller = new CmriPollMachine( m_port, m_model );
+        this.m_poller = new CmriPollMachine( m_port, baud_rate, m_model );
 
         XmlPropertyBean  rateBean = this.getProperty( PROP_DISCOVERY_RATE );
+        float   rate = DEFAULT_DISCOVERY_RATE;
+
         if( rateBean != null )
         {
             try
             {
-                float  rate = (float) rateBean.getValue();
-
-                this.m_poller.setRecoveryRate( rate );
+                rate = (float) rateBean.getValue();
             }
             catch( Exception ex )
             {
                 LOG.log( Level.WARNING, "Unable to set discovery rate." );
             }
+
+            this.m_poller.setRecoveryRate( rate );
         }
 
         return true;
@@ -206,10 +211,13 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
 
     //---------------------------  INSTANCE VARS  -----------------------------
 
-    public final static String  PROP_TIMEOUT = "timeout";
-    public final static String  PROP_PORT    = "port";
-    public final static String  PROP_SETTINGS = "settings";
-    public final static String  PROP_DISCOVERY_RATE = "discoverRate";
+    /*** How fast new units are brought on-line, per poll cycle.  E.g. 0.5 means every two cycles. */
+    public final static float   DEFAULT_DISCOVERY_RATE = 0.5f;
+
+    public final static String  PROP_TIMEOUT = "timeout";           // in milliseconds
+    public final static String  PROP_PORT    = "port";              // string name
+    public final static String  PROP_SETTINGS = "settings";         // 9600,8,n,1
+    public final static String  PROP_DISCOVERY_RATE = "discoverRate";   // float, per poll cycles.
 
     protected final String[]  m_key_list = new String[] { PROP_TIMEOUT, PROP_PORT, PROP_SETTINGS, PROP_DISCOVERY_RATE };
 
