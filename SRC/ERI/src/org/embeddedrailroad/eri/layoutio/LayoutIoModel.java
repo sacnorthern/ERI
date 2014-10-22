@@ -34,6 +34,7 @@ import java.util.HashMap;
  * <p> See http://www.onjava.com/pub/a/onjava/2004/07/07/genericmvc.html
  *
  * @author brian
+ * @param <TUnitAddr> Node address type, e.g.{@link Integer} or {@link java.net.InetAddress}.
  */
 public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
 

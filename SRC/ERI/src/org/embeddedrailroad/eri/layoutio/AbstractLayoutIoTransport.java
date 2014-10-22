@@ -19,8 +19,8 @@ import com.crunchynoodles.util.exceptions.UnsupportedKeyException;
 
 /**
  *  Abstract class with partial implementation of {@link LayoutIoTransport}.
- *  Methods to control polling but no instance-var for it.  LIkely it is state information
- *  of some deep-down polling state-machine engine object.
+ *  Methods to control polling but no instance-var for it.
+ *  Likely it is state information of some deep-down polling state-machine engine object.
  * <p>
  *  See: http://tutorials.jenkov.com/java/abstract-classes.html
  *
