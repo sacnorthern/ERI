@@ -110,6 +110,9 @@ public class CmriPollMachine
     /***
      *  Put some unit on the revival work list.
      *  If currently polling, then unit is demoted to re-initialization.
+     *  E.g. adding the same unit-address twice, will first put it on the poll list,
+     *  and then move to the "revive list" on the second call here.
+     *
      * @param unitAddr
      */
     public synchronized void addUnitToPollingList( int unitAddr )
@@ -126,6 +129,8 @@ public class CmriPollMachine
 
     /***
      *  Stop talking with some unit in the bank.
+     *  Removes unit-address from both the active polling list and the revive list.
+     *
      * @param unitAddr which to remove
      */
     public synchronized void removeUnitFromPollingList( int unitAddr )
@@ -186,7 +191,7 @@ public class CmriPollMachine
                 {
                     m_thread = new Thread( m_worker );
                     m_thread.setDaemon( true );
-                    m_thread.setName( m_worker.getClass().getSimpleName() );
+                    m_thread.setName( m_worker.getClass().getSimpleName() + " on " + m_port.getName() );
                     m_thread.setUncaughtExceptionHandler( this );
 
                     m_thread.start();
@@ -335,6 +340,13 @@ public class CmriPollMachine
 
         //----------------------  interface Runnable  -------------------------
 
+        /***
+         *  Run state machine to communicate with CMRI units, until told to stop or is interrupted.
+         *
+         * <p>
+         *  See http://stackoverflow.com/questions/12916580/why-arent-my-threads-timing-out-when-they-fail?rq=1
+         *  for good practices about using {@code Thread.currentThread().isInterrupted()}.
+         */
         @Override
         public void run()
         {
@@ -615,10 +627,10 @@ public class CmriPollMachine
             //  Ecape any bytes as they are sent.  UA is not escaped.
             for( byte b : mesg )
             {
-                if( b == CMRI_CH_STX || b == CMRI_CH_ETX || b == CMRI_ESCAPE )
+                if( b == CMRI_CH_STX || b == CMRI_CH_ETX || b == CMRI_CH_ESCAPE )
                 {
                     cntr_escapes++;
-                    m_outstr.write( CMRI_ESCAPE );
+                    m_outstr.write(CMRI_CH_ESCAPE );
                 }
                 m_outstr.write( b );
             }
@@ -696,7 +708,7 @@ public class CmriPollMachine
 
         /***
          *  Ask the worker thread to exit.
-         *  Afterwards use {@code thread.koin()} for cleanup.
+         *  Afterwards use {@code thread.join()} for cleanup.
          */
         public void stopWorkerThread()
         {
@@ -713,14 +725,16 @@ public class CmriPollMachine
 
         protected OutputStream          m_outstr;
 
-        public final byte   CMRI_ESCAPE      = (byte) 0x10;
+        /*** Offset added to unit address before sending on the wire. */
         public final byte   CMRI_ADDR_OFFSET = (byte) 0x41;
+
+        public final byte   CMRI_CH_ESCAPE   = (byte) 0x10;
         public final byte   CMRI_CH_STX      = (byte) 0x02;    // start byte
         public final byte   CMRI_CH_ETX      = (byte) 0x03;    // start byte
         public final byte   CMRI_CH_FRAME    = (byte) 0xff;
 
-        /*** Indicates an error occurred and is now cleared. */
-        public final byte   CH_ERROR_BYTE    = (byte) 0x00;
+        /*** Indicates an RX error occurred and is now cleared. */
+        public final byte   CH_ERROR_BYTE    = (byte) CMRI_CH_FRAME;
 
         public final byte[] CMRI_HEADER_BYTES = new byte[] { CMRI_CH_FRAME, CMRI_CH_FRAME, CMRI_CH_STX };
         public final byte[] CMRI_TRAILER_BYTES = new byte[] { CMRI_CH_ETX /*, CMRI_CH_FRAME */ };

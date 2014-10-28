@@ -65,8 +65,9 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
 
     /***
      *  Open up the port in PROP_PORT using PROP_SETTINGS values.
+     *  Port name PROP_PORT is case-insensitive, but must be a "serial port" type.
      *
-     * @return true on success, false when failed.
+     * @return true on success, otherwise false when failed and logging message put.
      *
      * @throws java.lang.ClassCastException if wrong type in property bean.
      * @throws java.lang.UnsatisfiedLinkError if OS-specific "rxtxSerial.dll" or "rxtxSerial.so" not found.
@@ -83,6 +84,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
 
         if( StringUtils.emptyOrNull( wantedPortName ) || StringUtils.emptyOrNull( settings_all ) )
         {
+            LOG.log( Level.WARNING, "Empty port or settings property, won't open port." );
             return false;
         }
 
@@ -133,11 +135,17 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         // We can configure it and obtain input and output streams.
         //
         final String[]  settings = settings_all.split( "[,;]" );
-        int     baud_rate = 1000;
+        int     baud_rate;
+
+        if( settings.length <= 1 )
+        {
+            LOG.log( Level.WARNING, "Need at least a baud-rate in PROP_SETTINGS, but got \"{0}\"", settings_all );
+            port.close();
+            return false;
+        }
 
         //
         // Set all the params.
-        // This may need to go in a try/catch block which throws UnsupportedCommOperationException
         //
         try {
             baud_rate = Integer.parseInt( settings[0] );
@@ -154,7 +162,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
             return false;
         }
 
-        //  Port now open. :)  Only reason to keep it around is to close on shutdown.
+        //  Port now open. :)  Only reason to keep port reference around is to close on shutdown.
         m_port = port;
 
         this.m_poller = new CmriPollMachine( m_port, baud_rate, m_model );
@@ -170,7 +178,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
             }
             catch( Exception ex )
             {
-                LOG.log( Level.WARNING, "Unable to set discovery rate." );
+                LOG.log( Level.WARNING, "Unable to set discovery rate, using default." );
             }
 
             this.m_poller.setRecoveryRate( rate );
