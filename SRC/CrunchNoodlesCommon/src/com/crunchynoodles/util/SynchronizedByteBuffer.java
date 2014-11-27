@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *  If first-byte matching is enabled, then initial bytes that do not match are ignored.
  *
  * <p> Since Java doesn't permit primitive types for type-parameters,
- *  {@code byte} is part of class name.
+ *  "byte" is part of class name.
  *
  * @author brian
  */
@@ -32,7 +32,7 @@ public class SynchronizedByteBuffer
         m_count = new AtomicInteger();
         m_enabled = new AtomicBoolean( false );
         m_array = new byte[ maxSize ];
-        m_match_first_byte = -1;
+        m_match_first_byte = MATCH_NONE;
     }
 
     //-----------------------  Buffer Data Management  ------------------------
@@ -55,6 +55,7 @@ public class SynchronizedByteBuffer
      *  Appends {@code ch} to end of buffer, incrementing count, and notifying any
      *  threads waiting for a change to 'count'.
      *  Only stores when the buffer is 'enabled'.
+     *  If match-first-char is enabled, such byte must be received before storing is enabled.
      *
      * <p> Throws illegal-array-index runtime error if buffer storage overflows.
      *  If {@code ch} successfully added, notifies all threads waiting for a change of 'count'.
@@ -69,7 +70,8 @@ public class SynchronizedByteBuffer
             {
                 int  i = m_count.get();
 
-                if( i == 0 && m_match_first_byte != -1 && ch != m_match_first_byte )
+                /* "If could store first byte AND matching enabled AND byte isn't the match-firstt char, then skip..." */
+                if( i == 0 && m_match_first_byte != MATCH_NONE && ch != m_match_first_byte )
                 {
                     // await STX char...
                 }
@@ -119,20 +121,20 @@ public class SynchronizedByteBuffer
      *  Using {@link System#currentTimeMillis() }, then time can skip forward, like for daylight savings time.
      *  In Java, the granularity of timers is not specified.
      *
-     * <p> Seehttp://stackoverflow.com/questions/817801/time-since-jvm-started
+     * <p> See http://stackoverflow.com/questions/817801/time-since-jvm-started
      *
-     * @param minCount minimum chars in buffer before returning.
+     * @param minCountRequested minimum chars in buffer before returning.
      * @param timeoutMilliseconds maximum time to wait before returning, in milliseconds,
      *              or zero to just test without waiting.
      * @return false if sufficient chars received ; true if timeout occurred first.
      * @throws java.lang.InterruptedException When time to exit thread...
      */
-    public boolean  awaitCountAtLeast( int minCount, int timeoutMilliseconds )
+    public boolean  awaitCountAtLeast( int minCountRequested, int timeoutMilliseconds )
             throws InterruptedException
     {
         final RuntimeMXBean  runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 
-        long  remaining = timeoutMilliseconds;
+        long  remaining_millis = timeoutMilliseconds;
         long  next_start = runtimeMXBean.getUptime();
 
         //  We do some gymnastics with the timeout here.  m_count.wait(0) ::=
@@ -141,22 +143,22 @@ public class SynchronizedByteBuffer
         //
         //  However, for this method "timeoutMilliseconds == 0" means non-block test.
 
-        if( remaining > 0 )
+        if( remaining_millis > 0 )
         {
             do
             {
                 long  start_time = next_start;
                 synchronized( m_count )
                 {
-                    m_count.wait( remaining );
+                    m_count.wait(remaining_millis );
                 }
 
                 next_start = runtimeMXBean.getUptime();
-                remaining -= (next_start - start_time);
-            } while( remaining > 0 && getCount() < minCount );
+                remaining_millis -= (next_start - start_time);
+            } while( remaining_millis > 0 && getCount() < minCountRequested );
         }
 
-        return ( getCount() < minCount );
+        return ( getCount() < minCountRequested );
     }
 
     //-----------------------------  Bean Things  -----------------------------
@@ -201,8 +203,8 @@ public class SynchronizedByteBuffer
     }
 
     /***
-     *  Returns first byte to match, or -1 if feature disabled.
-     * @return Byte to match, or -1 if not matching.
+     *  Returns first byte to match, or MATCH_NONE if feature disabled.
+     * @return Byte to match, or MATCH_NONE if not matching.
      */
     public int      getMatchFirstByte()
     {
@@ -211,7 +213,7 @@ public class SynchronizedByteBuffer
 
     /***
      *  Sets the first byte stored, all other first bytes are ignored.
-     * @param ch0 Byte to match on, or -1 to turn off feature.
+     * @param ch0 Byte to match on, or MATCH_NONE to turn off feature.
      */
     public void     setMatchFirstByte( int ch0 )
     {
@@ -227,5 +229,7 @@ public class SynchronizedByteBuffer
     private final byte[]            m_array;
 
     private int                     m_match_first_byte;
+
+    public final int                MATCH_NONE = -1;
 
 }
