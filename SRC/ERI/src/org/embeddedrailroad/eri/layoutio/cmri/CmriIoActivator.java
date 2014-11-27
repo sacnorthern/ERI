@@ -44,7 +44,7 @@ public class CmriIoActivator implements LayoutIoActivator
         m_bc = context;
 
         LayoutIoProviderManager  mgr = LayoutIoProviderManager.getInstance();
-        m_the_provider = new CmriLayoutProviderImpl();
+        m_the_provider = CmriLayoutProviderImpl.getInstance();      // Provider is a singleton.
         mgr.addProvider( PLAIN_NAME_STRING, m_the_provider.getLongDescription(), m_the_provider );
     }
 
@@ -82,6 +82,7 @@ public class CmriIoActivator implements LayoutIoActivator
 
     /***
      *  Provider is a singleton.
+     * TODO: Consider removing reference to singleton since can be obtained any time. (BWitt, Nov 2014)
      */
     transient private CmriLayoutProviderImpl   m_the_provider;
 

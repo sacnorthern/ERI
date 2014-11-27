@@ -19,10 +19,27 @@ import org.embeddedrailroad.eri.layoutio.LayoutIoTransport;
 public class CmriLayoutProviderImpl implements LayoutIoProvider
 {
 
-    /* package only */ CmriLayoutProviderImpl()
+    private CmriLayoutProviderImpl()
     {
         m_io_model = new CmriLayoutModelImpl();
         m_channels = new HashMap<Integer, CmriSerialLayoutTransport>();
+    }
+
+    /***
+     * static method to get instance
+     * @return singleton instance of manager
+     * @see http://stackoverflow.com/questions/18093735/double-checked-locking-in-singleton
+     */
+    public static CmriLayoutProviderImpl getInstance()
+    {
+        if (s_instance == null) { // first time lock
+            synchronized (CmriLayoutProviderImpl.class) {
+                if (s_instance == null) {  // second time lock
+                    s_instance = new CmriLayoutProviderImpl();
+                }
+            }
+        }
+        return s_instance;
     }
 
     @Override
@@ -45,7 +62,7 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
     @Override
     public String   getLongDescription()
     {
-        return "The CMRI protocol by Dr. Bruce Chubb" ;
+        return "The CMRI protocol by Dr. Bruce Chubb." ;
     }
 
     //-----------------------------  TRANSPORTS  ------------------------------
@@ -111,6 +128,8 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
     {
         return null;
     }
+
+    private static CmriLayoutProviderImpl       s_instance;
 
     //----------------------------  INSTANCE VARS  ----------------------------
 
