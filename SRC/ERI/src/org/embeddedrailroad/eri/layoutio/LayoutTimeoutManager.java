@@ -11,9 +11,20 @@ import java.util.concurrent.*;
 /**
  *  Singleton to manage timeouts for objects in the Layout IO system.
  *
- * <p> see https://groups.google.com/forum/#!msg/comp.lang.java.programmer/JoyZLGZu2m4/f3oR8NWd6g8J
- * <br> see http://stackoverflow.com/questions/2142287/resettable-timeout-in-java?rq=1
- * <br> see http://tutorials.jenkov.com/java-util-concurrent/scheduledexecutorservice.html
+ * <p> Although you can make multiple objects, there is just a single {@link ThreadPoolExecutor} object
+ *  shared among all.
+ *  What is really important are the {@link Future} objects returned from the
+ *  {@link #timeoutMillis(int, org.embeddedrailroad.eri.layoutio.LayoutTimeoutManager.TimeoutAction, java.lang.Object) }
+ *  methods.
+ *  These objects are the <em>real</em> objects of interest.
+ *  In a sense, the {@code timeoutMillis()} methods are factory methods on a "wrapped" static
+ *  {@link ThreadPoolExecutor} object.
+ *
+ * <br><ul><li> see https://groups.google.com/forum/#!msg/comp.lang.java.programmer/JoyZLGZu2m4/f3oR8NWd6g8J
+ * <li> see http://stackoverflow.com/questions/2142287/resettable-timeout-in-java?rq=1
+ * <li> see http://tutorials.jenkov.com/java-util-concurrent/scheduledexecutorservice.html
+ * <li> see http://en.wikipedia.org/wiki/Futures_and_promises
+ * </ul>
  *
  * @author brian
  */
@@ -22,6 +33,13 @@ public class LayoutTimeoutManager
 
     private LayoutTimeoutManager()
     {
+        //
+        //  The max-thread-count param does not affect how many timeouts can be pending.
+        //  Rather it limits the number of concurrent timeouts than can be expired simultaneously.
+        //  If more than "max" expire than the first runs execute immediately.
+        //  The rest queue up waiting for any of the first ones to complete.
+        //  Completing means returning from the callback in TimeoutAction#timeoutAction().
+        //
         m_executor = new DaemonThreadPool( 9 );
     }
 
@@ -40,6 +58,15 @@ public class LayoutTimeoutManager
             }
         }
         return( s_instance );
+    }
+
+    /***
+     *  Stop the timeout management immediately, cancelling all pending timeout requests.
+     *  From now until the application exits, submitting a timeout request is likely to fail....
+     */
+    public void shutdownNow()
+    {
+        m_executor.shutdownNow();
     }
 
     /***
@@ -87,6 +114,47 @@ public class LayoutTimeoutManager
         return scheduledFuture;
     }
 
+    /***
+     *  Sets up a timeout that invokes a callback when time expires, or does nothing if cancelled.
+     *
+     * <p> If you want to transform some object and return something different based on it.
+     * The new
+     *
+     * <pre>        public Object onTimeout( Object anchor )
+        {
+            System.out.println( "  onTimeout()  " );
+            int  v = (Integer) anchor;
+            return new Integer( v + 1 );
+        }
+    </pre>
+     *  And then in your client code, you can retrieve the value-object with a call to {@code future.get()}.
+     *  It blocks until the value has been produced.
+     *
+     * @param milliseconds how long to wait, in milliseconds.
+     * @param notifyObject Client object to callback when timeout expires
+     * @param anchor Parameter to callback
+     * @return {@link Future} so timeout can be cancelled, or tested if it ran to completion.
+     */
+    public Future timeoutMillis( int milliseconds, final TimeoutValueAction notifyObject, final Object anchor )
+    {
+        ScheduledFuture  scheduledFuture;
+
+        //  A 'Runnable' canont throw exceptions and cannot return a value.
+        //  A 'Callable' can do both of these, but that is overkill for just a timeout.
+        scheduledFuture = m_executor.schedule( new Callable<Object>()
+                {
+                    @Override
+                    public Object call() throws Exception
+                    {
+                        return notifyObject.onTimeout( anchor );
+                    }
+                },
+                milliseconds,
+                TimeUnit.MILLISECONDS );
+
+        return scheduledFuture;
+    }
+
     //-------------------------------  INSTANCE VARIABLES  ------------------------------
 
     /*** Singleton for manager. */
@@ -112,8 +180,32 @@ public class LayoutTimeoutManager
 
     }   // end public interface TimeoutAction ..
 
+    //-------------------------------  CALLBACK INTERFACE  ------------------------------
+
+    /***
+     *  Interface for client's object that is called when timeout expires, but not called
+     *  if timeout is cancelled.
+     *  Method {@link #onTimeout(java.lang.Object) } cannot throw exceptions.
+     */
+    public interface TimeoutValueAction
+    {
+        /***
+         *  Call back when timeout has expired without first being cancelled.
+         *
+         * @param anchor object-ref from when timeout was set up.
+         * @return Some object the client would like to use.
+         * @throws java.lang.Exception cuz you can...
+         */
+        Object onTimeout( Object anchor ) throws Exception;
+
+    }   // end public interface TimeoutValueAction ..
+
     //--------------------------  Deamon Thread Pool Executor  --------------------------
 
+    /***
+     *  Derived class from {@link ScheduledThreadPoolExecutor} so application here has
+     *  a handle-wrapper that can be extended if the need arises.
+     */
     protected class DaemonThreadPool extends ScheduledThreadPoolExecutor
     {
 

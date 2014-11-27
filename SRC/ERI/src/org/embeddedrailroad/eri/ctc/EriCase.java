@@ -28,6 +28,7 @@ import java.util.HashMap;
 import org.embeddedrailroad.eri.layoutio.LayoutIoProviderManager;
 import org.embeddedrailroad.eri.layoutio.LayoutIoActivator;
 import org.embeddedrailroad.eri.layoutio.LayoutIoTransport;
+import org.embeddedrailroad.eri.layoutio.LayoutTimeoutManager;
 import org.embeddedrailroad.eri.xml.BankBean;
 import org.embeddedrailroad.eri.xml.BankListBean;
 import org.embeddedrailroad.eri.xml.LayoutConfigurationBean;
@@ -441,6 +442,14 @@ public class EriCase {
         }
 
         LOG.exiting( "EriCase", "doit" );
+    }
+
+    /***
+     *  Much of the logic for ERI is timer based, call here to stop that stuff.
+     */
+    public void shutdownTimers()
+    {
+        LayoutTimeoutManager.getInstance().shutdownNow();
     }
 
     //--------------------------  INSTANCE VARS  --------------------------

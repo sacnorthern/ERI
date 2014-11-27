@@ -28,7 +28,10 @@ public class LayoutTimeoutManagerTest {
     }
 
     @AfterClass
-    public static void tearDownClass() {
+    public static void tearDownClass()
+    {
+        System.out.println( "shutdownNow..." );
+        LayoutTimeoutManager.getInstance().shutdownNow();
     }
 
     /**

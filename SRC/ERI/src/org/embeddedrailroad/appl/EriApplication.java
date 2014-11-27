@@ -153,6 +153,7 @@ public class EriApplication
         }
         catch( IOException ignored ) { }
 
+        eri.shutdownTimers();
         eri.destoryTransports();
 
         logger.log( Level.WARNING, "Application exits...");
