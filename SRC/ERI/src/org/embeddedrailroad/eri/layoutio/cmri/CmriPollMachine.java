@@ -8,19 +8,19 @@ package org.embeddedrailroad.eri.layoutio.cmri;
 
 import com.crunchynoodles.util.SynchronizedByteBuffer;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.Future;
 
 import com.google.common.collect.Queues;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
 import gnu.io.UnsupportedCommOperationException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.concurrent.Future;
 import org.embeddedrailroad.eri.layoutio.LayoutTimeoutManager;
 
 
@@ -46,6 +46,8 @@ public class CmriPollMachine
         this.m_port = serial;
         this.m_baud_rate = baudRate;
 
+        this.m_consecutive_missed_polls = new int[ CMRI_HIGHEST_POLL_ADDR + 1 ];
+
         // ``"Synchronized" [collection] classes can be useful when you need to prevent all access to
         //   a collection via a single lock, at the expense of poorer scalability.''
         this.m_active_queue = Queues.synchronizedQueue( new java.util.LinkedList<Integer>() );
@@ -61,12 +63,12 @@ public class CmriPollMachine
      *
      * @param millisecs max wait time after transmitting query.
      */
-    public void setTimeout( int millisecs )
+    public void setRxTurnaroundTimeout( int millisecs )
     {
         m_response_wait = millisecs;
     }
 
-    public int getTimeout()
+    public int getRxTurnaroundTimeout()
     {
         return this.m_response_wait;
     }
@@ -74,16 +76,19 @@ public class CmriPollMachine
     /***
      *  Return the timeout in milliseconds to wait for first byte of a response starting
      *  from when the first byte is sent out.
+     *  Takes size of TX packet, which assumes it is buffered by OS and is right now
+     *  being sent out.
+     *  In modern OSes, the serial or USB driver has buffered the packet to send.
      *
      * @param sizeSent how many bytes will be sent.
-     * @return milliseconds to wait, based on {@link #setTimeout(int) } value.
+     * @return milliseconds to wait, based on {@link #setRxTurnaroundTimeout(int) } value.
      */
     public int getTxToFirstRxTimeout( int sizeSent )
     {
         int  wait_xmit = (int) ( ((sizeSent + 2) / (m_baud_rate / 10.0)) * 1000 );
-        int  wait_rec  = this.m_response_wait;
+        int  wait_rec  = getRxTurnaroundTimeout();
 
-        return wait_xmit+ wait_rec;
+        return wait_xmit + wait_rec;
     }
 
     /***
@@ -158,6 +163,23 @@ public class CmriPollMachine
         }
 
         return( known );
+    }
+
+    /***
+     *  Count another missed response from a unit ; too many and try to re-INIT unit
+     * @param addr polling address, 0 to 255
+     */
+    private void _missedPoll( int addr )
+    {
+        m_consecutive_missed_polls[ addr ] += 1;
+        if( m_consecutive_missed_polls[ addr ] > PROP_GONE_TOO_LONG_REINIT )
+        {
+            LOG.log( Level.WARNING, "Unit #{0} hasn't responded in a while, will re-INIT.", addr );
+            m_consecutive_missed_polls[ addr ] = 0;
+
+            //  Since unit it on polling list, call addUnitToReviveList() will demote to revive list.
+            addUnitToPollingList( addr );
+        }
     }
 
     //------------------------  WORKER THREAD SUPPORT  ------------------------
@@ -353,18 +375,6 @@ public class CmriPollMachine
             LOG.log( Level.INFO, "Thread #{0} starting on " + m_port.toString() + " ...",
                                     Long.toString( Thread.currentThread().getId() ) );
 
-            /**  Don't need framing because we _are_ the only master.  BWitt, OCt 2014 **/
-//            // set framing (end-of-packet) character
-//            try
-//            {
-//                m_port.enableReceiveFraming( CMRI_CH_ETX );
-//            }
-//            catch( UnsupportedCommOperationException ex )
-//            {
-//                // No worries, we will do this manually.  It is helpful when implemented.
-//                LOG.log( Level.INFO, "Serial port doesn't suppport enableReceiveFraming(), continuing." );
-//            }
-
             m_in_mesg.setMatchFirstByte( CMRI_CH_STX );
 
             //
@@ -535,7 +545,7 @@ public class CmriPollMachine
         }
 
         /****
-         *  Query a unit for changed inputs; if no inputs then CMRI has no "idling response" so
+         *  Query a unit for changed inputs; if unit has no inputs then CMRI has no "idling response" so
          *  just assume the unit is functioning.
          *
          * @param addr unit's poll address, typically 0 to 127 , but not range checked.
@@ -552,10 +562,14 @@ public class CmriPollMachine
                 int  chars_sent = sendCmriMessage( addr, null );
 
                 //  Await first two bytes back from unit, which must match STX and unit's poll address
+                //  Compute timeou assuming whole TX packet has been buffered by OS, so must wait
+                //  for it to be fully sent, then a pause while th eunit interprets it, then
+                //  time for 4 bytes to be sent back: FF, FF, STX, "addr"
                 if( m_in_mesg.awaitCountAtLeast( 2, getTxToFirstRxTimeout(chars_sent + 2) ) )
                 {
                     // Timeout waiting for first byte of response.
                     LOG.log( Level.FINE, "Timeout waiting for STX + poll-address response." );
+                    _missedPoll( addr );
                     return false;
                 }
 
@@ -567,28 +581,31 @@ public class CmriPollMachine
 
                 try
                 {
-                synchronized( timeout_future )
-                {
-                    timeout_future.wait();
-                }
+                    synchronized( timeout_future )
+                    {
+                        timeout_future.wait();
+                    }
                 }
                 catch( InterruptedException ex )
                 {
-                    // Oh dear, timeout before all
+                    // Oh dear, timeout before whole packet received.
                 }
 
+                m_consecutive_missed_polls[ addr ] = 0;
                 return true;
             }
             catch( IOException ex )
             {
-                if( ! timeout_future.isDone() )
-                    timeout_future.cancel( true );
             }
             finally
             {
                 m_in_mesg.setEnabled( false );
+
+                if( timeout_future != null && ! timeout_future.isDone() )
+                    timeout_future.cancel( true );
             }
 
+            _missedPoll( addr );
             return false;
         }
 
@@ -652,14 +669,29 @@ public class CmriPollMachine
         }
 
         /***
-         *  Make any pending RX bytes go away.
+         *  Make any pending RX bytes go away, but does so at at most a few seconds.
          * @throws IOException when stream has been closed.
          */
         private void drainReceivePort()
                 throws IOException
         {
-            while( m_instr.available() > 0 )
+            // wait at most 'PROP_DRAIN_PORT_MAX_WAIT_SECONDS' seconds, in 5 micro-second units.
+            int  max_waits = (int) (200 * 1000 * PROP_DRAIN_PORT_MAX_WAIT_SECONDS);
+
+            while( --max_waits >= 0 && m_instr.available() > 0 )
+            {
+                //  do a short sleep first.
+                try {
+                    Thread.sleep( 0, 5 * 1000 );    // sleep 5 microseconds, in nanos.
+                }
+                catch( InterruptedException ex )
+                {
+                    Thread.currentThread().interrupt();
+                    return ;
+                }
+
                 m_instr.read();
+            }
             m_in_mesg.clear();
         }
 
@@ -676,6 +708,13 @@ public class CmriPollMachine
          */
         public void shortSleep( int milliseconds )
         {
+            if( m_do_thread_exit )
+            {
+                //  Time to exit thread, signal interrupt to start the duty.
+                Thread.currentThread().interrupt();
+                return ;
+            }
+
             if( milliseconds > 0 )
             {
                 try { Thread.sleep( milliseconds ); }
@@ -745,9 +784,10 @@ public class CmriPollMachine
          */
         private final SynchronizedByteBuffer   m_in_mesg;
 
-        private LayoutTimeoutManager    m_timeout_mgr;
+        private final LayoutTimeoutManager    m_timeout_mgr;
 
         private boolean                 m_rx_timeout;
+
     }
 
 
@@ -757,6 +797,24 @@ public class CmriPollMachine
      *   the inter-unit poll-response quiet time.
      */
     public int          PROP_INTER_UNIT_SILENCE = 30;
+
+    /***
+     *  Max time to wait when draining the RX port.  Prevents live-lock if a slave unit
+     *  is babbling.  Value is {@code double}, so max ease of fine tuning...
+     */
+    public double       PROP_DRAIN_PORT_MAX_WAIT_SECONDS = 0.5;
+
+    /***
+     *  After missing this many polls, send an INIT message to unit to try and re-enroll.
+     *  In case it lost its configuration, e.g. the unit was power-cycled.
+     */
+    public int          PROP_GONE_TOO_LONG_REINIT = 5;
+
+    /*  Smallest logical polling address. */
+    public final int    CMRI_LOWEST_POLL_ADDR   = 0;
+
+    /*  Maximum logical polling address. */
+    public final int    CMRI_HIGHEST_POLL_ADDR  = 255;
 
     //---------------------------  INSTANCE VARS  -----------------------------
 
@@ -782,6 +840,12 @@ public class CmriPollMachine
 
     /*** Synchronized queue of known units that are NOT responding. */
     protected Queue<Integer>    m_revive_queue;
+
+    /***
+     *  Counter of missed polls for some unit poll address, reset to zero when
+     *  a poll-response is succcessful.
+     */
+    transient private int[]             m_consecutive_missed_polls;
 
     transient protected SerialPort      m_port;
 
