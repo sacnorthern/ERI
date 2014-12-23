@@ -1,7 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/***  Java-ERI    Java-based Embedded Railroad Interfacing.
+ ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***
+ ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
+ ***  you may not use this file except in compliance with the License.
+ ***  You may obtain a copy of the License at:
+ ***        http://www.apache.org/licenses/LICENSE-2.0
+ ***
+ ***  Unless required by applicable law or agreed to in writing, software
+ ***  distributed under the License is distributed on an "AS IS" BASIS,
+ ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ***  See the License for the specific language governing permissions and
+ ***  limitations under the License.
+ ***/
+
 package org.embeddedrailroad.eri.layoutio;
 
 /**
@@ -44,7 +55,7 @@ public interface LayoutSignalSearchlightBiColor extends LayoutSignal
     /***
      * @return {@code true} if I/O unit will rapidly flicker LED to make yellow.
      */
-    public boolean  getUnitImplementsFlash();
+    public boolean  getUnitImplementsYellowCreation();
 
     /***
      *  Sets whether or not the I/O unit can quickly flash red/green together
@@ -53,7 +64,7 @@ public interface LayoutSignalSearchlightBiColor extends LayoutSignal
      *
      * @param unit_does_flash
      */
-    public void     setUnitImplementsFlash( boolean unit_does_flash );
+    public void     setUnitImplementsYellowCreation( boolean unit_does_flash );
 
 
 }

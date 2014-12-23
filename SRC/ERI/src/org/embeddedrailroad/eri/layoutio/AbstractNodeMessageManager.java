@@ -1,8 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+/***  Java-ERI    Java-based Embedded Railroad Interfacing.
+ ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***
+ ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
+ ***  you may not use this file except in compliance with the License.
+ ***  You may obtain a copy of the License at:
+ ***        http://www.apache.org/licenses/LICENSE-2.0
+ ***
+ ***  Unless required by applicable law or agreed to in writing, software
+ ***  distributed under the License is distributed on an "AS IS" BASIS,
+ ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ***  See the License for the specific language governing permissions and
+ ***  limitations under the License.
+ ***/
+
 package org.embeddedrailroad.eri.layoutio;
 
 import java.util.Formatter;
@@ -19,6 +29,7 @@ public abstract class AbstractNodeMessageManager implements NodeMessageManager
     {
         // see also: http://www.w3schools.com/tags/tag_td.asp
         // see also: http://www.w3schools.com/tags/att_td_valign.asp
+        // see also: http://www.w3schools.com/cssref/pr_text_text-align.asp
 
 
         StringBuilder  sb = new StringBuilder( 500 );
@@ -75,7 +86,12 @@ public abstract class AbstractNodeMessageManager implements NodeMessageManager
 
                 for( cntr = 0 ; cntr < bytes_per_line && offset < bytes.length ; ++cntr, ++offset )
                 {
-                    formatter.format( " %02X", bytes[ offset ] );
+                    if( cntr > 0 && ((cntr & 0x07) == 0) )
+                        sb.append( '.' );
+                    else
+                        sb.append( ' ' );
+
+                    formatter.format( "%02X", bytes[ offset ] );
                 }
 
                 sb.append( System.lineSeparator() );

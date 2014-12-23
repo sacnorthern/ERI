@@ -15,16 +15,20 @@
 
 package org.embeddedrailroad.eri.layoutio;
 
-import java.util.EventListener;
-
 /**
  *
  * @author brian
  */
-public interface IoSensedDataListener extends EventListener {
+public class LayoutSignalTriColor // extends LayoutSignal
+{
+    public final static int     CODE_DARK = 0x0;
+    public final static int     CODE_RED_ON = 0x1;
+    public final static int     CODE_YELLOW_ON = 0x2;
+    public final static int     CODE_GREEN_ON = 0x3;
 
-    public void     ioDataChanged( Object device_addr, boolean[] old_bits, boolean[] new_bits );
+    public LayoutSignalTriColor()
+    {
 
-    public void     ioBlobChanged( Object device_addr, byte[] old_bits, byte[] new_bits );
+    }
 
 }
