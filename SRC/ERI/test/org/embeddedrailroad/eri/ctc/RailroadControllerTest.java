@@ -1,8 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/***  This file is dedicated to the public domain, 2014 Brian Witt in USA.  ***/
+
 package org.embeddedrailroad.eri.ctc;
+
 
 import java.util.ArrayList;
 import java.util.List;
