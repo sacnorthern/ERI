@@ -1,17 +1,28 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/***  Java-ERI    Java-based Embedded Railroad Interfacing.
+ ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***
+ ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
+ ***  you may not use this file except in compliance with the License.
+ ***  You may obtain a copy of the License at:
+ ***        http://www.apache.org/licenses/LICENSE-2.0
+ ***
+ ***  Unless required by applicable law or agreed to in writing, software
+ ***  distributed under the License is distributed on an "AS IS" BASIS,
+ ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ***  See the License for the specific language governing permissions and
+ ***  limitations under the License.
+ ***/
+
 package org.embeddedrailroad.eri.block.interfaces;
 
 /**
  *  A turnout in the CTC model of the layout.  A turnout is part (or all) of a block.
  *  A route can be locked, in which case it cannot change.
  *
- *  There are up to 31 different reasons to lock a turnout, 0 to 30.
+ * <p> There are up to 31 different reasons to lock a turnout, 0 to 30.
  *  Each reason-to-lock value must be coordinated so as not to overlap.
  *
- *  When a turnout changes, it first asks if there are any vetoes.  If none, then
+ * <p> When a turnout changes, it first asks if there are any vetoes.  If none, then
  *  the state changes to indeterminate.  After a short while, the turnout announces
  *  its new route.
  *
