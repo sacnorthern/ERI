@@ -418,7 +418,7 @@ public class EriCase {
             {
                 try
                 {
-                    LOG.log( Level.INFO, String.format( "Stopping %1$s #%2$d ...", trans.getName(), 1 ) );
+                    LOG.log( Level.INFO, String.format( "Stopping %1$s #%2$d ...", trans.getProtocolName(), 1 ) );
 
                     trans.setPolling( false );
                     trans.detach();

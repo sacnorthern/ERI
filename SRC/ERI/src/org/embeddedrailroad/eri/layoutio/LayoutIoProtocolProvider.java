@@ -13,17 +13,17 @@ import org.osgi.annotation.versioning.Version;
  *
  * @author brian
  */
-public interface LayoutIoProvider
+public interface LayoutIoProtocolProvider
 {
 
     //--------------------------  DESIGNER  ---------------------------
 
     /***
-     *  Return the name of this provider that could include spaces and punctuation.
+     *  Return the name of this protocol provider that could include spaces and punctuation.
      *  E.g. "C/MRI" (punctuation is OK).
      *  @return name of provider, same as IO model's name.
      */
-    public String   getName();
+    public String   getProtocolName();
 
     /***
      *  Return a version string for this bundle, where "build" is an optional keyword.
@@ -56,7 +56,7 @@ public interface LayoutIoProvider
     public HashMap<Integer, LayoutIoTransport>  getTransportChannelList();
 
     /***
-     *  Creates a numbered transport channel using a physical media.
+     *  Creates a numbered transport channel using a physical media and protocol.
      *  If already opened / existing, then polling will stop.
      *
      * @param physical Kind of physical hookup, e.g. "serial", "tcp", or "udp".
@@ -69,6 +69,7 @@ public interface LayoutIoProvider
 
     /***
      *  Convert a string-form of a unit's address into native object-type.
+     *  Each "layout IO protocol" has its own addressing scheme.
      *  E.g. CMRI address is an integer, so passing "12" returns a {@code new Integer(12)} object.
      *
      * @param addr A string, i.e. from a GUI.
@@ -80,6 +81,7 @@ public interface LayoutIoProvider
 
     /***
      *   Convert a single IO line address into native object-type.
+     *  Each "layout IO protocol" has its own addressing scheme.
      *
      * @param bit which single IO line referencing.
      * @return converted into an input or output line.
@@ -90,6 +92,7 @@ public interface LayoutIoProvider
 
     /***
      *   Create an address for a single bit, either input or output, or both.
+     *  Each "layout IO protocol" has its own addressing scheme.
      *
      * @param addr Parameter to {@link #convertUnitAddressString()}.
      * @param bit Parameter to {@link #convertIoBitAddressString()}.
@@ -106,6 +109,7 @@ public interface LayoutIoProvider
     /***
      *  Some devices can support a range of bits as a single I/O unit, e.g. an RFID reader
      *  or a turntable indexing mechanism.
+     *  Each "layout IO protocol" has its own addressing scheme.
      *
      * @param addr unit address parameter to {@link #convertUnitAddressString()}.
      * @param bit_start first bit, parameter to {@link #convertIoBitAddressString()}.

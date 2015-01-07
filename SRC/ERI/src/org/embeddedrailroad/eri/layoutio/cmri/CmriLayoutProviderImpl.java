@@ -55,7 +55,7 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
     }
 
     @Override
-    public String   getName()
+    public String   getProtocolName()
     {
         return "C/MRI" ;
     }
@@ -68,7 +68,7 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
 
     @Override
     public String getSystemManufacturer() {
-        return "JLC Enterprises" ;
+        return "JLC Enterprises Inc." ;
     }
 
     @Override

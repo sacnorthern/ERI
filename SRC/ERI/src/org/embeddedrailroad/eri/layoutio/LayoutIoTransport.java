@@ -27,10 +27,11 @@ import java.util.Properties;
 public interface LayoutIoTransport
 {
     /*** @return same name as Layout IO Provider. */
-    public String getName();
+    public String getProtocolName();
 
     /***
      *  Given channel setup properties, attempt to connect and use transport channel.
+     *  For serial ports, this method will set the baud rate, parity, stop-bits, etc.
      *  If successful, caller needs to invoke {@code setPolling(true)} to start running.
      *
      * @return {@code true} if attachment successful, {@code false} otherwise.

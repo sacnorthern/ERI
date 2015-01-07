@@ -216,7 +216,7 @@ public class EriApplication
         for( LayoutIoProviderManager.ProviderTransportStruct prov : values )
         {
             Out( "%13s : %s , version \"%s\"%n<description>%s%n</description>",
-                    prov.shortName, prov.provider.getName(), prov.provider.getVersionString(),
+                    prov.shortName, prov.provider.getProtocolName(), prov.provider.getVersionString(),
                     prov.longDescr );
         }
         Out( "" );

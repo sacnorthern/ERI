@@ -52,7 +52,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
     }
 
     @Override
-    public String getName() { return m_owner.getName(); }
+    public String getProtocolName() { return m_owner.getProtocolName(); }
 
     //------------------------  POLLING MANAGEMENT  ---------------------------
 
@@ -131,8 +131,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         //
         SerialPort  port = null;
         try {
-            port = (SerialPort) portId.open(
-                                    getName(),  // Use name of the application asking for the port.
+            port = (SerialPort) portId.open(getProtocolName(),  // Use name of the application asking for the port.
                                     3000        // Wait max. 3 sec. to acquire port.
                                     );
         } catch(PortInUseException ex) {
