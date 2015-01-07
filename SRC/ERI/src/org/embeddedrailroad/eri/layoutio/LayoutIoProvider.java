@@ -36,23 +36,24 @@ public interface LayoutIoProvider
 
     /***
      *  Return producer / manufacturer of this IO system, e.g. "JLC Enterprises" (spaces likely).
+     *  Is not necessarily the software maker.
      * @return string with likely spaces in it.
      */
     public String   getSystemManufacturer();
 
     /***
      *  Return a verbose and long string describing this protocol.
-     *  If first is "<html>" then string is HTML formatted.
+     *  If string starts with "&lt;html&gt;" then string is HTML formatted.
      *
      * @return A long string, ala short paragraph.
      */
     public String   getLongDescription();
 
     /***
-     *  Return the IoTransports index by their channel number.
+     *  Return the registered IoTransports indexed by their channel number.
      * @return list of transport channels available.
      */
-    public HashMap<Integer, LayoutIoTransport> getTransportChannelList();
+    public HashMap<Integer, LayoutIoTransport>  getTransportChannelList();
 
     /***
      *  Creates a numbered transport channel using a physical media.
@@ -62,12 +63,13 @@ public interface LayoutIoProvider
      * @param channel number that IO model-specific.
      * @return
      */
-    public LayoutIoTransport makeChannel( String physical, Integer channel );
+    public LayoutIoTransport  makeChannel( String physical, Integer channel );
 
     //--------------------  Addressing Conversion  --------------------
 
     /***
      *  Convert a string-form of a unit's address into native object-type.
+     *  E.g. CMRI address is an integer, so passing "12" returns a {@code new Integer(12)} object.
      *
      * @param addr A string, i.e. from a GUI.
      * @return converted into an addressable unit
@@ -88,10 +90,12 @@ public interface LayoutIoProvider
 
     /***
      *   Create an address for a single bit, either input or output, or both.
+     *
      * @param addr Parameter to {@link #convertUnitAddressString()}.
      * @param bit Parameter to {@link #convertIoBitAddressString()}.
      * @param mode read, write or both.  Not all modes are implemented.
      * @return ???
+     *
      * @throws IllegalArgumentException Conversion failed.
      * @throws NumberFormatException {@code addr}, {@code bit_start}, or {@code bit_end} are
      *                              not valid or unimplemented place.
@@ -108,6 +112,7 @@ public interface LayoutIoProvider
      * @param bit_end last bit, parameter to {@link #convertIoBitAddressString()}.
      * @param mode read, write or both.  Not all modes are implemented.
      * @return ???
+     *
      * @throws IllegalArgumentException Conversion failed.
      * @throws NumberFormatException {@code addr}, {@code bit_start}, or {@code bit_end} are
      *                              not valid or unimplemented place.

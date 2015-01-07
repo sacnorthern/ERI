@@ -24,6 +24,7 @@ import org.embeddedrailroad.eri.layoutio.LayoutIoTransport;
 
 /**
  *  Provides instances of protocol transports; this object is effectively a singleton.
+ *  It holds a reference to a model shared amongst all CMRI nodes.
  *
  * @author brian
  */
@@ -62,7 +63,7 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
     @Override
     public String   getVersionString()
     {
-        return "0.0.1 build 1" ;
+        return "0.0.1 build 2" ;
     }
 
     @Override
@@ -73,7 +74,7 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
     @Override
     public String   getLongDescription()
     {
-        return "The CMRI protocol by Dr. Bruce Chubb." ;
+        return "The CMRI protocol created by Dr. Bruce Chubb." ;
     }
 
     //-----------------------------  TRANSPORTS  ------------------------------
