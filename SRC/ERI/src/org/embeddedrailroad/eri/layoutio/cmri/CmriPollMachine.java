@@ -48,6 +48,14 @@ import org.embeddedrailroad.eri.layoutio.LayoutTimeoutManager;
 public class CmriPollMachine
             implements UncaughtExceptionHandler
 {
+    /***
+     *  Create a polling machine that contains a little worker thread to do the actual work.
+     *  The port has already been setup for baud, stop bits, parity, etc.
+     *
+     * @param serial Serial port object , the channel
+     * @param baudRate baud rate, information only.
+     * @param model "Layout Model" to hold unit IO states.
+     */
     public CmriPollMachine( SerialPort serial, int baudRate, CmriLayoutModelImpl model )
     {
         this.m_model = model;
@@ -77,6 +85,11 @@ public class CmriPollMachine
         m_response_wait = millisecs;
     }
 
+    /***
+     *  Time to wait for first char of response to appear from unit after the entire request
+     *  message has been sent out the serial port.
+     * @return milliseconds to wait after request has been fully transmitted.
+     */
     public int getRxTurnaroundTimeout()
     {
         return this.m_response_wait;
@@ -103,7 +116,7 @@ public class CmriPollMachine
     /***
      *  Set recovery rate to re-try units that are not responding.
      *  After every poll cycle, the recovery rate is added to an accumulator.
-     *  Once 1.0 is reached ( or exceeded ), communication with a unit is attempted.
+     *  Once 1.0 is reached ( or exceeded ), communication with a non-communicating unit is attempted.
      *
      * @param rr value more than 0.0 but not above 1.0.
      * @throws IllegalArgumentException if {@link rr} less-than or equal to 0, or above 1.0
@@ -116,6 +129,12 @@ public class CmriPollMachine
         this.m_recovery_rate = (float) rr;
     }
 
+    /***
+     *  Return recovery rate for how often to attempt and revive a non-communicating unit.
+     *
+     * @return value more than 0.0 but not above 1.0.
+     * @see  CmriSerialLayoutTransport.DEFAULT_DISCOVERY_RATE
+     */
     public float getRecoveryRate()
     {
         return this.m_recovery_rate;
@@ -193,6 +212,11 @@ public class CmriPollMachine
 
     //------------------------  WORKER THREAD SUPPORT  ------------------------
 
+    /***
+     *  Check is polling is enabled.  There is a slight delay between "start now" request
+     *  and when the worker thread does its first poll.
+     * @return {@code true} if ought to be polling, {@code false} otherwise.
+     */
     public boolean isPolling()
     {
         return this.m_polling;
@@ -776,15 +800,21 @@ public class CmriPollMachine
         /*** Offset added to unit address before sending on the wire. */
         public final byte   CMRI_ADDR_OFFSET = (byte) 0x41;
 
+        /*** CMRI protocol escape byte. */
         public final byte   CMRI_CH_ESCAPE   = (byte) 0x10;
-        public final byte   CMRI_CH_STX      = (byte) 0x02;    // start byte
-        public final byte   CMRI_CH_ETX      = (byte) 0x03;    // start byte
+        /*** CMRI protocol "start of packet" byte. */
+        public final byte   CMRI_CH_STX      = (byte) 0x02;
+        /*** CMRI protocol "end of packet" byte. */
+        public final byte   CMRI_CH_ETX      = (byte) 0x03;
+        /*** CMRI protocol "line in use" byte. */
         public final byte   CMRI_CH_FRAME    = (byte) 0xff;
 
         /*** Indicates an RX error occurred and is now cleared. */
         public final byte   CH_ERROR_BYTE    = (byte) CMRI_CH_FRAME;
 
+        /***  Prefix (header) for CMRI packets. */
         public final byte[] CMRI_HEADER_BYTES = new byte[] { CMRI_CH_FRAME, CMRI_CH_FRAME, CMRI_CH_STX };
+        /***  Suffix (trailer) for CMRI packets. */
         public final byte[] CMRI_TRAILER_BYTES = new byte[] { CMRI_CH_ETX /*, CMRI_CH_FRAME */ };
 
         /***
@@ -819,23 +849,27 @@ public class CmriPollMachine
      */
     public int          PROP_GONE_TOO_LONG_REINIT = 5;
 
-    /*  Smallest logical polling address. */
+    /**  Smallest logical polling address. */
     public final int    CMRI_LOWEST_POLL_ADDR   = 0;
 
-    /*  Maximum logical polling address. */
+    /**  Maximum logical polling address. */
     public final int    CMRI_HIGHEST_POLL_ADDR  = 255;
 
     //---------------------------  INSTANCE VARS  -----------------------------
 
+    /*** Statistics: count of bytes in messages that were not accepted. */
     public volatile long            m_cntr_bad_bytes_in;
 
+    /*** Statistics: count of bytes in messages that were accepted. */
     public volatile long            m_cntr_good_bytes_in;
 
+    /*** Statistics: count of bytes in messages sent out. */
     public volatile long            m_cntr_good_bytes_out;
 
     /*** Model we feed sensor changes into. */
     protected final CmriLayoutModelImpl   m_model;
 
+    /***  Is polling desired?  Read by worker {@link #m_worker}. */
     private boolean             m_polling;
 
     /***  Fractional addition until reaching 1.0, then a revival will occur. */
@@ -852,16 +886,20 @@ public class CmriPollMachine
 
     /***
      *  Counter of missed polls for some unit poll address, reset to zero when
-     *  a poll-response is succcessful.
+     *  a poll-response is successful.
      */
     transient private int[]             m_consecutive_missed_polls;
 
+    /***  Serial port to use.  Requires {@link gnu.io.SerialPort} to inter-operate with host OS. */
     transient protected SerialPort      m_port;
 
+    /***  Baud rate of serial port with baud rate already set. */
     transient protected int             m_baud_rate;
 
+    /***  Little worker object. */
     transient protected CmriSerialPollingWorker   m_worker;
 
+    /***  Thread inside the little worker object {@link #m_worker}. */
     transient protected Thread          m_thread;
 
     /***  Logging output spigot. */

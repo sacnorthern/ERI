@@ -29,9 +29,9 @@ public interface NodeMessage< TUnitAddr extends Comparable<TUnitAddr> >
 
     /***
      *  Return reference to provider of this protocol.
-     * @return LayoutIoProvider instance
+     * @return LayoutIoProtocolProvider instance
      */
-    public LayoutIoProvider   getProtocolProvider();
+    public LayoutIoProtocolProvider   getProtocolProvider();
 
     /***
      *  Set up this object with a packet from a node, regardless of operation-code and any check-value.
@@ -56,7 +56,20 @@ public interface NodeMessage< TUnitAddr extends Comparable<TUnitAddr> >
 
     /*---------------------------  Properties  ------------------------------*/
 
+    /***
+     *  Set all bytes of the message, include address.
+     *  And data-link or escaping will be added during transmission or stripped during reception.
+     * @param allBytes bytes of message
+     */
     public void         setAllBytes( byte[] allBytes );
+
+    /***
+     *  Set all bytes of the message, but not the address byte(s).
+     *  If the address straddles bits of one or more bytes, then those bits should be zero.
+     *  They will be filled in during transmission.
+     *  And data-link or escaping will be added during transmission or stripped during reception.
+     * @param allBytes bytes of message, skipping address bytes if the addres uses the whole byte.
+     */
     public void         setBytesExceptAddress( byte[] bytesSansAddr );
 
     /***
@@ -73,9 +86,20 @@ public interface NodeMessage< TUnitAddr extends Comparable<TUnitAddr> >
      *
      * @return all bytes that must be sent for this message to be xmitted to a node.
      */
-    public byte[]       getAllBytes();
+    public byte[]       getDataLinkBytes();
 
+    /***
+     *  Sets the address of this message by remembering it outside of any message bytes.
+     *  When {@link #getMessageBytes() } or {{@link #getDataLinkBytes() } is called, the
+     *  address is inserted into the result.
+     *
+     * @param addr unit address.
+     */
     public void         setAddress( TUnitAddr addr );
 
+    /***
+     *  Returns the unit address if set, otherwise deciphers address in message-bytes.
+     * @return address if known, else {@code null} if unknown.
+     */
     public TUnitAddr    getAddress();
 }

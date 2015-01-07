@@ -31,6 +31,8 @@ import com.crunchynoodles.util.exceptions.UnsupportedKeyException;
  *  Methods to control polling but no instance-var for it.
  *  Likely it is state information of some deep-down polling state-machine engine object.
  * <p>
+ *  This class-type is also a properties-bean.
+ * <p>
  *  See: http://tutorials.jenkov.com/java/abstract-classes.html
  *
  * @author brian
@@ -42,7 +44,7 @@ public abstract class AbstractLayoutIoTransport implements LayoutIoTransport
         // who will actually use the no-args constructor?
     }
 
-    protected AbstractLayoutIoTransport( LayoutIoProvider owner )
+    protected AbstractLayoutIoTransport( LayoutIoProtocolProvider owner )
     {
         m_is_opened  = false;
         m_owner      = owner;
@@ -146,7 +148,7 @@ public abstract class AbstractLayoutIoTransport implements LayoutIoTransport
     protected HashMap< String, XmlPropertyBean >  m_properties = new HashMap<>();
 
     /*** IO Provider that we belong to. */
-    transient protected LayoutIoProvider      m_owner;
+    transient protected LayoutIoProtocolProvider      m_owner;
 
     /***  Logging output spigot. */
     transient private static final Logger LOG = Logger.getLogger( AbstractLayoutIoTransport.class.getName() );

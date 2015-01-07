@@ -9,7 +9,7 @@
  ***  Unless required by applicable law or agreed to in writing, software
  ***  distributed under the License is distributed on an "AS IS" BASIS,
  ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- ***  See the License for the specific languatge governing permissions and
+ ***  See the License for the specific language governing permissions and
  ***  limitations under the License.
  ***/
 
@@ -17,23 +17,25 @@ package org.embeddedrailroad.eri.layoutio.cmri;
 
 import org.embeddedrailroad.eri.ctc.exceptions.PacketCheckException;
 import org.embeddedrailroad.eri.ctc.exceptions.PacketUnknownException;
-import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
+import org.embeddedrailroad.eri.layoutio.LayoutIoProtocolProvider;
 import org.embeddedrailroad.eri.layoutio.NodeMessage;
 
 /**
- *
+ *  One CMRI message, either to send or received.
  * @author brian
  */
 public class CmriNodeMessage implements NodeMessage<Integer>
 {
-
+    /***
+     *  Create message with no payload and default unit address.
+     */
     public CmriNodeMessage()
     {
         m_address = 0;
     }
 
     @Override
-    public LayoutIoProvider getProtocolProvider()
+    public LayoutIoProtocolProvider getProtocolProvider()
     {
         return CmriLayoutProviderImpl.getInstance();
     }
@@ -66,7 +68,7 @@ public class CmriNodeMessage implements NodeMessage<Integer>
     }
 
     @Override
-    public byte[] getAllBytes()
+    public byte[] getDataLinkBytes()
     {
         return java.util.Arrays.copyOf( m_bytes, m_bytes.length );
     }

@@ -37,13 +37,25 @@ import org.embeddedrailroad.eri.layoutio.LayoutIoActivator;
  */
 public class CmriIoActivator implements LayoutIoActivator
 {
+    /***
+     *  Short-and-sweet name used to name ourselves to the {@link LayoutIoProviderManager}.
+     *  Contains no chars that might not be legal file name, e.g. no slash, quote, colon, or
+     *  control chars.
+     */
     public final static String  PLAIN_NAME_STRING = "cmri";
 
+    /***
+     *  Public constructor so loader can call newInstance() on class-ref.
+     */
     public CmriIoActivator()
     {
-        // public constructor so loader can call newInstance() on class-ref.
+        // do nothing.
     }
 
+    /**
+     *
+     * @param context An opaque object from the {@link LayoutIoProviderManager}.
+     */
     @Override
     public void start( BundleContext context )
     {
@@ -57,6 +69,10 @@ public class CmriIoActivator implements LayoutIoActivator
         mgr.addProvider( PLAIN_NAME_STRING, m_the_provider.getLongDescription(), m_the_provider );
     }
 
+    /**
+     *
+     * @param context same as passed to {@link #start(org.osgi.framework.BundleContext) }
+     */
     @Override
     public void stop( BundleContext context )
     {

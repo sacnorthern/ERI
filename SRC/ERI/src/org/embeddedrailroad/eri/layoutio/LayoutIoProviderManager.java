@@ -62,7 +62,7 @@ public class LayoutIoProviderManager
      *   @param longDescr longer descriptive text, in EN_us.
      *   @param providerSingleton Provider of transport objects.
      */
-    public void addProvider( String name, String longDescr, LayoutIoProvider providerSingleton )
+    public void addProvider( String name, String longDescr, LayoutIoProtocolProvider providerSingleton )
     {
 
         ProviderTransportStruct  pts = new ProviderTransportStruct( name, longDescr, providerSingleton );
@@ -145,11 +145,11 @@ public class LayoutIoProviderManager
     {
         public String               shortName;      // key.
         public String               longDescr;
-        public LayoutIoProvider     provider;       // singleton.
+        public LayoutIoProtocolProvider     provider;       // singleton.
 
         public ProviderTransportStruct( String shortName,
                                         String longDescr,
-                                        LayoutIoProvider provider )
+                                        LayoutIoProtocolProvider provider )
         {
             this.shortName = shortName;
             this.longDescr = longDescr;

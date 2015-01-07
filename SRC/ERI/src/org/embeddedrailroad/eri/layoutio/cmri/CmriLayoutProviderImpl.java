@@ -19,16 +19,18 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
+import org.embeddedrailroad.eri.layoutio.LayoutIoProtocolProvider;
 import org.embeddedrailroad.eri.layoutio.LayoutIoTransport;
 
 /**
  *  Provides instances of protocol transports; this object is effectively a singleton.
- *  It holds a reference to a model shared amongst all CMRI nodes.
+ *  Use {@link #makeChannel(java.lang.String, java.lang.Integer) } to create insteances
+ *  of the protocol.
+ *  This singleton owns the "layout model" shared amongst all CMRI nodes.
  *
  * @author brian
  */
-public class CmriLayoutProviderImpl implements LayoutIoProvider
+public class CmriLayoutProviderImpl implements LayoutIoProtocolProvider
 {
 
     private CmriLayoutProviderImpl()
@@ -95,11 +97,13 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
         //  sub-class knowing it will be created:
         //  http://stackoverflow.com/questions/3001490/creating-an-instance-of-a-subclass-extending-an-abstract-class-java
 
-        //  If don't already got that channel running, make it first.
+        //  See if channel exist...
         CmriSerialLayoutTransport  transport = m_channels.get( channel );
+
         if( transport == null )
         {
-            transport = new CmriSerialLayoutTransport( this );
+            //  If don't already got that channel running, make it first.
+            transport = new CmriSerialLayoutTransport( this, this.m_io_model );
 
             m_channels.put( channel, transport );
         }
@@ -145,8 +149,10 @@ public class CmriLayoutProviderImpl implements LayoutIoProvider
 
     //----------------------------  INSTANCE VARS  ----------------------------
 
+    /***  Layout input-output model shared amongst all of CMRI protocol. */
     protected CmriLayoutModelImpl   m_io_model;
 
+    /***  List of known channels of CMRI protocol. */
     protected HashMap<Integer, CmriSerialLayoutTransport>   m_channels;
 
     /***  Logging output spigot. */

@@ -37,7 +37,7 @@ public abstract class AbstractNodeMessageManager implements NodeMessageManager
         // Send all output to the Appendable object sb
         Formatter  formatter = new Formatter( sb, Locale.getDefault() );
 
-        final byte[]   bytes = mesg.getAllBytes();
+        final byte[]   bytes = mesg.getDataLinkBytes();
 
         int   bytes_per_line = Integer.MAX_VALUE;
         if( (options & PKT_FMT_8_BYTE_DUMP) != 0 )

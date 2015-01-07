@@ -25,19 +25,21 @@ import com.crunchynoodles.util.StringUtils;
 import com.crunchynoodles.util.XmlPropertyBean;
 import org.embeddedrailroad.eri.layoutio.AbstractLayoutIoTransport;
 import org.embeddedrailroad.eri.layoutio.LayoutIoController;
-import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
+import org.embeddedrailroad.eri.layoutio.LayoutIoModel;
+import org.embeddedrailroad.eri.layoutio.LayoutIoProtocolProvider;
 
 
 /***
- *   Create connection to an IO port and make the {@link LayoutIoController} object with our
- *   own C/MRI model (database).
+ *   Create connection to an IO port and make the {@link LayoutIoController} object with
+ *   the shared C/MRI layout model (database).
+ *   This object is also a properties-bean.
  * <p>
  *  Java RXTX library, see: http://users.frii.com/jarvi/rxtx/download.html
  * <p>
- *   To install the libraries (instructions from <a href="http://www.jcontrol.org/download/readme_rxtx_en.html">JControl</a>):
+ *   To install the libraries (instructions from <a href="http://www.jcontrol.org/download/readme_rxtx_en.html">JControl.com</a>):
  * <ol>
- *     <li> Copy rxtxSerial.dll to %JAVA_HOME%\bin, (%JAVA_HOME% is the folder where JRE is installed on your system; e.g. c:\Program Files\Java\j2re1.4.1_01)
- *     <li> Copy RXTXcomm.jar to %JAVA_HOME%\lib\ext
+ *     <li> Copy rxtxSerial.dll to %JAVA_HOME%\bin\ (%JAVA_HOME% is the folder where JRE is installed on your system; e.g. c:\Program Files\Java\j2re1.4.1_01)
+ *     <li> Copy RXTXcomm.jar to %JAVA_HOME%\lib\ext\
  * </ol>
  *
  * @author brian
@@ -45,10 +47,16 @@ import org.embeddedrailroad.eri.layoutio.LayoutIoProvider;
 public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
 {
 
-    /* package */ CmriSerialLayoutTransport( LayoutIoProvider owner )
+    /***
+     *  Create a transport that can attach to a physical port , that becomes the channel.
+     *
+     * @param owner Our protocol provider.
+     * @param model shared model among all CMRI transports.
+     */
+    /* package */ CmriSerialLayoutTransport( LayoutIoProtocolProvider owner, CmriLayoutModelImpl model )
     {
         super(owner);
-        m_model = new CmriLayoutModelImpl();
+        m_model = model;
     }
 
     @Override
@@ -73,7 +81,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
     }
 
     /***
-     *  Open up the port in PROP_PORT using PROP_SETTINGS values.
+     *  Open up the port in PROP_PORT using PROP_SETTINGS values that includes baud rate.
      *  Port name PROP_PORT is case-insensitive, but must be a "serial port" type.
      *
      * @return true on success, otherwise false when failed and logging message put.
@@ -83,7 +91,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
      * @throws IllegalArgumentException if discoveryRate less-than or equal to 0, or above 1.0
      */
     @Override
-    public synchronized boolean attach()
+    public synchronized boolean  attach()
     {
         XmlPropertyBean  wantedPortBean = this.getProperty( PROP_PORT );
         String  wantedPortName = (String) wantedPortBean.getValue();
@@ -165,7 +173,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         }
         catch( NumberFormatException | UnsupportedCommOperationException ex )
         {
-            LOG.log( Level.WARNING, String.format( "Serial port \"%1$s\" can't be set.", wantedPortName ), ex );
+            LOG.log( Level.WARNING, String.format( "Serial port \"%1$s\" can't be set with \"%2$s\".", wantedPortName, settings_all ), ex );
             port.close();
             return false;
         }
@@ -230,19 +238,30 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
     /*** How fast new units are brought on-line, per poll cycle.  E.g. 0.5 means every two cycles. */
     public final static float   DEFAULT_DISCOVERY_RATE = 0.5f;
 
-    public final static String  PROP_TIMEOUT = "timeout";           // in milliseconds
-    public final static String  PROP_PORT    = "port";              // string name
-    public final static String  PROP_SETTINGS = "settings";         // 9600,8,n,1
-    public final static String  PROP_DISCOVERY_RATE = "discoverRate";   // float, per poll cycles.
+    /***  Property Name: time to wait, in milliseconds. */
+    public final static String  PROP_TIMEOUT = "timeout";
 
+    /***  Property Name: string name of IO port, OS dependent. */
+    public final static String  PROP_PORT    = "port";
+
+    /***  Property Name: string of baud rate, bits, parity, stop-bits, e.g. "9600,8,n,1". */
+    public final static String  PROP_SETTINGS = "settings";
+
+    /***  Property Name: float, per poll cycles. */
+    public final static String  PROP_DISCOVERY_RATE = "discoverRate";
+
+    /***  Array of all settable properties. */
     protected final String[]  m_key_list = new String[] { PROP_TIMEOUT, PROP_PORT, PROP_SETTINGS, PROP_DISCOVERY_RATE };
 
     //---------------------------  INSTANCE VARS  -----------------------------
 
+    /***  Serial port to use.  Requires {@link gnu.io.SerialPort} to inter-operate with host OS. */
     transient protected SerialPort  m_port;
 
+    /*** Thing that will poll units on one network. */
     transient protected CmriPollMachine  m_poller;
 
+    /*** The shared CMRI IO model, owned by {@link CmriLayoutProviderImpl}. */
     protected final CmriLayoutModelImpl   m_model;
 
 

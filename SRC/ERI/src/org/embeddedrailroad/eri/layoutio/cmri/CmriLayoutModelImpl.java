@@ -32,6 +32,9 @@ import org.embeddedrailroad.eri.layoutio.AbstractLayoutIoModelIntegerAddress;
  */
 public class CmriLayoutModelImpl extends AbstractLayoutIoModelIntegerAddress
 {
+    /***
+     *  Public constructor since OK to make one.
+     */
     public CmriLayoutModelImpl()
     {
     }
