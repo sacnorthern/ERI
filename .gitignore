@@ -11,3 +11,6 @@ dist/*
 *.bak
 *~
 *.zip
+/SRC/CrunchyNoodlesCommon/nbproject/private/
+/SRC/CrunchyNoodlesCommon/dist/
+/SRC/CrunchyNoodlesCommon/build/
