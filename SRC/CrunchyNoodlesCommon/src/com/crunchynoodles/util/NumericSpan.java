@@ -1,7 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/***  Java Commons and Niceties Library from CrunchyNoodles.com
+ ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***
+ ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
+ ***  you may not use this file except in compliance with the License.
+ ***  You may obtain a copy of the License at:
+ ***        http://www.apache.org/licenses/LICENSE-2.0
+ ***
+ ***  Unless required by applicable law or agreed to in writing, software
+ ***  distributed under the License is distributed on an "AS IS" BASIS,
+ ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ***  See the License for the specific languatge governing permissions and
+ ***  limitations under the License.
+ ***/
+
 package com.crunchynoodles.util;
 
 /**
@@ -10,8 +21,9 @@ package com.crunchynoodles.util;
  *  If these values are very small or very large ( e.g. 1e50 ), the hash-code will be 0.
  *  The low and high end are bounded, i.e. they cannot be infinity.
  *
- *  An alternative implementation has {@code T} extend {@code Comparable} instead of
- *  {@code Number}.  The latter would allow a {@code String} span.
+ *  <p> An alternative implementation could have {@code T} extend {@code Comparable}
+ *  instead of {@code Number}.
+ *  The class could then allow a {@code String} span.
  *
  * @author brian
  * @see http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/collect/Range.html
@@ -52,15 +64,15 @@ public class NumericSpan<T extends Number> {
      *  Converts values to {@code double} for comparing.
      * @param to_include value to include in low &lt;= value &lt;= high.
      */
-    public void stretch( T to_include )
+    public void stretch( T toInclude )
     {
-        if( to_include.doubleValue() < m_low.doubleValue() )
+        if( toInclude.doubleValue() < m_low.doubleValue() )
         {
-            this.m_low = to_include;
+            this.m_low = toInclude;
         }
-        else if( m_high.doubleValue() < to_include.doubleValue() )
+        else if( m_high.doubleValue() < toInclude.doubleValue() )
         {
-            this.m_high = to_include;
+            this.m_high = toInclude;
         }
     }
 

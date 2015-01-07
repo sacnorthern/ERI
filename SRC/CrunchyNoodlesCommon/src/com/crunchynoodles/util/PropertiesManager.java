@@ -1,7 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/***  Java Commons and Niceties Library from CrunchyNoodles.com
+ ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***
+ ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
+ ***  you may not use this file except in compliance with the License.
+ ***  You may obtain a copy of the License at:
+ ***        http://www.apache.org/licenses/LICENSE-2.0
+ ***
+ ***  Unless required by applicable law or agreed to in writing, software
+ ***  distributed under the License is distributed on an "AS IS" BASIS,
+ ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ***  See the License for the specific languatge governing permissions and
+ ***  limitations under the License.
+ ***/
+
 package com.crunchynoodles.util;
 
 import java.io.FileInputStream;
@@ -24,13 +35,14 @@ public class PropertiesManager
 
     /**  Key for font-name.  Value might be "verdana" or "lucinda console". */
     public final static String   FONT_NAME_STR = "font.family";
+
     /**  Key for font-size.  Value might "12". */
     public final static String   FONT_SIZE_INT = "font.size";
 
     public final static String   MAIN_WINDOW = "mainWindow";
 
     /***
-     *   Used for creating filename of properties file.  Not used for naming properties in the file.
+     *   Used for creating file name of properties file.  Not used for naming properties in the file.
      */
     public static String    ApplicationName;
 
@@ -243,12 +255,13 @@ public class PropertiesManager
     /***
      *  Some properties can have multiple instances, up to 9999.
      *  E.g. the last five open files will be stored as:
-     * <ul> file.lastopen.1=sample.txt <br/>
+     * <ul><tt> file.lastopen.1=sample.txt <br/>
      *      file.lastopen.2=example.txt <br/>
      *      file.lastopen.3=ouch.txt <br/>
      *      file.lastopen.4=dual.txt <br/>
-     *      file.lastopen.5=likely.txt <br/>
-     *  </ul>
+     *      file.lastopen.5=unlikely.txt <br/>
+     *  </tt></ul>
+     * The sequence is 1-based, i.e. "lastopen.0" is not used.
      * Once a gap in the sequence is detected, the list has ended.
      * I.e. if {@code file.lastopen.3} were missing, then the list is considered
      * to end at ".2" and not ".5".  Sequence starts at 1.

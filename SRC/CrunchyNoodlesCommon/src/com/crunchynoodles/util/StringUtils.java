@@ -1,7 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/***  Java Commons and Niceties Library from CrunchyNoodles.com
+ ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***
+ ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
+ ***  you may not use this file except in compliance with the License.
+ ***  You may obtain a copy of the License at:
+ ***        http://www.apache.org/licenses/LICENSE-2.0
+ ***
+ ***  Unless required by applicable law or agreed to in writing, software
+ ***  distributed under the License is distributed on an "AS IS" BASIS,
+ ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ***  See the License for the specific languatge governing permissions and
+ ***  limitations under the License.
+ ***/
+
 package com.crunchynoodles.util;
 
 import java.util.ArrayList;
@@ -29,9 +40,8 @@ public class StringUtils {
         ArrayList<String>  items = new ArrayList<String>();
         int     start, end;
 
+        //  If input does begin with DQUOTE, then make it all one 'word', trimmed of spaces.
         start = withQuotes.indexOf( CHAR_DQUOTE );
-
-        //  If input doesn't begin with DQUOTE, then make it all one 'word', trimmed of spaces.
         if( start > 0 )
         {
             String before = withQuotes.substring( 0, start-1 ).trim();
