@@ -46,7 +46,7 @@ public class XmlPropertyBean
      *  Construct new XmlProperty from parts.
      *  The {@code valuestr} will be decoded from the string into appropriate thing
      *  based on {@code typestr}.
-     *  There are a few chars illegal in {@link key}, see {@link MAGIC_KEY_DELIM_CHARS}.
+     *  There are a few chars illegal in {@code keystr}, see {@link #MAGIC_KEY_DELIM_CHARS}.
      *  The types "string" and "list" are left as-is.
      *  A "list" is either comma- or semi-colon-separated values.
      *

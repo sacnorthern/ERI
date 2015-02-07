@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *  A very simple buffer that does NOT wrap but can be enabled or disabled (to block new
- *  {@link SynchronizedByteQueue#add(byte) } calls.
+ *  {@link #add(byte) } calls.
  *  The buffer is filled one {@code byte} at a time , but returns a byte-array
  *  when requested to give up its content.
  *  If first-byte matching is enabled, then initial bytes that do not match are ignored.
@@ -201,7 +201,7 @@ public class SynchronizedByteBuffer
      *  Change if accumulation of bytes is enabled or disabled.
      *  When disabled, no new bytes can be added to the buffer.
      *
-     * @param en {@true} to permit queuing of incoming bytes.
+     * @param en {@code true} to permit queuing of incoming bytes.
      */
     public void    setEnabled( boolean en )
     {

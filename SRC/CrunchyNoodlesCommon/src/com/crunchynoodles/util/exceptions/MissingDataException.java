@@ -48,8 +48,7 @@ public class MissingDataException
     /***
      *  Construction run-time exception with a canned "missing data" message.
      *
-     * @param dupKey Key string that is duplicate
-     * @param dummy  ignored
+     * @param element XML element node that's missing, used for its "name" property.
      */
     public MissingDataException( Element element )
     {

@@ -34,7 +34,7 @@ public class XmlUtils {
 
     /***
      *  Print every attribute and value of a node, one line at a time.
-     *  If {@link entry} is null, then outputs "&lt;null/&gt;".
+     *  If {@code entry} is null, then outputs "<tt>&lt;null/&gt;</tt>".
      *
      * @param outs where to send output, cannot be null.
      * @param entry XML node to examine, OK if null.

@@ -30,7 +30,7 @@ public interface XmlEntityBean
 {
 
     /**
-     *  String to use in {@link #toString()} when a null-reference is encountered.
+     *  String to use in {@link Object#toString()} when a null-reference is encountered.
      */
     public final   String  NULL_OBJECT_REF_STRING = "null";
 

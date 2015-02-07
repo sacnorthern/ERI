@@ -68,7 +68,7 @@ public class XmlPropertyListUtils
     /***
      *  Parse an XML property element, with data conversion of cdata to 'type'.
      *
-     * @param propertyElm element with tags {@link XmlPropertyBean.ATTR_KEY} and {@link XmlPropertyBean.ATTR_TYPE}.
+     * @param propertyElm element with tags {@link XmlPropertyBean#ATTR_KEY} and {@link XmlPropertyBean#ATTR_TYPE}.
      * @return {@link XmlPropertyBean} holding key, type-identification, and some data.
      * @throws IllegalArgumentException from {@code new XmlPropertyBean()}
      * @throws NumberFormatException Can't convert CDATA into type.

@@ -9,7 +9,7 @@
  ***  Unless required by applicable law or agreed to in writing, software
  ***  distributed under the License is distributed on an "AS IS" BASIS,
  ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- ***  See the License for the specific languatge governing permissions and
+ ***  See the License for the specific language governing permissions and
  ***  limitations under the License.
  ***/
 
@@ -22,12 +22,12 @@ import java.util.Objects;
 /**
  *  A C#-like key-value pair with comparing!
  *  Once set, the 'key' cannot change.  However, the 'value' is free to change.
- *  That's how "interface java.util.Map.Entry&lt;K,V&gt;" works.
+ *  That's how "<tt>interface java.util.Map.Entry&lt;K,V&gt;</tt>" works.
  *
  * @author brian
  * @param <KeyType> Comparable key.
- * @param <ValueType> Arbitraty class-type for value derived-from or associated-with key's value.
- * @see http://commons.apache.org/proper/commons-lang/javadocs/api-3.1/org/apache/commons/lang3/tuple/Pair.html
+ * @param <ValueType> Arbitrary class-type for value derived-from or associated-with key's value.
+ * @see <a href="http://commons.apache.org/proper/commons-lang/javadocs/api-3.1/org/apache/commons/lang3/tuple/Pair.html">Apache Pair</a>
  */
 public class KeyValue< KeyType extends Comparable, ValueType >
         implements Comparable<KeyValue< KeyType, ValueType >>,  Map.Entry< KeyType,ValueType >

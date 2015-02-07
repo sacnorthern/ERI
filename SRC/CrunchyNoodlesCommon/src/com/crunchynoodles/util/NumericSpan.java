@@ -26,7 +26,7 @@ package com.crunchynoodles.util;
  *  The class could then allow a {@code String} span.
  *
  * @author brian
- * @see http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/collect/Range.html
+ * @see <a href="http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/collect/Range.html">Guava Range</a>
  */
 public class NumericSpan<T extends Number> {
 
@@ -62,7 +62,7 @@ public class NumericSpan<T extends Number> {
     /***
      *  Expand the span to include a new value.
      *  Converts values to {@code double} for comparing.
-     * @param to_include value to include in low &lt;= value &lt;= high.
+     * @param toInclude value to include in low &lt;= value &lt;= high.
      */
     public void stretch( T toInclude )
     {

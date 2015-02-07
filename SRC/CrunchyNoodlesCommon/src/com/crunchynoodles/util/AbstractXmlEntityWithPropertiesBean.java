@@ -42,14 +42,14 @@ public abstract class AbstractXmlEntityWithPropertiesBean
     /***
      *  Insert a new property into the list, but throws exception if property already known.
      *  The property's value is converted from a string into an internal form.
-     *  If a conversion-exception occurs, then {@link value} could not be converted based
-     *  on {@link typestr}'s description.
+     *  If a conversion-exception occurs, then {@code value} could not be converted based
+     *  on {@code typestr}'s description.
      *
      * @param key String name of key
      * @param typestr Encoding and type of value
      * @param value String encoding of value, it will be converted ; must not be null.
      *
-     * @throws DuplicateKeyException {@link key} already in property-list.
+     * @throws DuplicateKeyException {@code key} already in property-list.
      */
     public void addProperty( String key, String typestr, String value )
             throws DuplicateKeyException
