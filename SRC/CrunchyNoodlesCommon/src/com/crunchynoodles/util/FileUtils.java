@@ -57,7 +57,7 @@ public class FileUtils
      * @return file as whole string, with line endings in tack.
      * @throws FileNotFoundException
      * @throws IOException
-     * @see http://stackoverflow.com/questions/326390/how-to-create-a-java-string-from-the-contents-of-a-file
+     * @see <a href="http://stackoverflow.com/questions/326390/how-to-create-a-java-string-from-the-contents-of-a-file">java string from file contents</a>
      */
     public static String readWholeFile( String filename, String charSet )
             throws FileNotFoundException, IOException
@@ -110,8 +110,6 @@ public class FileUtils
      */
     public static Boolean getArduinoRunCommand( List<String> foundCmd )
     {
-        String   ARDUINO_APPL_NAME = "arduino";
-
         int[]   returnValue = new int[1];
         List<String>  check_output = null;
         String[]    check_cmd;
@@ -125,7 +123,7 @@ public class FileUtils
             switch( s_osBrand )
             {
                 case OS_WINDOWS_MULTI :
-                    check_cmd = new String[] { "reg", "QUERY", "HKCU\\Software\\Classes\\Applications\\" + ARDUINO_APPL_NAME + ".exe\\shell\\open\\command" };
+                    check_cmd = new String[] { "reg", "QUERY", "HKCU\\Software\\Classes\\Applications\\" + PROP_ARDUINO_EXEC_NAME + ".exe\\shell\\open\\command" };
                     check_output = runCommandGetOutput( null, check_cmd, returnValue );
                     if( returnValue[0] != 0 )
                         break;
@@ -146,7 +144,7 @@ public class FileUtils
                 case OS_LINUX :
                 case OS_MAC_X86 :
                 case OS_SOLARIS :
-                    check_cmd = new String[] { "which", ARDUINO_APPL_NAME };
+                    check_cmd = new String[] { "which", PROP_ARDUINO_EXEC_NAME };
                     check_output = runCommandGetOutput( null, check_cmd, returnValue );
                     if( returnValue[0] != 0 )
                         break;
@@ -154,7 +152,7 @@ public class FileUtils
                     //  should get one line, line #1 {{no arduino in /bin /sbin /usr/bin}} ;
                     //  or on success, line #1 {{/usr/bin/arduino}}
                     runcmd = check_output.get(0);
-                    if( runcmd == null || runcmd.startsWith( "no " + ARDUINO_APPL_NAME ) )
+                    if( runcmd == null || runcmd.startsWith( "no " + PROP_ARDUINO_EXEC_NAME ) )
                     {
                         break;
                     }
@@ -192,13 +190,12 @@ public class FileUtils
      *  For MacOS, the list  is { "/dev/tty.Bluetooth-Modem", "/dev/tty.Bluetooth-PDA-Sync" }.
      *
      * @return List of strings to use for serial-comm ports, or null if errors.
-     * @throws {@code FileNotFoundException} when can't determine any ports to return.
-     * @throws {@code IOException} when trouble executing command to find serial-comm ports.
-     *
-     * @see https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/ts_cmd_changeport.mspx?mfr=true
-     * @see http://pbxbook.com/other/mac-tty.html
+     * @throws FileNotFoundException when can't determine any ports to return.
+     * @throws IOException when trouble executing command to find serial-comm ports.
+     * @see <a href="https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/ts_cmd_changeport.mspx?mfr=true">change port cmd</a>
+     * @see <a href="http://pbxbook.com/other/mac-tty.html">Mac TTY devices</a>
      */
-    public List<String> GetCommPortList()
+    public List<String> getCommPortList()
             throws FileNotFoundException, IOException
     {
         List<String>  comm_ports = new ArrayList<String>();
@@ -372,6 +369,8 @@ public class FileUtils
         return false;
     }
 
+    /*** Arduino application executable's name. OK to change it. */
+    public static String    PROP_ARDUINO_EXEC_NAME = "arduino";
 
     public static final int OS_UNKNOWN = -1;
     public static final int OS_WINDOWS_SINGLE_USER = 1;
@@ -437,8 +436,7 @@ public class FileUtils
      * @param args array of tokens to pass, where {@code args[0]} is name of program to run.
      * @param cmdReturnValue - int[0] is return value of process
      * @return captured output as string-list on successful exec, else null if troubles.
-     *
-     * @see http://stackoverflow.com/questions/1410741/want-to-invoke-a-linux-shell-command-from-java
+     * @see <a href="http://stackoverflow.com/questions/1410741/want-to-invoke-a-linux-shell-command-from-java">Invoke Shell from Java</a>
      */
     public static List<String> runCommandGetOutput( String startFolder, String[] args, int[] cmdReturnValue )
             throws IOException, InterruptedException
