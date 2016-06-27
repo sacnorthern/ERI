@@ -1,5 +1,5 @@
 /***  Java-ERI    Java-based Embedded Railroad Interfacing.
- ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***  Copyright (C) 2014,  in USA by Brian Witt , bwitt@value.net
  ***
  ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
  ***  you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.util.List;
  *  The physical connection can be shared, e.g. "tcp" or "udp", or private and not shared, e.g. "serial".
  *  All units on bank must have a unique address, though any may receive broadcast messages. <br>
  *
- *  <pre> &lt;!ELEMENT bank (comms,unit*)&gt;
+ *  <pre> &lt;!ELEMENT bank (comms,unitList)&gt;
  * &lt;!ATTLIST bank
  *            protocol   CDATA  #REQUIRED
  *            address    CDATA  #REQUIRED
@@ -53,6 +53,7 @@ public class BankBean
 
     public BankBean()
     {
+        this.m_unit_list = new ArrayList<UnitBean>();
         m_alias = "";
     }
 
@@ -67,7 +68,7 @@ public class BankBean
         if( m_protocol != null )        hc ^= m_protocol.hashCode();
         if( m_address != null )         hc ^= m_address.hashCode();
         if( m_alias != null )           hc ^= m_alias.hashCode();
-        if( m_unit_element != null )    hc ^= m_unit_element.hashCode();
+        if( m_unit_list != null )    hc ^= m_unit_list.hashCode();
         if( m_physical != null )        hc ^= m_physical.hashCode();
 
         return( hc );
@@ -114,9 +115,9 @@ public class BankBean
             sb.append( NULL_OBJECT_REF_STRING );
         }
 
-        sb.append( ",m_unit_element={" );
-        if( m_unit_element != null )
-            sb.append( m_unit_element.toString() );     // List<UnitBean>
+        sb.append( ",m_unit_list={" );
+        if( m_unit_list != null )
+            sb.append( m_unit_list.toString() );     // List<UnitBean>
         else
             sb.append( NULL_OBJECT_REF_STRING );
 
@@ -142,8 +143,8 @@ public class BankBean
 
     // ----------------------------------------------------------------------------
 
-    public static final String ELEMENT_UNIT = "unit";
-    protected List<UnitBean>          m_unit_element = new ArrayList<UnitBean>();
+    public static final String ELEMENT_UNIT_LIST = "unitList";
+    protected List<UnitBean>          m_unit_list;
 
     /***
      *  Return known units in an array, order is arbitrary.
@@ -151,7 +152,7 @@ public class BankBean
      */
     public UnitBean[]  getUnits()
     {
-        return (UnitBean[]) m_unit_element.toArray();
+        return (UnitBean[]) m_unit_list.toArray();
     }
 
     /***
@@ -160,7 +161,7 @@ public class BankBean
      */
     public Iterator<UnitBean> getUnitIterator()
     {
-        return m_unit_element.iterator();
+        return m_unit_list.iterator();
     }
 
     /***
@@ -171,7 +172,18 @@ public class BankBean
      */
     public void     addUnit( UnitBean unitElm )
     {
-        m_unit_element.add( unitElm );
+        m_unit_list.add( unitElm );
+    }
+
+    /***
+     *  Inject the caller's list of {@link UnitBean} objects.
+     *  Shallow copy.
+     *
+     * @param unitList List to shallow copy.
+     */
+    public void     addUnitList( List<UnitBean> unitList )
+    {
+        m_unit_list.addAll( unitList );
     }
 
     // ----------------------------------------------------------------------------

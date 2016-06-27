@@ -6,23 +6,28 @@
   <bankList>
     <bank protocol="cmri" address="1" alias="Layout" physical="serial">
       <network enabled="yes">
+        <!-- various key-values for this physical network -->
         <propertyList>
-          <property key="timeout"    type="int">2300</property>
+          <property key="timeout"    type="int">1250</property>
           <property key="port"       type="string">com1</property>   <!-- TCP / UDP is port# -->
           <property key="settings"   type="list">9600,8,e,1</property>
           <property key="discoverRate" type="float">0.334</property>     <!-- try non-responding after rate/(known#+1) polls -->
         </propertyList>
       </network>
 
-      <unit address="1" type="cpNode" protocol="1" alias="Littleton">
-        <propertyList>
-          <property key="sn"       type="string">39734</property>  <!-- verified somehow -->
-          <property key="initbytes.1" type="hexbytes">8F</property>
-        </propertyList>
-        <inputGroup  first="0" last="31" />
-        <inputGroup  first="96" last="127" />
-        <outputGroup first="0" last="47" />
-      </unit>
+      <unitList>
+        <unit address="1" type="cpNode" protocol="1" alias="Littleton">
+          <!-- various key-values for this particular node -->
+          <propertyList>
+            <property key="sn"       type="string">39734</property>  <!-- verified somehow -->
+            <property key="initbytes.1" type="hexbytes">0FF0</property>  <!-- pre-computed initialization string -->
+          </propertyList>
+          <!-- 64 inputs (not consecutive) ; 48 outputs -->
+          <inputGroup  first="0" last="31" />
+          <inputGroup  first="96" last="127" />
+          <outputGroup first="0" last="47" />
+        </unit>
+      </unitList>
 
     </bank>
   </bankList>

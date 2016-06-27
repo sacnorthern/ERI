@@ -130,18 +130,18 @@ public class XmlLayoutConfigurationSpecification
         int        start = 0;
         Element    elm;
 
-        // <bankList> is first and required.
+        // <bankList> is first, must occur just once, and is required.
         elm = (Element) entries.item(start);
         if( elm.getNodeName().equals( LayoutConfigurationBean.PROP_BANK_LIST ) )
         {
             System.out.printf( "LayoutConfigurationBean child #%d is \"%s\"\n", start, elm.getNodeName() );
 
             /**  <!ELEMENT bankList (bank*)>  **/
-            lc.setBankList( importBankList( elm ) );
+           lc.setBankList( importBankList( elm ) );
             ++start;
         }
 
-        // <layoutSensorList> is next and required.
+        // <layoutSensorList> is next, must occur just once, and is required.
         elm = (Element) entries.item(start);
         if( elm.getNodeName().equals( LayoutConfigurationBean.PROP_LAYOUT_SENSOR_LIST ) )
         {
@@ -172,10 +172,10 @@ public class XmlLayoutConfigurationSpecification
         for( int start = 0 ; start < entries.getLength() ; ++start )
         {
             elm = (Element) entries.item(start);
+            System.out.printf( "BankListBean child #%d is \"%s\"\n", start, elm.getNodeName() );
+
             if( elm.getNodeName().equals( BankListBean.PROP_BANK ) )
             {
-                System.out.printf( "BankListBean child #%d is \"%s\"\n", start, elm.getNodeName() );
-
                 /**  <!ELEMENT bank (comms unit*)>  **/
                 bank_list.add( importBank( elm ) );
             }
@@ -258,12 +258,12 @@ public class XmlLayoutConfigurationSpecification
         for( ; start < entries.getLength() ; ++start )
         {
             elm = (Element) entries.item(start);
-            if( elm.getNodeName().equals( BankBean.ELEMENT_UNIT ) )
+            if( elm.getNodeName().equals( BankBean.ELEMENT_UNIT_LIST ) )
             {
                 System.out.printf( "BankBean child #%d is \"%s\"\n", start, elm.getNodeName() );
 
                 /**  <!ELEMENT bank (...,unit*)> **/
-                bb.addUnit( importUnit( elm ) );
+                bb.addUnitList( importUnitList( elm ) );
             }
             else
             {
@@ -310,6 +310,31 @@ public class XmlLayoutConfigurationSpecification
     }
 
     // ----------------------------------------------------------------------------
+
+    static List<UnitBean> importUnitList( Element unitListElm )
+            throws SAXParseException
+    {
+        List<UnitBean>  unitList = new ArrayList<UnitBean>();
+
+        //  <!ELEMENT unitList (unit*)>
+        NodeList  children = unitListElm.getChildNodes();
+        for( int ndx = 0 ; ndx < children.getLength() ; ++ndx )
+        {
+            Element one = (Element) children.item( ndx );
+            if( one.getNodeName().equalsIgnoreCase( UnitBean.PROP_ELEMENT_NAME ) )
+            {
+                unitList.add( importUnit( one ) );
+            }
+            else
+            {
+                throw new SAXParseException( BankBean.ELEMENT_UNIT_LIST + " must have " +
+                                        UnitBean.PROP_ELEMENT_NAME + " child elements, not " +
+                                        one.getNodeName() + "!!", null );
+            }
+        }
+
+        return( unitList );
+    }   /* end importUnitList() */
 
     static UnitBean importUnit( Element unitElm )
             throws SAXParseException
