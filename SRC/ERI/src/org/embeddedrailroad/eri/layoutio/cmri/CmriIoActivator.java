@@ -53,8 +53,9 @@ public class CmriIoActivator implements LayoutIoActivator
     }
 
     /**
+     *  We are now part of the system.  For CMRI, this means registration.
      *
-     * @param context An opaque object from the {@link LayoutIoProviderManager}.
+     * @param context An opaque object from the {@link LayoutIoProviderManager}.  The {@link BundleContext} is our connection to the dynamic loading system.
      */
     @Override
     public void start( BundleContext context )
@@ -70,6 +71,7 @@ public class CmriIoActivator implements LayoutIoActivator
     }
 
     /**
+     *  No longer part of the system, so unregister ourselves.
      *
      * @param context same as passed to {@link #start(org.osgi.framework.BundleContext) }
      */

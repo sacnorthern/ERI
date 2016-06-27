@@ -30,8 +30,8 @@ public abstract class AbstractOrderedListView
         extends JPanel
 {
 
-    /*** Use with {2code addVerbButton} to append instead of insert. */
-    public static final int     INDEX_LAST = 99;
+    /*** Use with {@code #addVerbButton()} to append instead of insert. */
+    public static final int     INDEX_LAST = 9999;
 
     // ----------------------------------------------------------------------------
 

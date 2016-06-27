@@ -263,9 +263,9 @@ public class FileUtils
      *  Client provides folder and file-glob pattern.
      *  Matches are available in {@code FileList}. <p>
      *
-     *  <b>WARNING</b>: {@code PathMatcher} is Java 1.7 !!
+     *  <b>WARNING</b>: {@link PathMatcher} is Java 1.7 !!
      *
-     * @see http://docs.oracle.com/javase/tutorial/essential/io/find.html
+     * @see <a href="http://docs.oracle.com/javase/tutorial/essential/io/find.html">File files tutorial</a>
      */
     class MyFilesFinder extends SimpleFileVisitor<Path>
     {
@@ -334,7 +334,7 @@ public class FileUtils
 
     /***
      *  See if host OS matches the caller's kind-of interest.
-     *  It is a braod-stroke, fuzzy match.
+     *  It is a broad-stroke, fuzzy match.
      *  E.g. {@code OS_MAC_PPC} and {@code OS_MAC_X86} are equivalent.
      *
      * @param brand Desired brand to check for.

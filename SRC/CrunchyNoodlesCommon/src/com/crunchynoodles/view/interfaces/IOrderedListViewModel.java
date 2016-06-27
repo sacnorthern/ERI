@@ -9,7 +9,7 @@
  ***  Unless required by applicable law or agreed to in writing, software
  ***  distributed under the License is distributed on an "AS IS" BASIS,
  ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- ***  See the License for the specific languatge governing permissions and
+ ***  See the License for the specific language governing permissions and
  ***  limitations under the License.
  ***/
 
@@ -31,10 +31,10 @@ public interface IOrderedListViewModel {
     //  QUALIFIERS.
 
     /*** Return true if duplicates are allowed, otherwise View will prevent them. */
-    public boolean AreDuplicatesAllowed();
+    public boolean areDuplicateKeysAllowed();
 
     /*** Return title of data.  This is presented to the user. */
-    public String GetTitle();
+    public String getTitle();
 
     /*** Return sub-title of data.  This is presented to the user. */
     public String GetSubTitle();
@@ -45,9 +45,9 @@ public interface IOrderedListViewModel {
      *  Return the list of items.  The key 'String' is presented to the user.
      *  The value 'Object' is whatever data the back-end needs.
      */
-    public List< KeyValue<String, Object> >  GetItems();
+    public List< KeyValue<String, Object> >  getItems();
 
-    public IOrderedListViewModel MakeScratchCopy();
+    public IOrderedListViewModel makeScratchCopy();
 
     //  MUTATORS.
 
@@ -55,12 +55,14 @@ public interface IOrderedListViewModel {
      *  Add a new key in the list.
      * @param where - after item index, -1 for first in list, 0 for right after
      *              first item
+     * @param key - Key for display to human.
+     * @return null if key is brand new or must be unique, or null otherwise.
      */
-    public String AddNewItem( int where, String key );
+    public String addNewItem( int where, String key );
 
-    public String RemoveItem( String key );
+    public String removeItem( String key );
 
-    public String RemoveItem( int where );
+    public String removeItem( int where );
 
     /***
      *  Use the scratch copy as the primary, replacing the previous data for this ViewModel.
@@ -68,7 +70,7 @@ public interface IOrderedListViewModel {
      * @param scratch
      * @return null on success, non-null otherwise.
      */
-    public String UpdateFromScratchCopy( IOrderedListViewModel scratch );
+    public String updateFromScratchCopy( IOrderedListViewModel scratch );
 
     /***
      *  Dispose of the scratch "copy".
@@ -76,6 +78,6 @@ public interface IOrderedListViewModel {
      * @param scratch
      * @return null on success, non-null otherwise.
      */
-    public String DisposeOfScratchCopy( IOrderedListViewModel scratch );
+    public String disposeOfScratchCopy( IOrderedListViewModel scratch );
 
 }

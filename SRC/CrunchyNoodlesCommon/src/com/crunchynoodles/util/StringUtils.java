@@ -9,7 +9,7 @@
  ***  Unless required by applicable law or agreed to in writing, software
  ***  distributed under the License is distributed on an "AS IS" BASIS,
  ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- ***  See the License for the specific languatge governing permissions and
+ ***  See the License for the specific language governing permissions and
  ***  limitations under the License.
  ***/
 
@@ -40,7 +40,7 @@ public class StringUtils {
         ArrayList<String>  items = new ArrayList<String>();
         int     start, end;
 
-        //  If input does begin with DQUOTE, then make it all one 'word', trimmed of spaces.
+        //  If input doesn't begin with DQUOTE, then make it all one 'word', trimmed of spaces.
         start = withQuotes.indexOf( CHAR_DQUOTE );
         if( start > 0 )
         {
@@ -76,12 +76,12 @@ public class StringUtils {
     // ----------------------------------------------------------------------------
 
     /***
-     *   Compare two strings for equality.  If both are null, then they never the same.
-     *   Uses {@code String.equals()} for equality test, so case must match.
+     *   Compare two strings for equality.  If both are null, then they can't ever be equal.
+     *   Uses {@link String#equals(java.lang.Object) } for equality test, so case must match.
      *   This front-end handles null-references.
      *
      * <p> This method could be named {@code equals()} but then it might be confused
-     *   with an {@code equals} method for this object-type.
+     *   with an {@code equal()} method for this object-type.
      *
      * @param lhs one string, or null.
      * @param rhs other string, or null.
