@@ -56,6 +56,11 @@ public class XmlPropertyListUtils
             }
             catch( NumberFormatException ex )
             {
+                if( ex.getCause() != null )
+                {
+                    ex.printStackTrace();
+                    logger.warning( ex.getCause().toString() );
+                }
                 throw new SAXParseException( "property PCDATA ill-formed", null, ex );
             }
             catch( IllegalArgumentException ex )
