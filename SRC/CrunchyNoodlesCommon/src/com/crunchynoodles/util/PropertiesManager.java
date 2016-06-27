@@ -185,6 +185,16 @@ public class PropertiesManager
     }
 
     /***
+     *  Store a float-point value into properties.
+     * @param key Property key.  Method will prepend the module's name.
+     * @param fvalue float value.
+     */
+    public void putFloat( String key, float fvalue )
+    {
+        String full_key = m_module_name + key;
+        s_from_disk.setProperty( full_key, Float.toString( fvalue ) );    }
+
+    /***
      *  Retrieve key for this module, or {@code null} if key not found.
      *
      * @param key property key , within module scope.
@@ -229,6 +239,33 @@ public class PropertiesManager
             ival = Integer.parseInt( sval.trim() );
         }
         return ival;
+    }
+
+    /***
+     *  Retrieve a floating-point value from properties, with default is out-of-range
+     *  or no matching {@code key} found.
+     * @param key Search property key
+     * @param defaultValue return value if trouble creating the float.
+     * @return value from properties file if found and valid, else {code defaultValue}.
+     */
+    public float getFloat( String key, float defaultValue )
+    {
+        String  full_key = m_module_name + key;
+        String  sval = (String) s_props.getProperty( full_key );
+        float   fval = defaultValue;
+
+        try {
+            if( ! StringUtils.emptyOrNull( sval ) )
+            {
+                fval = (float) Double.parseDouble( sval.trim() );
+            }
+        }
+        catch( Exception ex )
+        {
+            // NumberFormatExeception, maybe bad conversion from double --> float cast.
+            fval = defaultValue;
+        }
+        return fval;
     }
 
     // ----------------------------------------------------------------------------
