@@ -1,4 +1,4 @@
-/***  This file is dedicated to the public domain, 2014 Brian Witt in USA.  ***/
+/***  This file is dedicated to the public domain, 2014, 2016 Brian Witt in USA.  ***/
 
 package org.embeddedrailroad.eri.ctc;
 
@@ -31,7 +31,8 @@ public class RailroadControllerTest {
      * Test of updateBlocks method, of class RailroadController.
      */
     @Test
-    public void testUpdateBlocks() {
+    public void testUpdateBlocks()
+    {
         System.out.println( "updateBlocks" );
         int reason_flags = 0;
 
@@ -43,7 +44,7 @@ public class RailroadControllerTest {
         List<CtcBlockItem> changed_blocks = null;
         c.updateBlocks( changed_blocks, reason_flags );
 
-        //  1.a  With empty changed_blocks, don't throw exceptions.
+        //  1.b  With empty changed_blocks, don't throw exceptions.
         changed_blocks = new ArrayList<CtcBlockItem>();
         c.updateBlocks( changed_blocks, reason_flags );
 

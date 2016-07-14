@@ -1,4 +1,4 @@
-/***  This file is dedicated to the public domain, 2014 Brian Witt in USA.  ***/
+/***  This file is dedicated to the public domain, 2014, 2016 Brian Witt in USA.  ***/
 
 package org.embeddedrailroad.eri.layoutio.cmri;
 
@@ -44,7 +44,7 @@ public class CmriLayoutModelImplTest {
                 if( expecteds[j] != actuals[j] )
                     throw new ArrayComparisonFailure( mesg, null, j );
             }
-	}
+	}   /* end assertBooleanArrayEquals() */
 
     /**
      * Test of setSensedBinaryData method, of class CmriLayoutModelImpl.
@@ -56,6 +56,10 @@ public class CmriLayoutModelImplTest {
         boolean[] new_bits = { false, true, false, true, false, true };
         CmriLayoutModelImpl instance = new CmriLayoutModelImpl();
         instance.setSensedBinaryData( device, new_bits );
+
+        boolean[]  expResult = new_bits;
+        boolean[]  result = instance.getSensedBinaryAll( device );
+        assertBooleanArrayEquals( "Device #"+device, expResult, result );
     }
 
     /**
@@ -74,6 +78,10 @@ public class CmriLayoutModelImplTest {
 
         CmriLayoutModelImpl instance = new CmriLayoutModelImpl();
         instance.setSensedBinaryData( device, individual_bits );
+
+        HashMap  expResult = individual_bits;
+        HashMap  result = instance.getSensedBinaryAll( device );
+        assertBooleanArrayEquals( "Device #"+device, expResult, result );
     }
 
     /**
@@ -87,6 +95,10 @@ public class CmriLayoutModelImplTest {
         byte[] blob = {0x7E, 0x03, 0x7F };
         CmriLayoutModelImpl instance = new CmriLayoutModelImpl();
         instance.setSensedBinaryBlob( device, subfunction, blob );
+
+        int[]  expResult = blob;
+        int[]  result = instance.getSensedDataAll( device );
+        assertBooleanArrayEquals( "Device #"+device, expResult, result );
     }
 
     /**

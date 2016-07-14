@@ -1,4 +1,4 @@
-/***  This file is dedicated to the public domain, 2014 Brian Witt in USA.  ***/
+/***  This file is dedicated to the public domain, 2014, 2016 Brian Witt in USA.  ***/
 
 package org.embeddedrailroad.eri.layoutio;
 
@@ -56,9 +56,10 @@ public class LayoutTimeoutManagerTest {
 
     private void tTM1()
     {
+        final int  SECONDS_TO_WAIT = 10;
         final int  TEST_VALUE = 0;
         System.out.println( "timeoutMicros-1" );
-        int  milliseconds = 10 * 1000;
+        int  milliseconds = SECONDS_TO_WAIT * 1000;
         LayoutTimeoutManager.TimeoutAction notifyObject = new MyClient();
         ReentrantLock pauseLock = new ReentrantLock();
         Integer[]  done = { new Integer(TEST_VALUE) };
@@ -68,7 +69,7 @@ public class LayoutTimeoutManagerTest {
         Future result = instance.timeoutMillis( milliseconds, notifyObject, done );
         int  secs = 0;
         try {
-            for( secs = 1 ; ; ++secs )
+            for( secs = 1 ; secs < SECONDS_TO_WAIT + 5 ; ++secs )
             {
                 System.out.print( "  " + secs );
                 System.out.flush();
@@ -91,14 +92,15 @@ public class LayoutTimeoutManagerTest {
                 pauseLock.unlock();
         }
         System.out.println();
-        assertTrue( "Timeout not right time-range", (8 < secs && secs < 12 ) );
+        assertTrue( "Timeout not right time-range", (SECONDS_TO_WAIT-2 < secs && secs < SECONDS_TO_WAIT+2 ) );
     }
 
     private void tTM2()
     {
+        final int  SECONDS_TO_WAIT = 10;
         final int  TEST_VALUE = 0;
         System.out.println( "timeoutMicros-2" );
-        int  milliseconds = 10 * 1000;
+        int  milliseconds = SECONDS_TO_WAIT * 1000;
         LayoutTimeoutManager.TimeoutAction notifyObject = new MyClient();
         ReentrantLock pauseLock = new ReentrantLock();
         Integer[]  done = { new Integer(TEST_VALUE) };
@@ -110,7 +112,7 @@ public class LayoutTimeoutManagerTest {
         boolean   flag = false;
 
         try {
-            for( secs = 1 ; secs < 6 ; ++secs )
+            for( secs = 1 ; secs < (SECONDS_TO_WAIT*3)/2 ; ++secs )
             {
                 System.out.print( "  " + secs );
                 System.out.flush();
@@ -126,6 +128,7 @@ public class LayoutTimeoutManagerTest {
                 }
             }
 
+            //  If timeout callback did not occur, then try and cancel it.
             if( ! flag )
                 result.cancel( true );
 
@@ -145,12 +148,12 @@ public class LayoutTimeoutManagerTest {
 
         //  Wait to 14 seconds to ensure onTimeout() not called.
         try {
-            Thread.sleep( (14 - secs) * 1000 );
+            Thread.sleep( ((int)(SECONDS_TO_WAIT*1.4) - secs) * 1000 );
         }catch( InterruptedException ex )
         {
         }
-        assertTrue( done[0].intValue() == TEST_VALUE );
 
+        assertTrue( done[0].intValue() == TEST_VALUE );
     }
 
 
