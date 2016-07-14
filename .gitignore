@@ -1,6 +1,7 @@
 /SRC/ERI/build/
 /SRC/ERI/dist/
-/SRC/CrunchNoodlesCommon/nbproject/private/
+#  Old names : typo no "y" in crunchy.
+## /SRC/CrunchNoodlesCommon/nbproject/private/
 /SRC/CrunchNoodlesCommon/build/
 /SRC/CrunchNoodlesCommon/dist/
 
@@ -11,6 +12,7 @@ dist/*
 *.bak
 *~
 *.zip
-/SRC/CrunchyNoodlesCommon/nbproject/private/
+#  Correct folder names with "y" in crunchy.
+## /SRC/CrunchyNoodlesCommon/nbproject/private/
 /SRC/CrunchyNoodlesCommon/dist/
 /SRC/CrunchyNoodlesCommon/build/
