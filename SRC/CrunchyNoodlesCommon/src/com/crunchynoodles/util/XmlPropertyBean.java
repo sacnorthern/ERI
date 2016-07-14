@@ -1,5 +1,5 @@
 /***  Java Commons and Niceties Library from CrunchyNoodles.com
- ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***  Copyright (C) 2014, 2016 in USA by Brian Witt , bwitt@value.net
  ***
  ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
  ***  you may not use this file except in compliance with the License.
@@ -12,6 +12,8 @@
  ***  See the License for the specific languatge governing permissions and
  ***  limitations under the License.
  ***/
+
+/* Code here requires Java 1.7 */
 
 package com.crunchynoodles.util;
 
@@ -26,13 +28,15 @@ import java.util.Objects;
  *  The "type=" attribute can imply the value's format, e.g. hex-bytes.
  * For example:
  * <ol>
- *  {@code <propertyList> <property key="initbytes.1" type="hexbytes">8F</property> </propertyList> }
+ *  {@code <propertyList> <property key="initbytes.1" type="hexbytes">8FF0</property> </propertyList> }
  * </ol>
  * <hr>
- *  {@code <!ELEMENT property (#PCDATA)>} <br/>
- *  {@code <!ATTLIST property } <br/>
- * &nbsp;&nbsp;&nbsp;&nbsp; {@code key} &nbsp; {@code NMTOKEN  #REQUIRED} <br/>
- * &nbsp;&nbsp;&nbsp;&nbsp; {@code type (bool|boolean|int|float|string|list|hexbytes|hexbinary|base64) "string" >} <br/>
+ *  {@code <!ELEMENT property (#PCDATA)>} <br>
+ *  {@code <!ATTLIST property } <br>
+ * &nbsp;&nbsp;&nbsp;&nbsp; {@code key} &nbsp; {@code NMTOKEN  #REQUIRED} <br>
+ * &nbsp;&nbsp;&nbsp;&nbsp; {@code type (bool|boolean|int|float|string|list|hexbytes|hexbinary|base64) "string" >} <br>
+ *
+ *  <p> FUCKING byte's ARE SIGNED IN JAVA !!!  CONVERTING "F0" RESULTS IN {@link NumberFormatException}!!
  *
  * @see AbstractXmlEntityWithPropertiesBean
  * @author brian
@@ -40,18 +44,23 @@ import java.util.Objects;
 public class XmlPropertyBean
             implements XmlEntityBean
 {
-    public final String     MAGIC_KEY_DELIM_CHARS = ":;=[]{}" ;
+    /***  These char's cannot be in the {@code Key} string. Whitespace is also checked and will be rejected */
+    public final String     MAGIC_KEY_DELIM_CHARS = ":;=\"[]{}" ;
 
     /***
      *  Construct new XmlProperty from parts.
      *  The {@code valuestr} will be decoded from the string into appropriate thing
      *  based on {@code typestr}.
-     *  There are a few chars illegal in {@code keystr}, see {@link #MAGIC_KEY_DELIM_CHARS}.
      *  The types "string" and "list" are left as-is.
-     *  A "list" is either comma- or semi-colon-separated values.
+     *  A "list" is either comma- or semi-colon-separated values. <p>
+     *
+     *  Try to use alpha-numeric chars in {@code keystr}, and not those in {@link #MAGIC_KEY_DELIM_CHARS}.
+     *  Also white-space and ISO-control chars are rejected.
+     *  Trying to use them will throw {@link IllegalArgumentException} exception.
+     *  "bool" affirmative is either "yes" or "true".  All other values mean "false".
      *
      * @param keystr Key string for storing.
-     * @param typestr A well-known name, "bool", "int", "float", "hexbytes".
+     * @param typestr A well-known name, "bool" or "boolean", "int", "float", "hexbytes", "base64".
      * @param valuestr String form of value.
      *
      * @throws IllegalArgumentException If any parameter is null.
@@ -67,10 +76,17 @@ public class XmlPropertyBean
         {
             throw new IllegalArgumentException( "key CANNOT contain delimiter chars: " + MAGIC_KEY_DELIM_CHARS );
         }
+        for( char c : keystr.toCharArray() )
+        {
+            if( Character.isWhitespace( c ) || Character.isISOControl( (int) c ) )
+                throw new IllegalArgumentException( "key CANNOT contain space or control chars." );
+        }
 
         this.Key = keystr;
         this.Type = typestr;
 
+        //  Change string-representation into internal object-type.  Can throw format-exception to caller.
+        //  Unknown 'typestr' is stored as String.
         if( typestr.equalsIgnoreCase( "bool") || typestr.equalsIgnoreCase( "boolean") )
         {
             this.Value = Boolean.FALSE;
@@ -94,14 +110,16 @@ public class XmlPropertyBean
         if( typestr.equalsIgnoreCase( "hexbytes" ) || typestr.equalsIgnoreCase( "hexbinary" ) )
         {
             //  valuestr can be upper-case or lower-case ; they are equivalent.
-            int      j;
-            byte[]   b = new byte[ valuestr.length() / 2 ];
+            //  Fucking 'byte' in Java is signed, so use array of short's instead ( a little wasterful but memory is cheap ).
+            //  Using short[] means we can tell apart "hexbytes" from "base64".
+            short[]   s = new short[ valuestr.length() / 2 ];
 
-            for( j = 0 ; j < valuestr.length() ; j += 2 )
+            for( int j = 0 ; j < valuestr.length() ; j += 2 )
             {
-                b[ j / 2 ] = Byte.parseByte( valuestr.substring( j, j+1 ), 16 );
+                String  pair = valuestr.substring( j, j+2 );
+                s[ j / 2 ] = (short) (Integer.parseInt( pair, 16 ) & 0x00FF);
             }
-            this.Value = b;
+            this.Value = s;
         }
         else
         if( typestr.equalsIgnoreCase( "base64" ) )
@@ -131,7 +149,7 @@ public class XmlPropertyBean
     }
 
     /***
-     *  Copy constructor, a shallow copy.
+     *  Copy constructor, a shallow copy....
      * @param other Thing to copy
      */
     public XmlPropertyBean( XmlPropertyBean other )
@@ -167,8 +185,70 @@ public class XmlPropertyBean
     @Override
     public String toString()
     {
-        //  TODO: Implement #toString() when Value is an array.
-        return "[Key=\"" + Key + "\",Type=" + Type + ",Value=\"" + Value.toString() + "\"]" ;
+        String  firstPart = "{Key=\"" + Key + "\",Type=" + Type + ",Value=";
+
+        if( Value == null )
+        {
+            firstPart += NULL_OBJECT_REF_STRING;
+        }
+        else
+        {
+            if( Value instanceof short[] )
+            {
+                //  {@code if( typestr.equalsIgnoreCase( "hexbytes" ) || typestr.equalsIgnoreCase( "hexbinary" ) ) }
+                //  A hexbyte array !
+                short[]  arr = (short[]) Value;
+                StringBuilder  sb = new StringBuilder( 12 + arr.length * 2 );
+                sb.append( "(hex)[" );
+                for( int v : arr )
+                {
+                    String  str = String.format( "%02X", v );
+                    sb.append( str );
+                }
+                sb.append( ']' );
+                firstPart += sb.toString();
+            }
+            else
+            if( Value instanceof byte[] )
+            {
+                //  {@code if( typestr.equalsIgnoreCase( "base64" ) ) }
+                //  A hexbyte array !
+                byte[]  arr = (byte[]) Value;
+                StringBuilder  sb = new StringBuilder( 12 + arr.length * 2 );
+                sb.append( "(base64)[" );
+                for( int v : arr )
+                {
+                   String  str = String.format( "%02x", v );
+                    sb.append( str );
+                }
+                sb.append( ']' );
+                firstPart += sb.toString();
+            }
+            else
+            if( Value.getClass().isArray() )
+            {
+                // TODO: Not sure what to do here.  How to determine type in the array?
+                //  maybe http://stackoverflow.com/questions/219881/java-array-reflection-isarray-vs-instanceof
+                //  maybe http://stackoverflow.com/questions/11107812/how-to-check-if-an-object-is-an-array-of-a-certain-type
+
+                firstPart += Value.toString();
+            }
+            else
+            if( Value instanceof Boolean )
+            {
+                Boolean  b = (Boolean) Value;
+                if( b )
+                    firstPart += "\"true\"";
+                else
+                    firstPart += "\"false\"";
+            }
+            else
+            {
+                firstPart += "\"" + Value.toString() + "\"" ;
+            }
+        }
+
+        return  firstPart + "}" ;
     }
 
     @Override
@@ -176,9 +256,9 @@ public class XmlPropertyBean
     {
         int   h = super.hashCode() ^ PROP_ELEMENT_NAME.hashCode();
 
-        if( Key != null )       h ^= Key.hashCode();
-        if( Type != null )      h ^= Type.hashCode();
-        if( Value != null )     h ^= Value.hashCode();
+        if( Key != null )       h ^= Key.hashCode() << 1;
+        if( Type != null )      h ^= Type.hashCode() << 2;
+        if( Value != null )     h ^= Value.hashCode() << 3;
 
         return( h );
     }
@@ -199,10 +279,7 @@ public class XmlPropertyBean
         if( !this.Type.equals( other.Type ) ) {
             return false;
         }
-        if( !Objects.equals( this.Value, other.Value ) ) {
-            return false;
-        }
-        return true;
+        return Objects.equals( this.Value, other.Value );
     }
 
     // ----------------------------------------------------------------------------
@@ -212,17 +289,35 @@ public class XmlPropertyBean
     public static final String ATTR_KEY        = "key";    // attribute
     public static final String ATTR_TYPE       = "type";     // attribute
 
+    /***  Name for this value.
+     *  @return String key name.
+     */
     public String   getKey() { return Key; }
     // NO - public void     setKey(String k ) { Key = k; }
 
+    /***  Return string telling internal-type {@code Value} should be stored using.
+     *  @return String naming the object-class type.
+     */
     public String   getType() { return Type; }
     // NO - public void     setType(String t) { Type = t; }
 
+    /*** Return object holding value.
+     *  @return some object holding (dynamic) value.
+     */
     public Object   getValue() { return Value; }
     // NO - public void     setValue(Object v) { Value = v; }
 
+    // ----------------------------------------------------------------------------
+
+    /*** The name of this property. */
     public String   Key;
+
+    /*** Internal type the value should be, e.g. "hex" which creates a byte array, or "float" to store a floating-point value. */
     public String   Type;
+
+    /*** Stored value.  If {@code Type} is "float", then {@code Value} is an object of
+     *  class {@link java.lang.Float} representing the interchange value in the XML file.
+     */
     public Object   Value;
 
 }
