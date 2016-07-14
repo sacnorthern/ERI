@@ -369,6 +369,15 @@ public class FileUtils
         return false;
     }
 
+    /***
+     *  Returns the cmd-line option prefix char, depending on the OS brand.
+     * @return '/' for MS-Windows, or '-' for Mac, Linux and Solaris.
+     */
+    public static char  getOptionChar()
+    {
+        return isOsKindOf(OS_WINDOWS_MULTI) ? '/' : '-' ;
+    }
+
     /*** Arduino application executable's name. OK to change it. */
     public static String    PROP_ARDUINO_EXEC_NAME = "arduino";
 

@@ -1,5 +1,5 @@
 /***  Java-ERI    Java-based Embedded Railroad Interfacing.
- ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***  Copyright (C) 2014, 2016 in USA by Brian Witt , bwitt@value.net
  ***
  ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
  ***  you may not use this file except in compliance with the License.
@@ -13,11 +13,15 @@
  ***  limitations under the License.
  ***/
 
+ /***
+  *     This is the main for the ERI application.
+  */
+
 package org.embeddedrailroad.appl;
 
 import java.util.logging.Logger;
-import java.util.*;
 import java.util.logging.Level;
+import java.util.*;
 
 import com.crunchynoodles.util.PropertiesManager;
 import com.crunchynoodles.util.UserDirectories;
@@ -35,11 +39,12 @@ import org.embeddedrailroad.eri.xml.LayoutConfigurationBean;
  */
 public class EriApplication
 {
+    /***   Default file name for layout (INI file). */
     public static String    INI_FILENAME_DEFAULT = "my_eri.ini";
 
     static transient PropertiesManager     s_props = new PropertiesManager("appl");
-
-    private static transient final Logger  logger  = Logger.getLogger( EriApplication.class.getName() );
+    /***  Logging output spigot. */
+    transient private static final Logger LOG = Logger.getLogger( EriApplication.class.getName() );
 
     /***
      *  Start up the Embedded Railroad Interface (ERI) server application.
@@ -64,11 +69,11 @@ public class EriApplication
 
         Logger.getGlobal().setLevel( Level.CONFIG );
 
-        logger.info( "Hello ERI logger!" );
+        LOG.info( "Hello ERI logger!" );
 
         String propfname = UserDirectories.getInstance().getUserApplSettingsPropertiesFilename();
 
-        logger.log( Level.INFO, "user-wide properties fname = \"{0}\"", propfname);
+        LOG.log( Level.INFO, "user-wide properties fname = \"{0}\"", propfname);
 
         PropertiesManager.ApplicationName = UserDirectories.ApplicationName;
         s_props.readProperties( propfname, UserDirectories.getInstance().getProjectApplSettingsFolder() );
@@ -76,6 +81,7 @@ public class EriApplication
         String  fname = "C:\\Devel\\Java-ERI\\Deployment\\front_range_layout.xml";
 
         //  Parse command line looking for "/prop:KEY=VALUE" or "/property:KEY=VALUE" and add to our properties.
+        //  Print usage for "/help" , "/?" or "--help".
         for( String option : args )
         {
             int  after_colon = -1;
@@ -103,6 +109,21 @@ public class EriApplication
 
                 s_props.tempPut( key, val );
             }
+            else
+            if( option.startsWith( "/help" ) || option.startsWith( "/?" ) || option.startsWith( "--help" ) )
+            {
+                Out( "Help for %s version %s by %s",
+                        UserDirectories.ApplicationName,
+                        "(unknown)",
+                        UserDirectories.CompanyName );
+                Out( "   /property:KEY=VALUE  -- set property value for program." );
+                Out( "   /prop:KEY=VALUE      -- set property value for program." );
+
+                Out("   Logging level is " + LOG.getLevel() );
+
+                LOG.log( Level.INFO, "Application exits...");
+                return ;
+            }
         }
 
         // ------------------------------------------------------
@@ -125,7 +146,7 @@ public class EriApplication
         //  Perform a few tests on components...
         //
 
-        logger.info( "Starting tests" );
+        LOG.info( "Starting tests" );
 
         test2001( fname );
 
@@ -146,7 +167,7 @@ public class EriApplication
         catch( Exception ex )
         {
             ex.printStackTrace( System.out );
-            logger.log(Level.WARNING, "Failed to startup and initialize: {0}", ex.getMessage());
+            LOG.log(Level.WARNING, "Failed to startup and initialize: {0}", ex.getMessage());
             System.exit( 2 );
         }
 
@@ -165,7 +186,7 @@ public class EriApplication
         eri.shutdownTimers();
         eri.destoryTransports();
 
-        logger.log( Level.WARNING, "Application exits...");
+        LOG.log( Level.WARNING, "Application exits...");
     }
 
     // ----------------------------------------------------------------------------
@@ -178,7 +199,7 @@ public class EriApplication
             LayoutConfigurationBean  bs = LayoutConfigurationBean.readFromFile( fname );
             if( null == bs )
             {
-                Out( "Sorry, file read failed.");
+                Out( "LayoutConfigurationBean is null : Sorry, file <%s> read failed.", fname );
                 return ;
             }
 
