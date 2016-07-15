@@ -25,7 +25,10 @@ import java.util.Iterator;
  *  {@code null} if no value is present.
  *  Index goes from 0 to MAX-1, MAX can grow but won't shrink.
  *
- *  Built out of frustration at trying to use {@code HashMap<Integer, Boolean>}.
+ *  <p> Can create an iterator&lt;Boolean&gt; object over the array, where unset values return
+ *  the {@code null} reference.
+ *
+ *  <p> Built out of frustration at trying to use {@code HashMap<Integer, Boolean>}.
  *  It's easier with C# cuz it boxes primitive types automagically.
  *
  *  Object is not MT-safe.
@@ -36,6 +39,11 @@ public class TableOfBoolean {
 
     //-------------------------  CONSTRUCTORS  ------------------------
 
+    /***
+     *  Create table (array) of Boolean values, with some default size.
+     *  Initially, the table is full of unset values, which return {@code null}
+     *  if {@link getEntry()} is called on any of the slots.
+     */
     public TableOfBoolean()
     {
         this( 32 );
@@ -50,21 +58,30 @@ public class TableOfBoolean {
         if( init_size <= 0 )
             throw new IllegalArgumentException( "init_size <= 0" );
 
-        m_has_value = new boolean[ init_size ];
-        m_value = new boolean[ init_size ];
+        m_has_value = new boolean[ init_size ];     // false here means value is "unset".
+        m_value     = new boolean[ init_size ];
     }
 
     //--------------------------  MANAGEMENT  -------------------------
 
     /**
-     * Removes all of the mappings from this map.
-     * The map will be empty after this call returns.
+     *  Removes all of the mappings from this map.
+     *  The map will be empty / unset after this call returns.
+     *  Afterwards, {@link containsKey()} for all slots will return {@code false}.
      */
     public void clear()
     {
         Arrays.fill( m_has_value, false );
     }
 
+    /***
+     *  Resize our array-of-booleans.  If growing size, then new entries are "unset".
+     *  Exception thrown is shrinking to 0 or a negative size.
+     *  Normally {@link Arrays.copyOf()} would throw NegativeArraySizeException, but not here.
+     *
+     * @param newCapacity new array size.
+     * @throws IllegalArgumentException if {@link newCapacity} is non-positive.
+     */
     public void resize( int newCapacity )
     {
         if( newCapacity <= 0 )
@@ -74,8 +91,26 @@ public class TableOfBoolean {
         m_value = Arrays.copyOf( m_value, newCapacity );
     }
 
+    /***
+     *  Returns current array size.  The array size will grow automatically if values are
+     *  stored beyond the current size limit.  However, it will not shrink if values at the
+     *  end are "unset".
+     *
+     * @return size of size being monitored.
+     */
+    public int getSize()
+    {
+        return m_value.length;
+    }
+
     //--------------------  ITERATOR AND ITERATION  -------------------
 
+    /***
+     *  Create iterator of Boolean objects, one for each slot.  An unset value will
+     *  return {@code null} instead of {@code Boolean.TRUE} or {@code Boolean.FALSE}.
+     *
+     * @return new iterator object.
+     */
     public Iterator<Boolean> iterator()
     {
         return new TableIterator<Boolean>();
@@ -130,22 +165,39 @@ public class TableOfBoolean {
 
     //------------------------  BOOLEAN GETTORS  ----------------------
 
+    /***
+     *   Returns slot value.
+     *
+     * @param index which slot (OK if negative or out-of-range).
+     * @return {@code Boolean.TRUE} iff slot is set and it is set to TRUE , otherwise {@code Boolean.FALSE}.
+     */
     public boolean get( int index )
     {
-        if( index < m_value.length )
+        if( 0 <= index && index < m_value.length )
             return m_value[ index ];
 
         return false;
     }
 
+    /***
+     *  Returns if slot is valid and it has some kind value there.
+     *
+     * @param index which slot (OK if negative or out-of-range).
+     * @return {@code Boolean.TRUE} iff slot is set to some value.
+     */
     public boolean containsKey( int index )
     {
-        if( index < m_value.length && m_has_value[index] )
+        if( 0 <= index && index < m_value.length && m_has_value[index] )
             return true;
 
         return false;
     }
 
+    /***
+     *  Retrieve slot's value, or {@null} if unset.
+     * @param index which slot (OK if negative or out-of-range).
+     * @return slot's value, or {@null} if unset.
+     */
     public Boolean getEntry( int index )
     {
         if( containsKey( index ) )
@@ -156,16 +208,17 @@ public class TableOfBoolean {
 
     /***
      *  Erase memory of storing any value at an index.
-     *  If a value was stored, then returns method else {@code false}.
+     *  Future {@link getEntry()} calls will return {@code null} for this slot.
      *
-     * @param index which value to forget.
+     * @param index which slot (OK if negative or out-of-range).
      * @return value last held if valid, else {@code false} if {@code index}
      *      was not recorded previously.
      */
     public boolean remove( int index )
     {
         boolean  last_value = false;
-        if( index < m_has_value.length )
+
+        if( 0 <= index && index < m_has_value.length )
         {
             last_value = m_value[ index ];
             m_has_value[ index ] = false;
@@ -174,13 +227,17 @@ public class TableOfBoolean {
         return( last_value );
     }
 
-    //------------------------  BOOLEAN GETTORS  ----------------------
+    //------------------------  BOOLEAN SETTORS  ----------------------
 
     /***
      *  Store a value into sparse array.
-     *  Array will resize itself if required to store new value.
-     * @param index from 0 to MAX-1.
+     *  Valid index values are non-negative.
+     *  Array will resize itself automatically if required to store new value.
+     * Could throw out-of-memory exception if {@link index} is too big.
+     *
+     * @param index where to store.
      * @param v value to store.
+     * @throws IllegalArgumentException if {@code index} &lt; 0.
      */
     public void set( int index, boolean v )
     {
@@ -188,7 +245,7 @@ public class TableOfBoolean {
             throw new IllegalArgumentException( "index < 0" );
 
         if( index >= m_value.length )
-            resize( index );
+            resize( index + 1 );
 
         m_value[ index ] = v;
         m_has_value[ index ] = true;
@@ -196,7 +253,7 @@ public class TableOfBoolean {
 
     //--------------------------  INSTANCE VARS  -------------------------
 
-    /*** TRUE means we have a value at this index. */
+    /*** TRUE means we have a value at this index, so can check {@link m_value} array. */
     protected boolean[]     m_has_value;
 
     /*** Client's value, or false if never set. */
