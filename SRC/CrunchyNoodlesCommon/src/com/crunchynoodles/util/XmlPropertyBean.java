@@ -45,41 +45,36 @@ public class XmlPropertyBean
             implements XmlEntityBean
 {
     /***  These char's cannot be in the {@code Key} string. Whitespace is also checked and will be rejected */
-    public final String     MAGIC_KEY_DELIM_CHARS = ":;=\"[]{}" ;
+    public final static String     MAGIC_KEY_DELIM_CHARS = ":;=\"[]{}" ;
 
     /***
      *  Construct new XmlProperty from parts.
      *  The {@code valuestr} will be decoded from the string into appropriate thing
      *  based on {@code typestr}.
-     *  The types "string" and "list" are left as-is.
+     *  The types "string" and "list" are left as-is. They can be zero-length but not {@code null}.
      *  A "list" is either comma- or semi-colon-separated values. <p>
      *
-     *  Try to use alpha-numeric chars in {@code keystr}, and not those in {@link #MAGIC_KEY_DELIM_CHARS}.
+     * <p>Try to use alpha-numeric chars in {@code keystr}, and not those in {@link #MAGIC_KEY_DELIM_CHARS}.
      *  Also white-space and ISO-control chars are rejected.
      *  Trying to use them will throw {@link IllegalArgumentException} exception.
      *  "bool" affirmative is either "yes" or "true".  All other values mean "false".
+     *  <em>However, an empty setting for bool is an exception.</aem>
      *
      * @param keystr Key string for storing.
      * @param typestr A well-known name, "bool" or "boolean", "int", "float", "hexbytes", "base64".
      * @param valuestr String form of value.
      *
-     * @throws IllegalArgumentException If any parameter is null.
-     * @throws NumberFormatException if {@code valuestr} is null, or zero-length for numeric conversions.
+     * @throws NullPointerException  If any parameter is null.
+     * @throws IllegalArgumentException if key contains illegal chars.
+     * @throws IllegalArgumentException if typestr is "bool" and valuestr is "" (zero length).
+     * @throws NumberFormatException if {@code valuestr} zero-length or invalid for numeric conversions.
      */
     public XmlPropertyBean( String keystr, String typestr, String valuestr )
     {
-        if( keystr == null || typestr == null || valuestr == null )
+        _validateKeyAndTypeStrings( keystr, typestr );
+        if( valuestr == null )
         {
-            throw new IllegalArgumentException( "key, typestr and valuestr cannot be null" );
-        }
-        if( keystr.contains( MAGIC_KEY_DELIM_CHARS ) )
-        {
-            throw new IllegalArgumentException( "key CANNOT contain delimiter chars: " + MAGIC_KEY_DELIM_CHARS );
-        }
-        for( char c : keystr.toCharArray() )
-        {
-            if( Character.isWhitespace( c ) || Character.isISOControl( (int) c ) )
-                throw new IllegalArgumentException( "key CANNOT contain space or control chars." );
+            throw new NullPointerException ( "valuestr cannot be null" );
         }
 
         this.Key = keystr;
@@ -89,12 +84,17 @@ public class XmlPropertyBean
         //  Unknown 'typestr' is stored as String.
         if( typestr.equalsIgnoreCase( "bool") || typestr.equalsIgnoreCase( "boolean") )
         {
-            this.Value = Boolean.FALSE;
+            if( valuestr.length() == 0 )
+                throw new IllegalArgumentException( "boolean value cannot be empty" );
+
+            Boolean  res = Boolean.FALSE;
             if( valuestr.equalsIgnoreCase( "true") ||
                 valuestr.equalsIgnoreCase( "yes" ) )
             {
-                this.Value = Boolean.TRUE;
+                res = Boolean.TRUE;
             }
+            //  marking 'Value' as final means we only get one chance to assign to it.
+            this.Value = res;
         }
         else
         if( typestr.equalsIgnoreCase( "int" ) )
@@ -143,6 +143,8 @@ public class XmlPropertyBean
      */
     public XmlPropertyBean( String keystr, String typestr, Object valueObj )
     {
+        _validateKeyAndTypeStrings( keystr, typestr );
+
         this.Key = keystr;
         this.Type = typestr;
         this.Value = valueObj;
@@ -154,6 +156,8 @@ public class XmlPropertyBean
      */
     public XmlPropertyBean( XmlPropertyBean other )
     {
+        _validateKeyAndTypeStrings( other.Key, other.Type );
+
         this.Key = other.Key;
         this.Type = other.Type;
 
@@ -169,6 +173,36 @@ public class XmlPropertyBean
             this.Value = other.Value;
         }
     }
+
+    /***
+     *   Validate the key-name and the type-name.  If bad, then exceptions are thrown.
+     *
+     * @param keyname string to check.  Cannot be null or contain spaces.
+     * @param typename string to check.  Cannot be null.
+     *
+     * @throws NullPointerException  If any parameter is null.
+     * @throws IllegalArgumentException if key contains illegal chars.
+     */
+    protected static void _validateKeyAndTypeStrings( String keyname, String typename )
+    {
+
+        if( keyname == null || typename == null )
+        {
+            throw new NullPointerException ( "key and typestr cannot be null" );
+        }
+        if( keyname.contains( MAGIC_KEY_DELIM_CHARS ) )
+        {
+            throw new IllegalArgumentException( "key CANNOT contain delimiter chars: " + MAGIC_KEY_DELIM_CHARS );
+        }
+        for( char c : keyname.toCharArray() )
+        {
+            if( Character.isWhitespace( c ) || Character.isISOControl( (int) c ) )
+                throw new IllegalArgumentException( "key CANNOT contain space or control chars." );
+        }
+
+    }
+
+    // ----------------------------------------------------------------------------
 
     @Override
     public String getElementName() {
@@ -310,14 +344,14 @@ public class XmlPropertyBean
     // ----------------------------------------------------------------------------
 
     /*** The name of this property. */
-    public String   Key;
+    public final String   Key;
 
     /*** Internal type the value should be, e.g. "hex" which creates a byte array, or "float" to store a floating-point value. */
-    public String   Type;
+    public final String   Type;
 
     /*** Stored value.  If {@code Type} is "float", then {@code Value} is an object of
      *  class {@link java.lang.Float} representing the interchange value in the XML file.
      */
-    public Object   Value;
+    public final Object   Value;
 
 }

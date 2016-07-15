@@ -1,8 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+/***  This file is dedicated to the public domain, 2014 Brian Witt in USA.  ***/
+
 package com.crunchynoodles.util;
 
 import java.util.List;
@@ -11,6 +8,7 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 
 /**
  *
@@ -19,6 +17,64 @@ import static org.junit.Assert.*;
 public class XmlPropertyBeanTest {
 
     public XmlPropertyBeanTest() {
+    }
+
+    @BeforeClass
+    public static void setUpClass()
+            throws Exception
+    {
+        System.out.println( "setUpClass -- XmlPropertyBean" );
+        Throwable  th;
+        XmlPropertyBean  instance;
+
+        //  "bool" throws exception if value is null or "" (empty string).
+        th = null;
+        instance = null;
+        try {
+            instance = new XmlPropertyBean("bad_bool.1", "bool", null );
+        } catch (Exception e) {
+            th = e;
+        }
+        assertNull( instance );
+        assertNotNull( th );
+        assertTrue( th instanceof NullPointerException );
+
+        //  "bool" throws exception if value is null or "" (empty string).
+        th = null;
+        instance = null;
+        try {
+            instance = new XmlPropertyBean("bad_bool.2", "bool", "" );
+        } catch (Exception e) {
+            th = e;
+        }
+        assertNull( instance );
+        assertNotNull( th );
+        assertTrue( th instanceof IllegalArgumentException );
+
+        //  control chars in key name is illegal.
+        th = null;
+        instance = null;
+        try {
+            instance = new XmlPropertyBean("beep\b", "int", "33" );
+        } catch (Exception e) {
+            th = e;
+        }
+        assertNull( instance );
+        assertNotNull( th );
+        assertTrue( th instanceof IllegalArgumentException );
+
+        //  spaces in key name is illegal.
+        th = null;
+        instance = null;
+        try {
+            instance = new XmlPropertyBean("this is spaced out", "int", "66" );
+        } catch (Exception e) {
+            th = e;
+        }
+        assertNull( instance );
+        assertNotNull( th );
+        assertTrue( th instanceof IllegalArgumentException );
+
     }
 
     @Before
