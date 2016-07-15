@@ -17,6 +17,7 @@ package com.crunchynoodles.util;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  *  Provides a sparse array of boolean values.
@@ -28,14 +29,23 @@ import java.util.Iterator;
  *  <p> Can create an iterator&lt;Boolean&gt; object over the array, where unset values return
  *  the {@code null} reference.
  *
+ * <p> Similar to {@code interface Collection<Boolean>} ; however, methods like
+ *  {@code containsAll()} , {@code removeAll()} and {@code retainAll()} do not make sense.
+ *  The passed in collection is Boolean's.  Since the table is sparse ( can contain holes ),
+ *  really these methods should pass in slot numbers to remove or retain instead.
+ *
  *  <p> Built out of frustration at trying to use {@code HashMap<Integer, Boolean>}.
  *  It's easier with C# cuz it boxes primitive types automagically.
  *
  *  Object is not MT-safe.
  *
+ * @see {@code interface Collection<E>}
  * @author brian
  */
-public class TableOfBoolean {
+
+public class TableOfBoolean
+        implements Iterable<Boolean>
+{
 
     //-------------------------  CONSTRUCTORS  ------------------------
 
@@ -98,7 +108,7 @@ public class TableOfBoolean {
      *
      * @return size of size being monitored.
      */
-    public int getSize()
+    public int size()
     {
         return m_value.length;
     }
@@ -106,8 +116,31 @@ public class TableOfBoolean {
     //--------------------  ITERATOR AND ITERATION  -------------------
 
     /***
+     *  Returns an array containing all of the elements in this collection.
+     *  If slot is unset, then you get null-reference.
+     *  @return new array with values, not sparse.
+     */
+    Object[]  toArray()
+    {
+        int  len = m_value.length;
+        Boolean[]  result = new Boolean[ len ];
+
+        //  'result' is initially all null references.  Insert all TRUE slots.
+        for( int j = len ; --j >= 0 ; )
+        {
+            if( m_has_value[ j ] )
+            {
+                result[j ] = new Boolean( m_value[j] );
+            }
+        }
+
+        return( result );
+    }
+
+    /***
      *  Create iterator of Boolean objects, one for each slot.  An unset value will
      *  return {@code null} instead of {@code Boolean.TRUE} or {@code Boolean.FALSE}.
+     *  Client can tell unset slots from slots with a value.  :)
      *
      * @return new iterator object.
      */
@@ -129,20 +162,23 @@ public class TableOfBoolean {
         }
 
         @Override
-        public final boolean hasNext() {
+        public final boolean hasNext()
+        {
+            // Returns true if the iteration has more elements.
+            // (In other words, returns true if next() would return an element rather than throwing an exception.)
             return( m_index == -1 || m_index < m_has_value.length );
         }
 
         final Boolean nextEntry()
         {
-            while( ++m_index < m_has_value.length )
+            if( ++m_index < m_has_value.length )
             {
                 if( m_has_value[m_index] )
                 {
                     return( m_value[m_index] );
                 }
             }
-
+            //  Nothing there ( slot is unset ) so return null.
             return null;
         }
 
@@ -150,13 +186,16 @@ public class TableOfBoolean {
         @SuppressWarnings("unchecked")
         public final E next()
         {
+            if( m_index >= m_has_value.length )
+                throw new NoSuchElementException();
+
             return (E) nextEntry();
         }
 
         @Override
         public final void remove()
         {
-            if( m_index < 0 )
+            if( m_index < 0 || m_index >= m_has_value.length )
                 throw new IllegalStateException();
             TableOfBoolean.this.m_has_value[ m_index ] = false;
             ++m_index;

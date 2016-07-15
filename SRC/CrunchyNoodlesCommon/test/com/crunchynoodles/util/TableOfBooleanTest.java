@@ -1,14 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+/***  This file is dedicated to the public domain, 2016 Brian Witt in USA.  ***/
+
 package com.crunchynoodles.util;
 
 import java.util.Iterator;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 
 /**
  *
@@ -18,6 +16,26 @@ public class TableOfBooleanTest {
 
     public TableOfBooleanTest()
     {
+    }
+
+    @BeforeClass
+    public static void setUpClass()
+            throws Exception
+    {
+        System.out.println( "setUpClass -- TableOfBoolean" );
+        TableOfBoolean  instance = new TableOfBoolean();
+        int  len = instance.size();
+        assertTrue( "non-positive size", len > 0 );
+
+        //  All slots are initially unset.
+        Object[]  arr = instance.toArray();
+        for( Object o : arr )
+        {
+            assertNull( "Slot isn't null", o);
+        }
+
+        //  Array must be same size as how much table is holding.
+        assertEquals( len, arr.length );
     }
 
     @Before
@@ -40,7 +58,7 @@ public class TableOfBooleanTest {
         instance.clear();
 
         //  Check all slots and ensure they are unset.
-        for( int j = instance.getSize() + 4 ; --j >= 0 ; )
+        for( int j = instance.size() + 4 ; --j >= 0 ; )
         {
             if( instance.getEntry( j ) != null )
                 fail( "Found valid slot at " + j );
@@ -61,18 +79,46 @@ public class TableOfBooleanTest {
 
         int newCapacity = 3;
         instance.resize( newCapacity );
-        result = instance.getSize();
+        result = instance.size();
         assertEquals( newCapacity, result );
 
         newCapacity = 4449;
         instance.resize( newCapacity );
-        result = instance.getSize();
+        result = instance.size();
         assertEquals( newCapacity, result );
 
         newCapacity = 29;
         instance.resize( newCapacity );
-        result = instance.getSize();
+        result = instance.size();
         assertEquals( newCapacity, result );
+
+    }
+
+    /**
+     * Test of toArray method, of class TableOfBoolean.
+     */
+    @Test
+    public void testToArray()
+    {
+        System.out.println( "toArray" );
+        TableOfBoolean instance = new TableOfBoolean();
+        Object[] expResult = new Boolean[ instance.size() ];
+        Object[] result = instance.toArray();
+        assertArrayEquals( expResult, result );
+
+        instance.clear();
+        instance.resize( 99 );
+        int[]  places = { 23, 14, 11, 83, 68, 31 };
+        expResult = new Boolean[ instance.size() ];
+        for( int j : places )
+        {
+            assertTrue( "Please change places[] to have smaller values", j < instance.size() );
+            instance.set( j, true );
+            expResult[ j ] = true;
+        }
+
+        result = instance.toArray();
+        assertArrayEquals( expResult, result );
 
     }
 
@@ -89,6 +135,7 @@ public class TableOfBooleanTest {
 //        assertEquals( expResult, result );
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail( "The test case is a prototype." );
+        System.out.println( "\t*** TO DO ***" );
     }
 
     /**
@@ -113,7 +160,7 @@ public class TableOfBooleanTest {
         assertEquals( expResult, result );
 
         //  Now do a couple of specific places.  DO NOT USE CONSECUTIVE PLACES!!
-        int[]  places = { 23, 12, 55, 37, 199 };
+        int[]  places = { 23, 12, 55, 37, 199, 110 };
         for( int j : places )
         {
             instance.set( j, true );
@@ -152,7 +199,7 @@ public class TableOfBooleanTest {
         assertEquals( expResult, result );
 
         //  Now do a couple of specific places.  DO NOT USE CONSECUTIVE PLACES!!
-        int[]  places = { 11, 23, 17, 55, 37, 199, 444 };
+        int[]  places = { 11, 23, 17, 55, 37, 199, 137, 444 };
         for( int j : places )
         {
             instance.set( j, true );
@@ -234,7 +281,7 @@ public class TableOfBooleanTest {
             instance.remove( slot );
             now_alive--;
 
-            int  sizeP2 = instance.getSize() + 2;
+            int  sizeP2 = instance.size() + 2;
             int  after_remove_alive = 0;
 
             for( int j = 0 ; j <= sizeP2 ; ++j )
@@ -264,26 +311,26 @@ public class TableOfBooleanTest {
     }
 
     /**
-     * Test of getSize method, of class TableOfBoolean.
+     * Test of size method, of class TableOfBoolean.
      */
     @Test
-    public void testGetSize()
+    public void testSize()
     {
         System.out.println( "getSize" );
         TableOfBoolean instance = new TableOfBoolean();
 
         int expResult = 32;
-        int result = instance.getSize();
+        int result = instance.size();
         assertEquals( expResult, result );
 
         expResult = 99;
         instance.resize( expResult );
-        result = instance.getSize();
+        result = instance.size();
         assertEquals( expResult, result );
 
         expResult = 5;
         instance.resize( expResult );
-        result = instance.getSize();
+        result = instance.size();
         assertEquals( expResult, result );
 
     }
