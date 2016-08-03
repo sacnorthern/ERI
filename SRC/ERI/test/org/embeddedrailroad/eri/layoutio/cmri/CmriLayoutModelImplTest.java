@@ -2,6 +2,7 @@
 
 package org.embeddedrailroad.eri.layoutio.cmri;
 
+import com.crunchynoodles.util.TableOfBoolean;
 import java.util.HashMap;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -50,27 +51,32 @@ public class CmriLayoutModelImplTest {
      * Test of setSensedBinaryData method, of class CmriLayoutModelImpl.
      */
     @Test
-    public void testSetSensedBinaryData_Integer_booleanArr() {
+    public void testSetSensedBinaryData_Integer_booleanArr()
+    {
         System.out.println( "setSensedBinaryData" );
-        Integer device = new Integer(3);
+        Integer device = new Integer(3);            // Boxing here is "unnecessary" but it explains the API.
         boolean[] new_bits = { false, true, false, true, false, true };
         CmriLayoutModelImpl instance = new CmriLayoutModelImpl();
         instance.setSensedBinaryData( device, new_bits );
 
-        boolean[]  expResult = new_bits;
-        boolean[]  result = instance.getSensedBinaryAll( device );
-        assertBooleanArrayEquals( "Device #"+device, expResult, result );
+        TableOfBoolean  expResult = new TableOfBoolean( new_bits );
+
+        TableOfBoolean  result = instance.getSensedDataAll( device );
+
+        assertTrue( "Device #"+device + " failed.", expResult.isSame( result ));
+
     }
 
     /**
      * Test of setSensedBinaryData method, of class CmriLayoutModelImpl.
      */
     @Test
-    public void testSetSensedBinaryData_Integer_HashMap() {
+    public void testSetSensedBinaryData_Integer_HashMap()
+    {
         System.out.println( "setSensedBinaryData" );
-        Integer device = new Integer(3);
+        Integer device = new Integer(3);            // Boxing here is "unnecessary" but it explains the API.
 
-        HashMap individual_bits = new HashMap();
+        TableOfBoolean individual_bits = new TableOfBoolean();
         individual_bits.put( new Integer(0), Boolean.FALSE );
         individual_bits.put( new Integer(2), Boolean.FALSE );
         individual_bits.put( new Integer(5), Boolean.TRUE );
@@ -79,26 +85,27 @@ public class CmriLayoutModelImplTest {
         CmriLayoutModelImpl instance = new CmriLayoutModelImpl();
         instance.setSensedBinaryData( device, individual_bits );
 
-        HashMap  expResult = individual_bits;
-        HashMap  result = instance.getSensedBinaryAll( device );
-        assertBooleanArrayEquals( "Device #"+device, expResult, result );
+        TableOfBoolean  expResult = individual_bits;
+        TableOfBoolean  result = instance.getSensedDataAll( device );
+        assertTrue( "Device #"+device + " failed.", expResult.isSame( result ));
     }
 
     /**
      * Test of setSensedBinaryBlob method, of class CmriLayoutModelImpl.
      */
     @Test
-    public void testSetSensedBinaryBlob() {
+    public void testSetSensedBinaryBlob()
+    {
         System.out.println( "setSensedBinaryBlob" );
         Integer device = new Integer(3);
-        int subfunction = 0;
+        int subfunction = 10;
         byte[] blob = {0x7E, 0x03, 0x7F };
         CmriLayoutModelImpl instance = new CmriLayoutModelImpl();
         instance.setSensedBinaryBlob( device, subfunction, blob );
 
-        int[]  expResult = blob;
-        int[]  result = instance.getSensedDataAll( device );
-        assertBooleanArrayEquals( "Device #"+device, expResult, result );
+        byte[]  expResult = blob;
+        byte[]  result = instance.getSensedBlob( device, subfunction );
+        assertArrayEquals( "Device #"+device, expResult, result );
     }
 
     /**
@@ -112,9 +119,9 @@ public class CmriLayoutModelImplTest {
         CmriLayoutModelImpl instance = new CmriLayoutModelImpl();
         instance.setSensedBinaryData( device, new_bits );
 
-        boolean[] expResult = new_bits;
-        boolean[] result = instance.getSensedDataAll( device );
-        assertBooleanArrayEquals( "Device #"+device, expResult, result );
+        TableOfBoolean expResult = new TableOfBoolean( new_bits );
+        TableOfBoolean result = instance.getSensedDataAll( device );
+        assertTrue( "Device #"+device + " failed.", expResult.isSame( result ));
     }
 
     /**
@@ -125,6 +132,7 @@ public class CmriLayoutModelImplTest {
         System.out.println( "getSensedDataOne" );
         Integer device = new Integer(3);
         boolean[] new_bits = { false, true, false, true, false, true };
+
         CmriLayoutModelImpl instance = new CmriLayoutModelImpl();
         instance.setSensedBinaryData( device, new_bits );
 
@@ -132,7 +140,7 @@ public class CmriLayoutModelImplTest {
         {
             boolean expResult = new_bits[j];
             boolean result = instance.getSensedDataOne( device, j );
-            assertEquals( expResult, result );
+            assertEquals( "new_bits[" + j + "]", expResult, result );
         }
     }
 

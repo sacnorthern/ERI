@@ -20,24 +20,25 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- *  Provides a sparse array of boolean values.
+ *  Provides a sparse array of boolean values, where array-values can be {@code null}
+ *  if never assigned.
  *  It follows a pseudo-HashMap interface.  By default, asking for an unknown
  *  element will return false.  Calling {@code containsKey} instead will return
  *  {@code null} if no value is present.
  *  Index goes from 0 to MAX-1, MAX can grow but won't shrink.
  *
- *  <p> Can create an iterator&lt;Boolean&gt; object over the array, where unset values return
+ *  <p> Can create an {@code iterator<Boolean>} over the array, where unset values return
  *  the {@code null} reference.
  *
  * <p> Similar to {@code interface Collection<Boolean>} ; however, methods like
  *  {@code containsAll()} , {@code removeAll()} and {@code retainAll()} do not make sense.
  *  The passed in collection is Boolean's.  Since the table is sparse ( can contain holes ),
- *  really these methods should pass in slot numbers to remove or retain instead.
+ *  really those methods should pass in slot numbers to remove or retain instead.
  *
  *  <p> Built out of frustration at trying to use {@code HashMap<Integer, Boolean>}.
  *  It's easier with C# cuz it boxes primitive types automagically.
  *
- *  Object is not MT-safe.
+ *  <p> <strong>Object is not MT-safe.</strong>
  *
  * @see {@code interface Collection<E>}
  * @author brian
@@ -72,16 +73,38 @@ public class TableOfBoolean
         m_value     = new boolean[ init_size ];
     }
 
+    public TableOfBoolean( final boolean[] seed )
+    {
+        this( seed.length );
+        this.setFrom( seed );
+    }
+
     //--------------------------  MANAGEMENT  -------------------------
 
     /**
      *  Removes all of the mappings from this map.
-     *  The map will be empty / unset after this call returns.
+     *  The map will be 100% empty / unset after this call returns.
      *  Afterwards, {@link containsKey()} for all slots will return {@code false}.
+     *  Afterwards, {@link isEmpty()} will return {@code true}.
      */
     public void clear()
     {
         Arrays.fill( m_has_value, false );
+    }
+
+    /***
+     *  Test if there are no set values in this table.
+     *  After a {@link clear()}, this method returns {@code true}.
+     *
+     * @return true if no places have a set value.
+     */
+    public boolean isEmpty()
+    {
+        for( boolean b : m_has_value )
+        {
+            if( b ) return false;
+        }
+        return true;
     }
 
     /***
@@ -118,7 +141,7 @@ public class TableOfBoolean
     /***
      *  Returns an array containing all of the elements in this collection.
      *  If slot is unset, then you get null-reference.
-     *  @return new array with values, not sparse.
+     *  @return new array with Boolean objects , and {@code null} reference when unset.
      */
     Object[]  toArray()
     {
@@ -130,7 +153,7 @@ public class TableOfBoolean
         {
             if( m_has_value[ j ] )
             {
-                result[j ] = new Boolean( m_value[j] );
+                result[ j ] = m_value[j];
             }
         }
 
@@ -156,8 +179,8 @@ public class TableOfBoolean
         TableIterator()
         {
             m_index = -1;
-            if( hasNext() == false )
-                m_index = m_has_value.length + 1;
+            if( hasNext() == false )            // if there are no places with "put values",
+                m_index = m_has_value.length;   // .. then indicate nothing to do.
 
         }
 
@@ -171,7 +194,7 @@ public class TableOfBoolean
 
         final Boolean nextEntry()
         {
-            if( ++m_index < m_has_value.length )
+            while( ++m_index < m_has_value.length )
             {
                 if( m_has_value[m_index] )
                 {
@@ -197,7 +220,7 @@ public class TableOfBoolean
         {
             if( m_index < 0 || m_index >= m_has_value.length )
                 throw new IllegalStateException();
-            TableOfBoolean.this.m_has_value[ m_index ] = false;
+            TableOfBoolean.this.remove( m_index );    // .m_has_value[ m_index ] = false;
             ++m_index;
         }
     }
@@ -205,10 +228,10 @@ public class TableOfBoolean
     //------------------------  BOOLEAN GETTORS  ----------------------
 
     /***
-     *   Returns slot value.
+     *   Returns slot value, never {@code null}.
      *
      * @param index which slot (OK if negative or out-of-range).
-     * @return {@code Boolean.TRUE} iff slot is set and it is set to TRUE , otherwise {@code Boolean.FALSE}.
+     * @return {@code Boolean.TRUE} iff slot is put and it is put to TRUE , otherwise {@code Boolean.FALSE}.
      */
     public boolean get( int index )
     {
@@ -222,7 +245,7 @@ public class TableOfBoolean
      *  Returns if slot is valid and it has some kind value there.
      *
      * @param index which slot (OK if negative or out-of-range).
-     * @return {@code Boolean.TRUE} iff slot is set to some value.
+     * @return {@code Boolean.TRUE} iff slot is put to some value.
      */
     public boolean containsKey( int index )
     {
@@ -233,9 +256,9 @@ public class TableOfBoolean
     }
 
     /***
-     *  Retrieve slot's value, or {@null} if unset.
+     *  Retrieve slot's value, or {@code null} if unset.
      * @param index which slot (OK if negative or out-of-range).
-     * @return slot's value, or {@null} if unset.
+     * @return slot's value, or {@code null} if unset.
      */
     public Boolean getEntry( int index )
     {
@@ -278,7 +301,7 @@ public class TableOfBoolean
      * @param v value to store.
      * @throws IllegalArgumentException if {@code index} &lt; 0.
      */
-    public void set( int index, boolean v )
+    public void put( int index, boolean v )
     {
         if( index < 0 )
             throw new IllegalArgumentException( "index < 0" );
@@ -290,12 +313,175 @@ public class TableOfBoolean
         m_has_value[ index ] = true;
     }
 
+    /***
+     *  Set values from a provided array of booleans, where slots from 0 to
+     *  {@code readArray.length - 1} will be set either {@code true} or {@code false).
+     *  The result will not be sparse over this slot range.
+     *
+     *  @param readArray array to read from, OK if {@code null}.
+     */
+    public void setFrom( final boolean[] readArray )
+    {
+        if( null != readArray )
+        {
+            int  j = readArray.length ;
+
+            this.resize( j );
+            while( --j >= 0 )
+            {
+                this.put( j, readArray[j] );
+            }
+        }
+    }
+
+    /***
+     *  Set values from a provided Table.  If new value is put, then it updates
+  existing value.  If a mismatch in size, {@code this} will expand but not
+     *  shrink or be truncated.
+     *
+     *  @param newValues Update values to replace existing values.
+     */
+    public void  setFrom( final TableOfBoolean newValues )
+    {
+        if( null != newValues )
+        {
+            Boolean  nv;
+            for( int j = newValues.size() ; --j >= 0 ; )
+            {
+                nv = newValues.getEntry( j );
+                if( null != nv )
+                    this.put( j, nv );
+            }
+        }
+    }
+
+    //------------------------  BOOLEAN OPERATORS  -----------------------
+
+    /***
+     *  Perform union (OR) with another, updating this.
+     *
+     * @param rhs Perform bit-wise OR with.
+     */
+    public void  unionWith( final TableOfBoolean rhs )
+    {
+        if( null != rhs )
+        {
+            Boolean     ll, rr;
+            int         rhs_size = rhs.size();
+            int         j;
+            final int   new_size = Math.max( this.size(), rhs_size );
+            this.resize( new_size );
+
+            for( j = rhs_size ; --j >= 0 ; )
+            {
+                ll = this.getEntry( j );
+                rr = rhs.getEntry( j );
+                if( null != ll || null != rr )
+                {
+                    if( null == ll )
+                        ll = Boolean.FALSE;
+                    if( null == rr )
+                        rr = Boolean.FALSE;
+
+                    //  If either side has a value, then we can compute union.
+                    this.put( j, ll || rr );
+                }
+                else
+                {
+                    //  Neither side has a value, so remove.
+                    this.remove( j );
+                }
+            }
+        }
+    }
+
+    /***
+     *  Perform intersection (AND) with another, updating this.
+     *  <strong> if {@link rhs} is smaller than {@code this}, then we shrink.</strong>
+     *
+     * @param rhs Boolean array
+     */
+    public void  intersectWith( final TableOfBoolean rhs )
+    {
+        if( null != rhs )
+        {
+            Boolean     ll, rr;
+            int         rhs_size = rhs.size();
+            int         j;
+            final int   new_size = Math.max( this.size(), rhs_size );
+            this.resize( new_size );
+
+            for( j = rhs_size ; --j >= 0 ; )
+            {
+                ll = this.getEntry( j );
+                rr = rhs.getEntry( j );
+                if( null != ll && null != rr )
+                {
+                    //  When both side has a value, then we can compute intersection.
+                    this.put( j, ll && rr );
+                }
+                else
+                {
+                    //  One size or other has a value, so remove.
+                    this.remove( j );
+                }
+            }
+
+            //  If unionWith RHS has fewer places, then shrink ourselves.
+            for ( j = rhs_size ; j < this.size() ; ++j )
+            {
+                this.remove( j );
+            }
+        }
+    }
+
+    /***
+     *  Compare {code this} to {@link rhs} and return {@code true} if values within
+     *  are same and unset places are same, or {@code false} if there are any differences.
+     *  If {@link rhs} is {@code null}, then can never be equal/same.
+     *
+     * <p> Tables do NOT need be the same size, as long as those places with a value
+     *  have identical values, the tables will be same.
+     *  Thus if {@link rhs} has twice as many slots bt both only have values in slots 3 to 12,
+     *  then the tables are the same.
+     *
+     *  @param rhs Another table to compare to.
+     *  @return true if those slots with values are identical values ; otherwise false.
+     */
+    public boolean isSame( final TableOfBoolean rhs )
+    {
+        if( rhs == null )
+            return false;
+
+        int   max_size = Math.max( this.size(), rhs.size() );
+
+        for( int j = max_size ; --j >= 0 ; )
+        {
+            Boolean  ll = this.getEntry( j );
+            Boolean  rr =  rhs.getEntry( j );
+
+            //  We're dealing with references here, so "if( ll != rr )" mearly compares references,
+            //  not the actual values, i.e. true or false.
+            if( (ll == null && rr != null) ||
+                (ll != null && rr == null) )
+            {
+                //  One side is null but other isn't, so not same.
+                return false;
+            }
+            if( ll != null && rr != null && ll.compareTo(rr) != 0 )
+                return false;
+        }
+
+        //  All thing examined are same, so tables are same / equal.
+        return true;
+    }
+
     //--------------------------  INSTANCE VARS  -------------------------
 
     /*** TRUE means we have a value at this index, so can check {@link m_value} array. */
-    protected boolean[]     m_has_value;
+    private boolean[]     m_has_value;
 
-    /*** Client's value, or false if never set. */
-    protected boolean[]     m_value;
+    /*** Client's value, or false if never put. */
+    private boolean[]     m_value;
 
 }

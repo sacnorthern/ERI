@@ -16,7 +16,9 @@
 package org.embeddedrailroad.eri.layoutio;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+
+import com.crunchynoodles.util.TableOfBoolean;
+
 
 /**
  *  Interface of all layout IO models; these hold state of inputs and allow setting of
@@ -50,8 +52,8 @@ import java.util.HashMap;
 public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
 
     /***
-     *  Get class-type of address {@code TUnitAddr} thing.
-     * @return class-type of address {@code TUnitAddr} thing.
+     *  Get class-type of addressing {@code TUnitAddr} thing.
+     * @return class-type of addressing {@code TUnitAddr} thing.
      */
     public Class   getUnitAddressType();
 
@@ -99,7 +101,7 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
      *  If {@code newBits} is null, then it is removed.
      *
      * @param device address of device that gave data.
-     * @param newBits array of them bits.
+     * @param newBits array of them bits, replacing prior.
      */
     public void     setSensedBinaryData( TUnitAddr device, boolean[] newBits );
 
@@ -108,14 +110,21 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
      *  If {@code individual_bits} is null, then nothing changes.
      *
      * @param device address of device that gave data.
-     * @param individual_bits map of which bit to what value.
+     * @param individual_bits map of which bit to what value, union in.
      */
-    public void     setSensedBinaryData( TUnitAddr device, HashMap<Integer, Boolean> individual_bits );
+    public void     setSensedBinaryData( TUnitAddr device, TableOfBoolean individual_bits );
 
     /***
      *  A complex functional-unit on the device reported back a bunch of bytes.
      *  This could be an RFID reader.
      *  If {@code blob} is null, then the sub-function is removed.
+     *
+     *  <p> E.g. device "6.22.19" with sub-function "3" has bytes from an RFID reader,
+     *  bytes "0x56 0x7F 0xA2 0x33 0xFF".  By setting that blob, the previous
+     *  blob from the RFID reader is overwritten.
+     *
+     *  <p> This great for mapping a CV value to a sub-function, so blob is an array
+     *  of one 8-bit value.
      *
      * @param device address of device that gave data
      * @param subfunction functional unit on the device
@@ -132,7 +141,7 @@ public interface LayoutIoModel< TUnitAddr extends Comparable<TUnitAddr> > {
      * @param device address of device
      * @return array of sensed data, indexed by position.
      */
-    public boolean[]    getSensedDataAll( TUnitAddr device )
+    public TableOfBoolean    getSensedDataAll( TUnitAddr device )
             throws UnknownLayoutUnitException, NullPointerException;
 
     /***

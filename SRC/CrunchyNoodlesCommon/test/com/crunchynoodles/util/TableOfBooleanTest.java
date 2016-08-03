@@ -2,7 +2,10 @@
 
 package com.crunchynoodles.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -52,9 +55,9 @@ public class TableOfBooleanTest {
     {
         System.out.println( "clear" );
         TableOfBoolean instance = new TableOfBoolean();
-        instance.set( 14, true);
-        instance.set( 17, true);
-        instance.set( 11, true);
+        instance.put( 14, true);
+        instance.put( 17, true);
+        instance.put( 11, true);
         instance.clear();
 
         //  Check all slots and ensure they are unset.
@@ -113,7 +116,7 @@ public class TableOfBooleanTest {
         for( int j : places )
         {
             assertTrue( "Please change places[] to have smaller values", j < instance.size() );
-            instance.set( j, true );
+            instance.put( j, true );
             expResult[ j ] = true;
         }
 
@@ -163,7 +166,7 @@ public class TableOfBooleanTest {
         int[]  places = { 23, 12, 55, 37, 199, 110 };
         for( int j : places )
         {
-            instance.set( j, true );
+            instance.put( j, true );
         }
 
         //  Read back, ensuring just certain places changed.  Before and after place must be unset and false.
@@ -202,7 +205,7 @@ public class TableOfBooleanTest {
         int[]  places = { 11, 23, 17, 55, 37, 199, 137, 444 };
         for( int j : places )
         {
-            instance.set( j, true );
+            instance.put( j, true );
         }
 
         //  Read back, ensuring just certain places changed.  Before and after place must be unset and false.
@@ -237,7 +240,7 @@ public class TableOfBooleanTest {
         int[]  places = { 7, 23, 17, 65, 37, 202, 501 };
         for( int j : places )
         {
-            instance.set( j, true );
+            instance.put( j, true );
         }
 
         //  Read back, ensuring just certain places changed.  Before and after place must be unset and false.
@@ -269,11 +272,11 @@ public class TableOfBooleanTest {
         assertEquals( expResult, result );
 
         //  Now do a couple of specific places.  DO NOT USE CONSECUTIVE PLACES!!
-        int[]  places = { 7, 23, 17, 65, 37, 202, 501 };
+        final int[]  places = { 7, 23, 17, 65, 37, 202, 501 };
         int   now_alive = places.length;
         for( int slot : places )
         {
-            instance.set( slot, true );
+            instance.put( slot, true );
         }
 
         for( int slot : places )
@@ -295,16 +298,16 @@ public class TableOfBooleanTest {
     }
 
     /**
-     * Test of set method, of class TableOfBoolean.
+     * Test of put method, of class TableOfBoolean.
      */
     @Test
-    public void testSet()
+    public void testPut()
     {
         System.out.println( "set" );
         int index = 0;
         boolean v = false;
         TableOfBoolean instance = new TableOfBoolean();
-        instance.set( index, v );
+        instance.put( index, v );
 
         Boolean  expResult = instance.getEntry( index );
         assertEquals( v, expResult );
@@ -334,5 +337,136 @@ public class TableOfBooleanTest {
         assertEquals( expResult, result );
 
     }
+
+    /**
+     * Test of setFrom method, of class TableOfBoolean.
+     */
+    @Test
+    public void testSetFrom_booleanArr()
+    {
+        System.out.println( "setFrom" );
+        TableOfBoolean instance = new TableOfBoolean();
+
+        //  Setting from a 'null' array doesn't chang anything, and TableOfBoolean()
+        //  is created empty.  So by adding nothing , Table is still empty.
+        boolean[] readArray = null;
+        instance.setFrom( readArray );
+        boolean  expResult = true;
+        boolean  result = instance.isEmpty();
+        assertEquals( expResult, result );
+
+        //  Now do a couple of specific places.  DO NOT USE CONSECUTIVE PLACES!!
+        List<Integer> places = Arrays.asList( 7, 23, 17, 65, 37, 202, 501 );
+        readArray = new boolean[999];
+        for( int slot : places )
+        {
+            readArray[ slot ] = true ;
+        }
+        instance.setFrom( readArray );
+        expResult = false;
+        result = instance.isEmpty();
+        assertEquals( expResult, result );
+
+        for( int j = instance.size() ; --j >= 0 ; )
+        {
+            Boolean  b = instance.getEntry( j );
+            if( places.contains( j ) )
+            {
+                assertNotNull( b );
+                assertTrue( "["+j+"]", b.booleanValue() );
+            } else
+            {
+                assertNotNull( b );
+                assertFalse( "["+j+"]", b.booleanValue() );
+            }
+        }
+    }
+
+    /**
+     * Test of setFrom method, of class TableOfBoolean.
+     */
+    @Test
+    public void testSetFrom_TableOfBoolean()
+    {
+        System.out.println( "setFrom" );
+        TableOfBoolean newValues = null;
+        TableOfBoolean instance = new TableOfBoolean();
+        instance.setFrom( newValues );
+        boolean expResult = true;
+        boolean result = instance.isEmpty();
+        assertEquals( expResult, result );
+
+        //  Now do a couple of specific places.  DO NOT USE CONSECUTIVE PLACES!!
+        final int[]  places = { 7, 23, 17, 65, 37, 202, 501 };
+        int   now_alive = places.length;
+        newValues = new TableOfBoolean( 999 );
+        for( int slot : places )
+        {
+            newValues.put( slot, true );
+        }
+        instance.setFrom( newValues );
+        expResult = true;
+        result = instance.isSame( newValues );
+        assertEquals( expResult, result );
+
+    }
+
+    /**
+     * Test of unionWith method, of class TableOfBoolean.
+     */
+    @Test
+    public void testUnionWith()
+    {
+        System.out.println( "unionWith" );
+        TableOfBoolean rhs = null;
+        TableOfBoolean instance = new TableOfBoolean();
+        instance.unionWith( rhs );
+        // TODO review the generated test code and remove the default call to fail.
+        fail( "The test case is a prototype." );
+    }
+
+    /**
+     * Test of intersectWith method, of class TableOfBoolean.
+     */
+    @Test
+    public void testIntersectWith()
+    {
+        System.out.println( "intersectWith" );
+        TableOfBoolean rhs = null;
+        TableOfBoolean instance = new TableOfBoolean();
+        instance.intersectWith( rhs );
+        // TODO review the generated test code and remove the default call to fail.
+        fail( "The test case is a prototype." );
+    }
+
+    /**
+     * Test of isSame method, of class TableOfBoolean.
+     */
+    @Test
+    public void testIsSame()
+    {
+        System.out.println( "isSame" );
+        TableOfBoolean rhs = null;
+        TableOfBoolean instance = new TableOfBoolean();
+
+        // 1.  The 'null' instance is always false.
+        boolean expResult = false;
+        boolean result = instance.isSame( rhs );
+        assertEquals( expResult, result );
+
+        //  2.  Two instances with 3 values each, added in different order.
+        instance.put( 1, true );
+        instance.put( 3, false );
+        instance.put( 21, true );
+
+        rhs = new TableOfBoolean();
+        rhs.put( 21, true );
+        rhs.put( 3, false );
+        rhs.put( 1, true );
+        expResult = true;
+        result = instance.isSame( rhs );
+        assertEquals( expResult, result );
+
+   }
 
 }

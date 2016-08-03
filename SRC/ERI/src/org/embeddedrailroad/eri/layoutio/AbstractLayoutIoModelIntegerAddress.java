@@ -25,9 +25,14 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
+import com.crunchynoodles.util.TableOfBoolean;
+import java.util.logging.Level;
+
 
 /***
  *  Abstract implementation for {@link LayoutIoModel<Integer>}.
+ *
+ * <p><strong>Remember, {@link byte} type is SIGNED!!</strong>
  *
  * <p> See http://www.onjava.com/pub/a/onjava/2004/07/07/genericmvc.html
  *
@@ -89,12 +94,20 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
         if( device == null )
             throw new NullPointerException("device cannot be null");
 
+        //  'newBits' replaces prior.
         m_lock.writeLock().lock();
         try
         {
             if( newBits != null )
             {
-                m_inputs.put( device, (boolean[]) newBits.clone() );
+                TableOfBoolean  d = m_inputs.get( device );
+                if( null == d )
+                {
+                    //  Fir time here, create fresh TabelOfBoolean for this device.
+                    d = new TableOfBoolean( newBits.length );
+                    m_inputs.put( device, d );
+                }
+                d.setFrom(  newBits );
             }
             else
             {
@@ -103,8 +116,7 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
         }
         catch( Throwable ex )
         {
-            System.out.println( "ERROR in setSensedBinaryData(): " + ex.toString() );
-            ex.printStackTrace( System.out );
+            LOG.logp( Level.WARNING, this.getClass().getSimpleName(), "setSensedBinaryData", "cannot convert", ex );
         }
         finally
         {
@@ -113,64 +125,31 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
     }
 
     @Override
-    public void setSensedBinaryData( Integer device, HashMap<Integer, Boolean> individual_bits )
+    public void setSensedBinaryData( Integer device, TableOfBoolean individual_bits )
     {
-        /***
-         *  'individual_bits' is type HashMap< Integer, Boolean > for CMRI.
-         *  The 'individual_bits' are copied one-at-a-time into the object.
-         */
+
         if( device == null )
             throw new NullPointerException("device cannot be null");
         if( individual_bits == null )
             return;
 
+        //  'individual_bits' OR in with prior.
         m_lock.writeLock().lock();
         try
         {
-
-            //  1.  Determine highest bit number in individual_bits
-            Set<Integer>   keys = individual_bits.keySet();
-            int  max = 0;
-
-            for( Integer itemp : keys )
+            TableOfBoolean  inputs = m_inputs.get( device );
+            if( null == inputs )
             {
-                if( max  < itemp )
-                    max = itemp;
-            }
-            max += 1;
-
-            //  2.  We must have 'max' bits in order to store them all.
-            //      Ensure HashMap.get(device) is big enough, resize if too small.
-            boolean[]   dev_bits = m_inputs.get( device );
-            if( dev_bits == null )
-            {
-                //  Nothing there, so make it right size.
-                dev_bits = new boolean[ max ];
-                m_inputs.put( device, dev_bits );
-            }
-            else if( dev_bits.length < max )
-            {
-                //  More bits have arrived, extend size.
-                dev_bits = Arrays.copyOf( dev_bits, max );
-                m_inputs.put( device, dev_bits );
+                //  first time for this device.  Make one quick and insert it into m_inputs !!
+                inputs = new TableOfBoolean( individual_bits.size() );
+                m_inputs.put( device, inputs );
             }
 
-            //  3.  Copy of the changes, not changing if not mentioned in 'individual_bits'.
-            //      With a Set, bit numbers can be in any order!
-            //      I had a lot of trouble getting the types to match up...  :(
-            Iterator< Map.Entry<Integer, Boolean> >  everything = individual_bits.entrySet().iterator();
-
-            while( everything.hasNext() )
-            {
-                Map.Entry<Integer, Boolean>  entry = everything.next();
-
-                dev_bits[ entry.getKey() ] = entry.getValue();
-            }
+            inputs.setFrom( individual_bits );
         }
         catch( Throwable ex )
         {
-            System.out.println("ERROR in setSensedBinaryData(" + device.toString() + "): " + ex.toString() );
-            ex.printStackTrace( System.out );
+            LOG.logp( Level.WARNING, this.getClass().getSimpleName(), "setSensedBinaryData", "Device=" + device.toString(), ex );
         }
         finally
         {
@@ -182,7 +161,7 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
     public void setSensedBinaryBlob( Integer device, int subfunction, byte[] blob )
     {
         /**
-         *  E.g. device "6.22.19" has sub-function "3" has bytes from an RFID reader,
+         *  E.g. device "6.22.19" with sub-function "3" has bytes from an RFID reader,
          *  bytes "0x56 0x7F 0xA2 0x33 0xFF".  By setting that blob, the previous
          *  blob from the RFID reader is overwritten.
          *
@@ -203,7 +182,7 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
             //  1.  Retrieve all blobs for this device, i.e. function
             if( ! m_blobs.containsKey( device ) )
             {
-                m_blobs.put( device, new  HashMap< Integer, byte[] >() );
+                m_blobs.put( device, new HashMap< Integer, byte[] >() );
             }
             HashMap< Integer, byte[] >  funct = m_blobs.get( device );
 
@@ -219,8 +198,7 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
         }
         catch( Throwable ex )
         {
-            System.out.println("ERROR in setSensedBinaryData(" + device.toString() + "): " + ex.toString() );
-            ex.printStackTrace( System.out );
+            LOG.logp( Level.WARNING, this.getClass().getSimpleName(), "setSensedBinaryData", "Device=" + device.toString(), ex );
         }
         finally
         {
@@ -231,7 +209,7 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
     //--------------------------  DATA GETTORS  --------------------------
 
     @Override
-    public boolean[] getSensedDataAll( Integer device )
+    public TableOfBoolean getSensedDataAll( Integer device )
             throws NullPointerException, UnknownLayoutUnitException
     {
         /***
@@ -252,9 +230,8 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
         }
         catch( UnknownLayoutUnitException ex )
         {
-            System.out.println("ERROR in getSensedDataAll(" + device.toString() + "): " + ex.toString() );
-            ex.printStackTrace( System.out );
-            return new boolean[0];
+            LOG.logp( Level.FINE, this.getClass().getSimpleName(), "getSensedDataAll", "Device=" + device.toString(), ex );
+            return new TableOfBoolean();
         }
 
         return m_inputs.get( device );
@@ -264,14 +241,14 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
     public boolean getSensedDataOne( Integer device, int bit_number )
             throws ArrayIndexOutOfBoundsException, UnknownLayoutUnitException, NullPointerException
     {
-        boolean[]   whole = getSensedDataAll( device );
+        TableOfBoolean   whole = getSensedDataAll( device );
 
-        if( bit_number < 0 || bit_number >= whole.length )
+        if( bit_number < 0 || bit_number >= whole.size() )
         {
             throw new ArrayIndexOutOfBoundsException( "getSensedDataOne(" + device.toString() +"," + bit_number + ") out-of-range" );
         }
 
-        return whole[ bit_number ] ? Boolean.TRUE : Boolean.FALSE;
+        return whole.get( bit_number );
     }
 
     @Override
@@ -294,8 +271,7 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
         }
         catch( Throwable ex )
         {
-            System.out.println("ERROR in getSensedDataAll(" + device.toString() + "): " + ex.toString() );
-            ex.printStackTrace( System.out );
+            LOG.logp( Level.WARNING, this.getClass().getSimpleName(), "getSensedBlob", "Device=" + device.toString(), ex );
         }
         finally
         {
@@ -312,26 +288,26 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
      *  Data access READER/WRITER lock.
      *  @see https://www.obsidianscheduler.com/blog/java-concurrency-part-2-reentrant-locks/
      */
-    transient private final ReadWriteLock   m_lock = new ReentrantReadWriteLock();
+    private final transient     ReadWriteLock   m_lock = new ReentrantReadWriteLock();
 
     /*** Store unit initialization strings, indexed by unit-address. */
-    transient private HashMap< Integer, ArrayList<byte[]> >    m_init_msgs;
+    private final transient     HashMap< Integer, ArrayList<byte[]> >    m_init_msgs;
 
-    transient private HashMap< Integer, byte[] >    m_query_msgs;
+    private final transient     HashMap< Integer, byte[] >          m_query_msgs;
 
     /***
      *  HashMap of boolean input bits, indexed by device address.
      *  {@code m_inputs.get()} returns the whole array for one device.
      */
-    transient private HashMap< Integer, boolean[] >   m_inputs;
+    private final transient     HashMap< Integer, TableOfBoolean >   m_inputs;
 
     /***
      *  Recorded data-blobs from different units: primary index = unit, secondary index = device therein.
      *  Data blobs are as big as given to use, and can vary in size.
      */
-    transient private HashMap< Integer, HashMap< Integer, byte[] > >  m_blobs;
+    private final transient     HashMap< Integer, HashMap< Integer, byte[] > >    m_blobs;
 
     /***  Logging output spigot. */
-    transient private static final Logger LOG = Logger.getLogger( AbstractLayoutIoModelIntegerAddress.class.getName() );
+    private final transient static  Logger LOG = Logger.getLogger( AbstractLayoutIoModelIntegerAddress.class.getName() );
 
 }
