@@ -37,11 +37,21 @@ public class StringUtilsTest {
         System.out.println( "tokenizeQuotedStrings" );
 
         String withQuotes = "   First  \"Second has   Quotes\"  last";
-        List<String> expResult = Arrays.asList( "First", "Second has   Quotes", "last" );
+        //  'expResult' has double constructors so 'expResult' can later to add()-ed to.
+        List<String> expResult = new ArrayList<String>( Arrays.asList( "First", "Second has   Quotes", "last" ) );
         List<String> result = StringUtils.tokenizeQuotedStrings( withQuotes );
         if( result.size() != 3 )
             fail( "StringUtils.tokenizeQuotedStrings() --> List.size != 3" );
         assertEquals( expResult, result );
+
+        withQuotes = withQuotes + "    lastly     \"unquoted three words  ";
+        expResult.add( "lastly" );
+        expResult.add( "unquoted three words  " );
+        result = StringUtils.tokenizeQuotedStrings( withQuotes );
+        if( result.size() != 5 )
+            fail( "StringUtils.tokenizeQuotedStrings() --> List.size != 5" );
+        assertEquals( expResult, result );
+
     }
 
     /**

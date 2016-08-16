@@ -43,17 +43,22 @@ public class StringUtils {  ; // no instances.
     {
         ArrayList<String>  items = new ArrayList<String>();
 
-        final String    regex = "\"([^\"]*)\"|(\\S+)";
+        // ORIG final String    regex = "\"([^\"]*)\"|(\\S+)";
+
+        //  Group 2: Check for unterminated quoted string: assume that missing close of quotation.
+        final String    regex = "\"([^\"]*)\"|\"([^\"]*)$|(\\S+)";
+
         /***
          * There are 2 alternates:
          *   - The first alternate matches the opening double quote, a sequence of anything
          *     but double quote (captured in group 1), then the closing double quote.
-         *   - The second alternate matches any sequence of non-whitespace characters,
-         *     captured in group 2.
+         *   - The third alternate matches any sequence of non-whitespace characters,
+         *     captured in group 3.
          *   - The order of the alternates matter in this pattern.
          *
          * Note that this does not handle escaped double quotes within quoted segments.
          *
+         * Inserted group 2 grabs an un-terminated quoted sub-string.
          */
 
         Matcher m = Pattern.compile(regex).matcher(withQuotes);
@@ -61,9 +66,14 @@ public class StringUtils {  ; // no instances.
             if (m.group(1) != null) {
                 items.add( m.group(1) );
                 //** System.out.println("Quoted [" + m.group(1) + "]");
-            } else {
+            } else
+            if( m.group(2) != null) {
                 items.add( m.group(2) );
-                //** System.out.println("Plain [" + m.group(2) + "]");
+                //** System.out.println("Unterminated [" + m.group(2) + "]");
+            } else
+            {
+                items.add( m.group(3) );
+                //** System.out.println("Plain [" + m.group(3) + "]");
             }
         }
 
