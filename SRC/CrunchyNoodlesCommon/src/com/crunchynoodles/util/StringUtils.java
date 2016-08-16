@@ -1,5 +1,5 @@
 /***  Java Commons and Niceties Library from CrunchyNoodles.com
- ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***  Copyright (C) 2014, 2016 in USA by Brian Witt , bwitt@value.net
  ***
  ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
  ***  you may not use this file except in compliance with the License.
@@ -17,12 +17,15 @@ package com.crunchynoodles.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
+ *   Static methods to help work with Strings.  No instance creation allowed.
  *
  * @author brian
  */
-public class StringUtils {
+public class StringUtils {  ; // no instances.
 
     public static final char    CHAR_DQUOTE = '\"';
     public static final char    CHAR_ESCAPE = '\\';
@@ -32,42 +35,36 @@ public class StringUtils {
      *  If a quoted string is not closed, then the end-of-string implicitly ends token.
      *  The quotes, which can be single or double, are not stored in token list.
      *
+     * @see <a href="http://stackoverflow.com/questions/3366281/tokenizing-a-string-but-ignoring-delimiters-within-quotes">tokenizing-a-string-but-ignoring-delimiters-within-quotes</a>
      * @param withQuotes String with some quoted-tokens.
      * @return List of tokens found.
      */
     public static List<String> tokenizeQuotedStrings( String withQuotes )
     {
         ArrayList<String>  items = new ArrayList<String>();
-        int     start, end;
 
-        //  If input doesn't begin with DQUOTE, then make it all one 'word', trimmed of spaces.
-        start = withQuotes.indexOf( CHAR_DQUOTE );
-        if( start > 0 )
-        {
-            String before = withQuotes.substring( 0, start-1 ).trim();
-            if( !StringUtils.emptyOrNull( before ) )
-                items.add( before );
-        }
+        final String    regex = "\"([^\"]*)\"|(\\S+)";
+        /***
+         * There are 2 alternates:
+         *   - The first alternate matches the opening double quote, a sequence of anything
+         *     but double quote (captured in group 1), then the closing double quote.
+         *   - The second alternate matches any sequence of non-whitespace characters,
+         *     captured in group 2.
+         *   - The order of the alternates matter in this pattern.
+         *
+         * Note that this does not handle escaped double quotes within quoted segments.
+         *
+         */
 
-        for( ; start >= 0 && start < withQuotes.length() ; start = withQuotes.indexOf( CHAR_DQUOTE, end+1) )
-        {
-            //  Find next QUOTE not preceeded by ESCAPE.
-            do
-            {
-                end = withQuotes.indexOf( CHAR_DQUOTE, start+1 );
-                if( end < 0 )
-                {
-                    //  Opps, the string ended without matching QUOTE.  Oh well, pretend it ended
-                    //  with one.  We're all done parsing.
-                    items.add( withQuotes.substring( start+1 ) );
-                    break;
-                }
+        Matcher m = Pattern.compile(regex).matcher(withQuotes);
+        while (m.find()) {
+            if (m.group(1) != null) {
+                items.add( m.group(1) );
+                //** System.out.println("Quoted [" + m.group(1) + "]");
+            } else {
+                items.add( m.group(2) );
+                //** System.out.println("Plain [" + m.group(2) + "]");
             }
-            while( withQuotes.charAt( end-1 ) == CHAR_ESCAPE );
-
-            if( end > 0 )
-                items.add( withQuotes.substring( start+1, end ) );
-
         }
 
         return items;
