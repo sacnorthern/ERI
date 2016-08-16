@@ -1,367 +1,95 @@
-/***  This file is dedicated to the public domain, 2014 Brian Witt in USA.  ***/
+/***  This file is dedicated to the public domain, 2014, 2016 Brian Witt in USA.  ***/
 
 package com.crunchynoodles.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.w3c.dom.Attr;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.TypeInfo;
-import org.w3c.dom.UserDataHandler;
+
+import com.sun.org.apache.xerces.internal.impl.xs.opti.ElementImpl;
 
 /**
  *
  * @author brian
  */
-class TestWithXmlElement implements Element
+class TestWithXmlElement extends ElementImpl
 {
 
-    public TestWithXmlElement( String name )
+    public TestWithXmlElement(int line, int column, int offset)
     {
-        m_name = name;
-        m_attrs = new HashMap<String,String >();
-        m_cdata = "";
+        super( line, column, offset );
     }
 
-    @Override
-    public String getTagName() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+    public TestWithXmlElement(int line, int column)
+    {
+        super( line, column );
     }
 
-    @Override
-    public String getAttribute( String name ) {
-        // "The Attr value as a string, or the empty string if that attribute does not have a specified or default value."
-        for( Map.Entry<String,String > en : m_attrs.entrySet() )
+    public TestWithXmlElement(String prefix, String localpart, String rawname,
+                                String uri, int line, int column, int offset)
+    {
+        super( prefix, localpart, rawname, uri, line, column, offset );
+    }
+
+    public TestWithXmlElement(String prefix, String localpart, String rawname,
+                                String uri, int line, int column)
+    {
+        super( prefix, localpart, rawname, uri, line, column );
+    }
+
+    /***
+     *  Specific constructor to make element with our sample attributes.
+     */
+    public TestWithXmlElement( String localpart )
+    {
+        super( "", localpart, localpart, "", s_counter, 0 );
+        ++s_counter;
+
+        myElementInit();
+    }
+
+    private static int     s_counter = 1;
+
+    // ----------------------------------------------------------------------
+
+    private void myElementInit()
+    {
+
+        //  Create defaults.
+        //  "The Double Brace Initialization Idiom firsts appears as very appealing. ...  when you
+        //   declare a class with double braces, an anonymous class will be created. Because the
+        //   anonymous class is not static, it will also hold a reference (this$0) to its containing
+        //   class (if defined within another class, which is the most normal case). This means that
+        //   the containing instance (this$0) can not be garbage-collected as long as your Map is alive."
+        //      ( from http://minborgsjavapot.blogspot.com/2014/12/java-8-initializing-maps-in-smartest-way.html )
+        //
+        Map<String, String>   def_attrs = imperative();
+
+        for( Map.Entry<String,String>  e : def_attrs.entrySet() )
         {
-            if( en.getKey().equals( name ) )
-            {
-                return en.getValue();
-            }
+            TestWithAttr  a = new TestWithAttr( this, "", e.getKey(), e.getKey(), "", e.getValue() );
+            this.setAttributeNode( a );
         }
-        return "";
-    }
-
-    @Override
-    public void setAttribute( String name, String value )
-            throws DOMException {
-        removeAttribute( name );
-        m_attrs.put( name, value );
-    }
-
-    @Override
-    public void removeAttribute( String name )
-            throws DOMException {
-        m_attrs.remove( name );
-
-        //   *** NOT IMPLEMENTED ***
-        //  "If a default value for the removed attribute is defined in the DTD, a new attribute
-        //   immediately appears with the default value as well as the corresponding namespace URI,
-        //   local name, and prefix when applicable."
 
     }
 
-    @Override
-    public Attr getAttributeNode( String name ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+    /*** Hashmap with default values from our DTD.
+     *   ( from http://minborgsjavapot.blogspot.com/2014/12/java-8-initializing-maps-in-smartest-way.html )
+     */
+
+    protected static Map< String, String > imperative()
+    {
+        final Map< String, String > def_map = new HashMap<>();
+        def_map.put( "lang", "en" );
+        def_map.put( "input", "false" );
+        def_map.put( "output", "false" );
+        def_map.put( "whole", "false" );
+        return ( def_map );
+        //!! return Collections.unmodifiableMap(def_map);
     }
 
-    @Override
-    public Attr setAttributeNode( Attr newAttr )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Attr removeAttributeNode( Attr oldAttr )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public NodeList getElementsByTagName( String name ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getAttributeNS( String namespaceURI, String localName )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setAttributeNS( String namespaceURI, String qualifiedName, String value )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void removeAttributeNS( String namespaceURI, String localName )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Attr getAttributeNodeNS( String namespaceURI, String localName )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Attr setAttributeNodeNS( Attr newAttr )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public NodeList getElementsByTagNameNS( String namespaceURI, String localName )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean hasAttribute( String name ) {
-        return m_attrs.containsKey( name );
-    }
-
-    @Override
-    public boolean hasAttributeNS( String namespaceURI, String localName )
-            throws DOMException {
-        // not implemented, so don't have any.
-        return false;
-        // throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public TypeInfo getSchemaTypeInfo() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setIdAttribute( String name, boolean isId )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setIdAttributeNS( String namespaceURI, String localName, boolean isId )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setIdAttributeNode( Attr idAttr, boolean isId )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getNodeName() {
-        return m_name;
-    }
-
-    @Override
-    public String getNodeValue()
-            throws DOMException {
-        return m_cdata;
-    }
-
-    @Override
-    public void setNodeValue( String nodeValue )
-            throws DOMException {
-        m_cdata = new String( nodeValue );
-    }
-
-    @Override
-    public short getNodeType() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node getParentNode() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public NodeList getChildNodes() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node getFirstChild() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node getLastChild() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node getPreviousSibling() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node getNextSibling() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public NamedNodeMap getAttributes() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Document getOwnerDocument() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node insertBefore( Node newChild, Node refChild )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node replaceChild( Node newChild, Node oldChild )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node removeChild( Node oldChild )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node appendChild( Node newChild )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean hasChildNodes() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node cloneNode( boolean deep ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void normalize() {
-        // do nothing.
-        // throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean isSupported( String feature, String version ) {
-        return false;
-        // throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getNamespaceURI() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getPrefix() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setPrefix( String prefix )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getLocalName() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean hasAttributes() {
-        return ! m_attrs.isEmpty();
-    }
-
-    @Override
-    public String getBaseURI() {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public short compareDocumentPosition( Node other )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getTextContent()
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setTextContent( String textContent )
-            throws DOMException {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean isSameNode( Node other ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String lookupPrefix( String namespaceURI ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean isDefaultNamespace( String namespaceURI ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String lookupNamespaceURI( String prefix ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean isEqualNode( Node arg ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object getFeature( String feature, String version ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object setUserData( String key, Object data, UserDataHandler handler ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object getUserData( String key ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
+    // ----------------------------------------------------------------------
 
 
-    // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-    String  m_name;
-
-    String  m_cdata;
-
-    HashMap<String, String>   m_attrs;
 }
