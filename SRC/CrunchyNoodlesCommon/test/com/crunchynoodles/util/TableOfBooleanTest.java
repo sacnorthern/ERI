@@ -39,6 +39,8 @@ public class TableOfBooleanTest {
 
         //  Array must be same size as how much table is holding.
         assertEquals( len, arr.length );
+
+        assertTrue( instance.isEmpty() );
     }
 
     @Before
@@ -68,6 +70,8 @@ public class TableOfBooleanTest {
             if( instance.containsKey( j ) )
                 fail( "Contains valid data at " + j );
         }
+
+        assertTrue( instance.isEmpty() );
     }
 
     /**
@@ -236,26 +240,36 @@ public class TableOfBooleanTest {
         Boolean result = instance.getEntry( index );
         assertEquals( expResult, result );
 
-        //  Now do a couple of specific places.  DO NOT USE CONSECUTIVE PLACES!!
-        int[]  places = { 7, 23, 17, 65, 37, 202, 501 };
-        for( int j : places )
+        Boolean[]  false_true  = { Boolean.FALSE , Boolean.TRUE };
+        for( Boolean val : false_true )
         {
-            instance.put( j, true );
+            //  start fresh!
+            instance.clear();
+
+            //  Now do a couple of specific places.  DO NOT USE CONSECUTIVE PLACES!!
+            int[]  places = { 7, 23, 17, 65, 37, 202, 501 };
+            for( int j : places )
+            {
+                instance.put( j, val );
+            }
+
+            //  Read back, ensuring just certain places changed.  Before and after place must be unset and false.
+            Boolean  bo;
+            for( int j : places )
+            {
+                bo = instance.getEntry( j-1 );
+                assertNull( "Before slot has value", bo );
+
+                bo = instance.getEntry( j );
+                assertNotNull( "Slot is unset", bo );
+
+                assertEquals( val.booleanValue(), bo.booleanValue() );
+
+                bo = instance.getEntry( j+1 );
+                assertNull( "Before slot has value", bo );
+            }
         }
 
-        //  Read back, ensuring just certain places changed.  Before and after place must be unset and false.
-        Boolean  bo;
-        for( int j : places )
-        {
-            bo = instance.getEntry( j-1 );
-            assertNull( "Before slot has value", bo );
-
-            bo = instance.getEntry( j );
-            assertNotNull( "Slot is unset", bo );
-
-            bo = instance.getEntry( j+1 );
-            assertNull( "Before slot has value", bo );
-        }
     }
 
     /**
