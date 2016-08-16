@@ -1,4 +1,4 @@
-/***  This file is dedicated to the public domain, 2014 Brian Witt in USA.  ***/
+/***  This file is dedicated to the public domain, 2014, 2016 Brian Witt in USA.  ***/
 
 package com.crunchynoodles.util;
 
@@ -59,8 +59,12 @@ public class XmlUtilsTest {
      */
     TestWithXmlElement  makeElement( String eleName, String attrName, String attrValue, String... args)
     {
+        final String  PREFIX = "";
+        final String  URI  = "";
+
         TestWithXmlElement el = new TestWithXmlElement( eleName );
-        el.setAttribute( attrName, attrValue);
+        Attr  newatt = new TestWithAttr(el, PREFIX, attrName, attrName, URI, attrValue );
+        el.setAttributeNode( newatt );
 
         if( args.length % 2 != 0 )
         {
@@ -69,7 +73,10 @@ public class XmlUtilsTest {
 
         for( int j = args.length ; j > 0 ; j -= 2 )
         {
-            el.setAttribute( args[j-1], args[j-2] );
+            attrName = args[j-1];
+            attrValue = args[j-2];
+            newatt = new TestWithAttr(el, PREFIX, attrName, attrName, URI, attrValue );
+            el.setAttributeNode( newatt );
         }
 
         return( el );
@@ -87,18 +94,23 @@ public class XmlUtilsTest {
 
         TestWithXmlElement entry = null;
         XmlUtils.XmlPrintAttrs( outs, entry );
+        outs.println( "]] done.");
 
         entry = makeElement( "first" );
         XmlUtils.XmlPrintAttrs( outs, entry );
+        outs.println( "]] done.");
 
         entry.setAttribute( "attr1", "value1" );
         XmlUtils.XmlPrintAttrs( outs, entry );
+        outs.println( "]] done.");
 
         entry.setAttribute( "attr2", "value2" );
         XmlUtils.XmlPrintAttrs( outs, entry );
+        outs.println( "]] done.");
 
         entry.setAttribute( "attr1", "replacement1" );
         XmlUtils.XmlPrintAttrs( outs, entry );
+        outs.println( "]] done.");
 
         System.out.println( "XmlPrintAttrs - done." );
     }

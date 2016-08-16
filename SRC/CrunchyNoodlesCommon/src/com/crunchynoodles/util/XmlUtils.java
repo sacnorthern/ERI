@@ -93,6 +93,7 @@ public class XmlUtils {
      *  Ask element for the named attribute, then try and convert the value into an integer.
      *  Uses {@link Integer#parseInt(java.lang.String)} for the heavy lifting.
      *  Assumes base 10 unless value starts with "0x" which means hex.
+     *  Octal is NOT supported.
      *  An empty string returns 0.
      *
      * @param element XML element, must not be null.
@@ -125,6 +126,7 @@ public class XmlUtils {
      *  Ask element for the named attribute, then try and convert the value into an integer.
      *  Uses {@code Integer.parseInt()} for the heavy lifting.
      *  Assumes base 10 unless value starts with "0x" which means hex.
+     *  Octal is NOT supported.
      *  An empty or null attribute-value returns 0.
      *
      * @param element XML element, must not be {@code null}.
@@ -133,8 +135,8 @@ public class XmlUtils {
      * @param maxValue largest value that is acceptable, OK if {@code Integer.MAX_VALUE}.
      *
      * @return {@code int} value, when possible.
-     * @throws NumberFormatException Attribute's value is not a valid integer.
-     * @throws AssertionError  If value is outside of given min-max range.
+     * @throws NumberFormatException attribute's value is not a valid integer.
+     * @throws AssertionError  If attribute's value is outside of given min-max range.
      */
     public static int ParseIntegerAttribute( Element element, String attrName, int minValue, int maxValue )
             throws NumberFormatException
@@ -154,9 +156,9 @@ public class XmlUtils {
             val = Integer.parseInt( strval, radix );
 
             if( minValue != Integer.MIN_VALUE && val < minValue )
-                throw new AssertionError( "parsed value too small", null );
+                throw new AssertionError( "parsed integer value too small", null );
             if( maxValue != Integer.MAX_VALUE && val > maxValue )
-                throw new AssertionError( "parsed value too large", null );
+                throw new AssertionError( "parsed integer value too large", null );
         }
 
         return val;
@@ -175,7 +177,8 @@ public class XmlUtils {
      * @param element Element holding some CDATA, must not be {@code null}.
      * @param format E.g. "hexbinary", "hexbytes" or "base64", not case-sensitive.
      * @return array of bytes.
-     * @throws NumberFormatException Attribute's value is not a hex data.
+     * @throws NumberFormatException Attribute's value is not valid hex data.
+     * @throws IllegalArgumentException if encoding name-string not recognized.
      */
     public static byte[] ParseHexBinaryCData( Element element, String format )
             throws NumberFormatException, MissingDataException
