@@ -1,18 +1,17 @@
 /SRC/ERI/build/
 /SRC/ERI/dist/
+/SRC/ERI/nbproject/private/
+
 #  Old names : typo no "y" in crunchy.
 ## /SRC/CrunchNoodlesCommon/nbproject/private/
-/SRC/CrunchNoodlesCommon/build/
-/SRC/CrunchNoodlesCommon/dist/
+/SRC/CrunchyNoodlesCommon/build/
+/SRC/CrunchyNoodlesCommon/dist/
+/SRC/CrunchyNoodlesCommon/nbproject/private/
 
 #  NetBeans support stuff.
-build/*
-dist/*
+
 
 *.bak
 *~
 *.zip
-#  Correct folder names with "y" in crunchy.
-## /SRC/CrunchyNoodlesCommon/nbproject/private/
-/SRC/CrunchyNoodlesCommon/dist/
-/SRC/CrunchyNoodlesCommon/build/
+
