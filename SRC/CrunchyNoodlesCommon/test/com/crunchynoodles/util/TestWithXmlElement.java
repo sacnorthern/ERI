@@ -98,6 +98,9 @@ class TestWithXmlElement extends ElementImpl
     @Override
     public Attr setAttributeNode(Attr newAttr) throws DOMException
     {
+        // See: http://stackoverflow.com/questions/3603405/access-a-private-variable-of-the-super-class-in-java-jchart2d
+        // See: http://stackoverflow.com/questions/1555658/is-it-possible-in-java-to-access-private-fields-via-reflection
+
         //  Use introspection to find 'Attr[] attrs' in parent.  This field is
         //  package-only.  This test class is a leach, so pry a look-see.
 

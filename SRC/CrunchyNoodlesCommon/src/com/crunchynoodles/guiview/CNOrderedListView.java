@@ -9,11 +9,11 @@
  ***  Unless required by applicable law or agreed to in writing, software
  ***  distributed under the License is distributed on an "AS IS" BASIS,
  ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- ***  See the License for the specific languatge governing permissions and
+ ***  See the License for the specific language governing permissions and
  ***  limitations under the License.
  ***/
 
-package com.crunchynoodles.view;
+package com.crunchynoodles.guiview;
 
 import com.crunchynoodles.util.StringUtils;
 import com.crunchynoodles.view.interfaces.AbstractOrderedListView;
@@ -31,16 +31,16 @@ import javax.swing.JList;
  *
  * @author brian
  */
-public class OrderedListView extends AbstractOrderedListView
+public class CNOrderedListView extends AbstractOrderedListView
 {
     public static final String MSG_ACCEPT = "OK";
     public static final String MSG_REJECT = "Cancel";
 
     // ----------------------------------------------------------------------------
 
-    public OrderedListView()
+    public CNOrderedListView()
     {
-        _initComponent();
+        _createComponents();
     }
 
     // ----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ public class OrderedListView extends AbstractOrderedListView
         super.setViewModel( new_model );
 
         //  1.  Extract title and sub-title.
-        Ltitle.setText( m_model.GetTitle() );
+        Ltitle.setText( m_model.getTitle() );
 
         m_title_subtitle.removeAll();
         m_title_subtitle.add( Ltitle );
@@ -93,13 +93,13 @@ public class OrderedListView extends AbstractOrderedListView
     // ----------------------------------------------------------------------------
 
     /***
-     *  Build up the GUI widgets of the OrderedListView.
+     *  Build up the GUI widgets of the CNOrderedListView.
      *  To the basic {@code BorderLayout}, NORTH gets a Vertical box for the title and
      *  subtitle.
      *  EAST gets a vertical stack of buttons with [Add...] on the top and [Remove] on the bottom.
      *  SOUTH gets a Horizontal box that contains the [
      */
-    private void _initComponent()
+    private void _createComponents()
     {
         this.setLayout( new BorderLayout() );
 

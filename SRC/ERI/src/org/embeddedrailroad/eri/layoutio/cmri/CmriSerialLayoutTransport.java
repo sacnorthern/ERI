@@ -96,7 +96,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         XmlPropertyBean  wantedPortBean = this.getProperty( PROP_PORT );
         String  wantedPortName = (String) wantedPortBean.getValue();
 
-        XmlPropertyBean  settings_all_bean = this.getProperty( PROP_SETTINGS );
+        XmlPropertyBean  settings_all_bean = this.getProperty( PROP_SETTINGS ); // "9600,8,n,1"
         String  settings_all = (String) settings_all_bean.getValue();
 
         if( StringUtils.emptyOrNull( wantedPortName ) || StringUtils.emptyOrNull( settings_all ) )
@@ -140,7 +140,7 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         SerialPort  port = null;
         try {
             port = (SerialPort) portId.open(getProtocolName(),  // Use name of the application asking for the port.
-                                    3000        // Wait max. 3 sec. to acquire port.
+                                    2000        // Wait max. 2 sec. to acquire port.
                                     );
         } catch(PortInUseException ex) {
             LOG.log( Level.WARNING, String.format( "Serial port \"%1$s\" already in use.", wantedPortName ), ex );
@@ -148,12 +148,11 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         }
         //
         // Now we are granted exclusive access to the particular serial port.
-        // We can configure it and obtain input and output streams.
         //
         final String[]  settings = settings_all.split( "[,;]" );
         int     baud_rate;
 
-        if( settings.length <= 1 )
+        if( settings.length <= 0 )
         {
             LOG.log( Level.WARNING, "Need at least a baud-rate in PROP_SETTINGS, but got \"{0}\"", settings_all );
             port.close();
@@ -165,10 +164,12 @@ public class CmriSerialLayoutTransport extends AbstractLayoutIoTransport
         //
         try {
             baud_rate = Integer.parseInt( settings[0] );
+            int  stopbits = (settings.length > 3) ? Integer.parseInt(settings[3]) : SerialPort.STOPBITS_1;
+
             port.setSerialPortParams(
                             baud_rate,                      // first is baud rate.
                             SerialPort.DATABITS_8,          // always 8 bit.
-                            SerialPort.STOPBITS_1,
+                            stopbits,
                             SerialPort.PARITY_NONE );       // always NO parity.
         }
         catch( NumberFormatException | UnsupportedCommOperationException ex )

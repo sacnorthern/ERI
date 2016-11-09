@@ -58,7 +58,7 @@ public class XmlPropertyBean
      *  Also white-space and ISO-control chars are rejected.
      *  Trying to use them will throw {@link IllegalArgumentException} exception.
      *  "bool" affirmative is either "yes" or "true".  All other values mean "false".
-     *  <em>However, an empty setting for bool is an exception.</aem>
+     *  <em>However, an empty setting for bool is an exception.</em>
      *
      * @param keystr Key string for storing.
      * @param typestr A well-known name, "bool" or "boolean", "int", "float", "hexbytes", "base64".
@@ -89,7 +89,9 @@ public class XmlPropertyBean
 
             Boolean  res = Boolean.FALSE;
             if( valuestr.equalsIgnoreCase( "true") ||
-                valuestr.equalsIgnoreCase( "yes" ) )
+                valuestr.equalsIgnoreCase( "yes" ) ||
+                valuestr.equalsIgnoreCase( "ok" ) ||
+                valuestr.equalsIgnoreCase( "on" ) )
             {
                 res = Boolean.TRUE;
             }
@@ -178,7 +180,7 @@ public class XmlPropertyBean
      *   Validate the key-name and the type-name.  If bad, then exceptions are thrown.
      *
      * @param keyname string to check.  Cannot be null or contain spaces.
-     * @param typename string to check.  Cannot be null.
+     * @param typename string to check.  Only check is cannot be null.
      *
      * @throws NullPointerException  If any parameter is null.
      * @throws IllegalArgumentException if key contains illegal chars.

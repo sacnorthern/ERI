@@ -88,7 +88,7 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
     public void setSensedBinaryData( Integer device, boolean[] newBits )
     {
         /***
-         *  'device' cannot be null.
+         *  assert : 'device' cannot be null.
          *  'newBits' as null means remove info about 'device'.
          */
         if( device == null )
@@ -103,7 +103,7 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
                 TableOfBoolean  d = m_inputs.get( device );
                 if( null == d )
                 {
-                    //  Fir time here, create fresh TabelOfBoolean for this device.
+                    //  First time here, create fresh TabelOfBoolean for this device.
                     d = new TableOfBoolean( newBits.length );
                     m_inputs.put( device, d );
                 }
@@ -186,10 +186,10 @@ public class AbstractLayoutIoModelIntegerAddress implements LayoutIoModel<Intege
             }
             HashMap< Integer, byte[] >  funct = m_blobs.get( device );
 
-            //  2.  Store the sub-function blob.
+            //  2.  Copy the sub-function blob.
             if( blob != null )
             {
-                funct.put( subf, (byte[]) blob.clone() );
+                funct.put( subf, Arrays.copyOf( blob, blob.length ) );
             }
             else
             {
