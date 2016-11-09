@@ -85,11 +85,11 @@ public class EriApplication
         for( String option : args )
         {
             int  after_colon = -1;
-            if( option.startsWith( "/prop:" ) )
+            if( option.startsWith( "/prop:" ) || option.startsWith( "-prop:" ) )
             {
                 after_colon = 6;
             }
-            else if( option.startsWith( "/property:" ) )
+            else if( option.startsWith( "/property:" ) || option.startsWith( "-property:" ) )
             {
                 after_colon = 10;
             }
@@ -100,7 +100,7 @@ public class EriApplication
                 int  eq = option.indexOf( '=', after_colon );
                 if( eq < 0 )
                 {
-                    Out( "ERROR: ill-formed /property: option {{%s}}", option );
+                    Out( "ERROR: ill-formed property option {{%s}}", option );
                     System.exit(1);
                 }
 
@@ -110,7 +110,11 @@ public class EriApplication
                 s_props.tempPut( key, val );
             }
             else
-            if( option.startsWith( "/help" ) || option.startsWith( "/?" ) || option.startsWith( "--help" ) )
+            if( option.startsWith( "/help" ) ||
+                option.startsWith( "/?" ) ||
+                option.startsWith( "-h" ) ||
+                option.startsWith( "-help" ) ||
+                option.startsWith( "--help" ) )
             {
                 Out( "Help for %s version %s by %s",
                         UserDirectories.ApplicationName,
@@ -119,7 +123,10 @@ public class EriApplication
                 Out( "   /property:KEY=VALUE  -- set property value for program." );
                 Out( "   /prop:KEY=VALUE      -- set property value for program." );
 
-                Out("   Logging level is " + LOG.getLevel() );
+                Out( "   Logging level is " + LOG.getLevel() );
+
+                Out( "Get help: /help /? -h -help --help" );
+                Out( "" );
 
                 LOG.log( Level.INFO, "Application exits...");
                 return ;
@@ -168,6 +175,9 @@ public class EriApplication
         {
             ex.printStackTrace( System.out );
             LOG.log(Level.WARNING, "Failed to startup and initialize: {0}", ex.getMessage());
+
+            eri.shutdownTimers();
+
             System.exit( 2 );
         }
 

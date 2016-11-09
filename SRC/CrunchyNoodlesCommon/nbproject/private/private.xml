@@ -4,9 +4,8 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group name="ArduWriter">
             <file>file:/C:/Devel/Java-ERI/SRC/CrunchyNoodlesCommon/src/com/crunchynoodles/util/XmlPropertyBean.java</file>
-            <file>file:/C:/Devel/Java-ERI/SRC/CrunchyNoodlesCommon/src/com/crunchynoodles/util/FileUtils.java</file>
-            <file>file:/C:/Devel/Java-ERI/SRC/CrunchyNoodlesCommon/test/com/crunchynoodles/util/XmlPropertyBeanTest.java</file>
-            <file>file:/C:/Devel/Java-ERI/SRC/CrunchyNoodlesCommon/test/com/crunchynoodles/util/XmlUtilsTest.java</file>
+            <file>file:/C:/Devel/Java-ERI/SRC/CrunchyNoodlesCommon/src/com/crunchynoodles/util/XmlUtils.java</file>
+            <file>file:/C:/Devel/Java-ERI/SRC/CrunchyNoodlesCommon/src/com/crunchynoodles/util/TableOfBoolean.java</file>
             <file>file:/C:/Devel/Java-ERI/SRC/CrunchyNoodlesCommon/src/com/crunchynoodles/util/XmlPropertyListUtils.java</file>
         </group>
     </open-files>

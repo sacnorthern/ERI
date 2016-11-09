@@ -1,5 +1,5 @@
 /***  Java-ERI    Java-based Embedded Railroad Interfacing.
- ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***  Copyright (C) 2014, 2016 in USA by Brian Witt , bwitt@value.net
  ***
  ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
  ***  you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.osgi.framework.*;
  *  <li>See http://felix.apache.org/documentation/subprojects/apache-felix-ipojo/apache-felix-ipojo-gettingstarted/ipojo-in-10-minutes.html
  *  for how simple bundle activation can be!
  *  <li> See http://www.osgi.org/javadoc/r4v43/core/org/osgi/framework/BundleContext.html for documentation.
+ *  <li> See http://njbartlett.name/osgibook.html for OSGi book ( dated 2009 when downloaded Oct 2016 ).
  * </ul>
  * @author brian
  */

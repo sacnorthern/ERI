@@ -29,6 +29,10 @@ import org.embeddedrailroad.eri.layoutio.LayoutIoActivator;
  *  Start up code registers with {@link LayoutIoProviderManager}, and stopping removes
  *  the registration.
  *
+ * <p> "Thread safety is particularly important in OSGi since it is intrinsically multithreaded,
+ *      but frankly we should always write our code to be thread-safe. " <br>
+ *      --- from http://www.eclipsezone.com/eclipse/forums/t97690.html
+ *
  *  <p> Modeled after OSGi framework:
  * <br>
  *    &nbsp;  http://www.osgi.org/javadoc/r4v43/core/org/osgi/framework/BundleActivator.html

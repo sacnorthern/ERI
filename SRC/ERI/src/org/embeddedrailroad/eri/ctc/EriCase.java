@@ -41,7 +41,9 @@ import org.embeddedrailroad.eri.layoutio.LayoutTimeoutManager;
 import org.embeddedrailroad.eri.xml.BankBean;
 import org.embeddedrailroad.eri.xml.BankListBean;
 import org.embeddedrailroad.eri.xml.LayoutConfigurationBean;
+
 import org.ini4j.*;
+
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -91,6 +93,12 @@ public class EriCase {
 
     //-------------------------  INI LOAD / STORE  ------------------------
 
+    /***
+     *  Load the program's INI file.  Read only once.
+     * @param f {@link File} object connected to a file.
+     * @throws IOException
+     * @throws InvalidFileFormatException
+     */
     public void loadIni( File f )
             throws IOException, InvalidFileFormatException
     {
@@ -105,6 +113,12 @@ public class EriCase {
         }
     }
 
+    /***
+     *  Load the program's INI file.  Read only once.
+     * @param ins {@link InputStream} object connected to INI source.
+     * @throws IOException
+     * @throws InvalidFileFormatException
+     */
     public void loadIni( InputStream ins )
             throws IOException
     {
@@ -119,6 +133,12 @@ public class EriCase {
         }
     }
 
+    /***
+     *  Load the program's INI file.  Read only once.
+     * @param rdr {@link Reader} object connected to INI source.
+     * @throws IOException
+     * @throws InvalidFileFormatException
+     */
     public void loadIni( Reader rdr )
             throws IOException
     {
@@ -177,7 +197,8 @@ public class EriCase {
                 throws FileNotFoundException, ClassNotFoundException,
                         InvalidFileFormatException
     {
-        LOG.entering( "EriCase", "initialize" );
+        final String  _METHOD = "initialize";
+        LOG.entering( "EriCase", _METHOD, iniFilename );
 
         try
         {
@@ -190,7 +211,7 @@ public class EriCase {
         }
         catch( IOException ex )
         {
-            LOG.log( Level.WARNING, "Sorry, initialize() cannot read your INI file", ex );
+            LOG.log( Level.WARNING, "Sorry, " + _METHOD + " cannot read your INI file", ex );
             throw new FileNotFoundException( ex.getMessage() );
         }
 
@@ -208,7 +229,7 @@ public class EriCase {
             }
 
             //  Find section e.g. "[class.cti]"
-            String  provider_section_name = "class." + prov;
+            final String  provider_section_name = "class." + prov;
 
             Ini.Section  provider_sect = Ini.get ( provider_section_name );
             if( provider_sect == null )
@@ -268,7 +289,7 @@ public class EriCase {
                     }
                     catch( ClassNotFoundException ex )
                     {
-                        //  'impl_full_class' not found, which means clas isn't compiled-in.
+                        //  'impl_full_class' not found, which means class isn't compiled-in.
                     }
                 }
 
@@ -294,7 +315,7 @@ public class EriCase {
 
                         System.out.println( "YES!" );
 
-                        //  Remember it, so we'll keep reference to class-loaer and activator.
+                        //  Remember it, so we'll keep reference to class-loader and activator.
                         ActivationStruct  as = new ActivationStruct( cl, activator, fake_bc, provider_section_name );
                         m_activatorList.add( as );
                     }
@@ -356,7 +377,7 @@ public class EriCase {
             }
         }
 
-        LOG.exiting( "EriCase", "initialize" );
+        LOG.exiting( "EriCase", _METHOD );
     }
 
     /***
@@ -466,11 +487,17 @@ public class EriCase {
 
     //--------------------------  INSTANCE VARS  --------------------------
 
+    /*** Section name listing OSGi LayoutIo providers.  Each provider is detailed in its own section, later. */
     public static final String    INI_SECTION_PROVIDERS_NAME = "providers";
+
+    /***
+     *  Each provider uses this key inside section {@link INI_SECTION_PROVIDERS_NAME}.
+     *  Key is repeated for each provider detailed in the INI file.
+     */
     public static final String    INI_KEY_PROVIDERS_PROVIDER_NAME = "provider";
 
     /***
-     *  In "[class.cmri]" section, the optional "jar=" clause specifies a named file wherefore
+     *  In "[class.cmri]" section, the optional "jar=" clause specifies a named file wherein
      *  the Activator class can be found.
      *  However, if class is built-in to the ERI application, this clause is ignored.
      */
@@ -491,174 +518,17 @@ public class EriCase {
      *  and (2) which layout description to load otherwise prompt user.
      */
     public static final String    INI_SECTION_STARTUP_NAME = "startup";
+
+    /*** Key that has layout XML file, within section {@link INI_SECTION_STARTUP_NAME}. */
     public static final String    INI_KEY_LAYOUT_NAME = "layout";
+
+    /*** Key that has describes how to start-up, either "auto", "no" or "yes". */
     public static final String    INI_KEY_STARTUP_NAME = "startup";
 
-    public Ini      Ini = null;
-
+    /*** Singleton holder of all Layout IO providers. */
     public LayoutIoProviderManager   theTransportManager = null;
 
-    //-----------------------  FAKE OSGi BUNDLE CONTEXT  ----------------------
-
-    class FakeOSGiBundleContext implements BundleContext
-    {
-        public  Object  m_reference;
-
-        public FakeOSGiBundleContext( Object obj )
-        {
-            m_reference = obj;
-        }
-
-        @Override
-        public String getProperty( String string ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public Bundle getBundle() {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public Bundle installBundle( String string, InputStream in )
-                throws BundleException {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public Bundle installBundle( String string )
-                throws BundleException {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public Bundle getBundle( long l ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public Bundle[] getBundles() {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void addServiceListener( ServiceListener sl, String string )
-                throws InvalidSyntaxException {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void addServiceListener( ServiceListener sl ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void removeServiceListener( ServiceListener sl ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void addBundleListener( BundleListener bl ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void removeBundleListener( BundleListener bl ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void addFrameworkListener( FrameworkListener fl ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void removeFrameworkListener( FrameworkListener fl ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public ServiceRegistration<?> registerService( String[] strings, Object o, Dictionary<String, ?> dctnr ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public ServiceRegistration<?> registerService( String string, Object o, Dictionary<String, ?> dctnr ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public <S> ServiceRegistration<S> registerService( Class<S> type, S s, Dictionary<String, ?> dctnr ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public <S> ServiceRegistration<S> registerService( Class<S> type, ServiceFactory<S> sf, Dictionary<String, ?> dctnr ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public ServiceReference<?>[] getServiceReferences( String string, String string1 )
-                throws InvalidSyntaxException {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public ServiceReference<?>[] getAllServiceReferences( String string, String string1 )
-                throws InvalidSyntaxException {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public ServiceReference<?> getServiceReference( String string ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public <S> ServiceReference<S> getServiceReference( Class<S> type ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public <S> Collection<ServiceReference<S>> getServiceReferences( Class<S> type, String string )
-                throws InvalidSyntaxException {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public <S> S getService( ServiceReference<S> sr ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public boolean ungetService( ServiceReference<?> sr ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public <S> ServiceObjects<S> getServiceObjects( ServiceReference<S> sr ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public File getDataFile( String string ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public Filter createFilter( String string )
-                throws InvalidSyntaxException {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public Bundle getBundle( String string ) {
-            throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-    }
-
-    //-----------------------  PRIVATE INSTANCE VARS  ---------------------
+    //-----------------  FakeOSGiBundleContext Handy Data  ----------------
 
     class ActivationStruct
     {
@@ -680,10 +550,16 @@ public class EriCase {
 
     private static volatile EriCase    s_instance;
 
-    protected List<ActivationStruct>   m_activatorList = new ArrayList<ActivationStruct>();
-
-    transient protected boolean        m_auto_startup;
-
     /***  Logging spigot. */
     private static transient final Logger LOG = Logger.getLogger( EriCase.class.getName() );
+
+    /*** Global INI file sections, key and values. */
+    protected Ini      Ini = null;
+
+    /*** Known {@link LayoutIoActivator} providers. */
+    private List<ActivationStruct>   m_activatorList = new ArrayList<ActivationStruct>();
+
+    /*** Should polling begin whenever program is started up? */
+    transient protected boolean        m_auto_startup;
+
 }
