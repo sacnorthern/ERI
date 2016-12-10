@@ -31,8 +31,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Map;
+
+import org.ini4j.*;
 
 import org.embeddedrailroad.eri.layoutio.LayoutIoProviderManager;
 import org.embeddedrailroad.eri.layoutio.LayoutIoActivator;
@@ -42,23 +44,18 @@ import org.embeddedrailroad.eri.xml.BankBean;
 import org.embeddedrailroad.eri.xml.BankListBean;
 import org.embeddedrailroad.eri.xml.LayoutConfigurationBean;
 
-import org.ini4j.*;
-
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.BundleListener;
-import org.osgi.framework.Filter;
-import org.osgi.framework.FrameworkListener;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceFactory;
-import org.osgi.framework.ServiceListener;
-import org.osgi.framework.ServiceObjects;
-import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
-
 import com.crunchynoodles.util.StringUtils;
 import com.crunchynoodles.util.exceptions.UnsupportedKeyException;
+import com.crunchynoodles.util.StringUtils;
+import com.crunchynoodles.util.exceptions.UnsupportedKeyException;
+
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.launch.Framework;
+import org.osgi.framework.launch.FrameworkFactory;
+
+// import static org.embeddedrailroad.eri.ctc.EriCase.INI_SECTION_PROVIDERS_NAME;
+// import static org.embeddedrailroad.eri.ctc.EriCase.INI_SECTION_STARTUP_NAME;
 
 
 /**
@@ -160,12 +157,12 @@ public class EriCase {
      *  particular Java class in some JAR file.
      *
      * <p> Some protocol transports providers are compiled in.
-     *  However, if "{@code jar=} is provided, then the compiled-in code not looked at,
+     *  However, if "{@code jar=}" is provided, then the compiled-in code not looked at,
      *  instead using the external code.  Note, it is a failure if same-classes are overridden
      *  but not found.
      *
      * <p> Sample INIFile with two transportation providers.  The layout XML file is also specified.
-     * <pre>
+     * <blockquote><pre>
     [providers]
     provider=cmri
     provider=cti
@@ -174,16 +171,16 @@ public class EriCase {
     jar=dist/ERI.jar
     activator=org.embeddedrailroad.eri.layoutio.cmri.CmriIoActivator
     alias.1=C/MRI
+    alias.2=CmriNet
 
     [class.cti]
     jar=dist/ERI.jar
     activator=org.embeddedrailroad.eri.layoutio.cti.CtiIoActivator
 
-
     [startup]
     layout=front_range_layout.xml
     startup=auto
-</pre>
+</pre></blockquote>
      * <br>
      *  For INI4J help see: http://ini4j.sourceforge.net/tutorial/IniTutorial.java.html
      *
@@ -191,7 +188,8 @@ public class EriCase {
      *
      * @throws FileNotFoundException {@link iniFilename} not found, OR comms JAR file not found.
      * @throws InvalidFileFormatException Your INI file has a syntax error. :(
-     * @throws ClassNotFoundException Comms Java class not found in JAR.
+     * @throws ClassNotFoundException Comms Java class not found in JAR, or cannot start up
+     *         dynamic-class OSGi {@link Framework} manager.
      */
     public void initialize( String iniFilename )
                 throws FileNotFoundException, ClassNotFoundException,
@@ -216,6 +214,18 @@ public class EriCase {
         }
 
         theTransportManager = LayoutIoProviderManager.getInstance();
+
+        //  Start up OSGI framework, so we can load external LayoutIO Transports.
+        final String  loader_name = "com.crunchynoodles.osgi.FakeOSGiFrameworkFactory" ;
+        try
+        {
+            launchOSGi( loader_name, new File[1] );
+        }
+        catch( Exception ex )
+        {
+            LOG.log( Level.SEVERE, "Failed to start OSGi Framework loader", ex );
+            throw new ClassNotFoundException( "Failed to start OSGi Framework loader", ex );
+        }
 
         Ini.Section  provider_section = Ini.get( INI_SECTION_PROVIDERS_NAME );
         List<String>  provider_list = provider_section.getAll( INI_KEY_PROVIDERS_PROVIDER_NAME );
@@ -303,7 +313,7 @@ public class EriCase {
                         final LayoutIoActivator  activator = (LayoutIoActivator) prov_obj;
 
                         //  Create a fake/place-holder bundle context.
-                        FakeOSGiBundleContext fake_bc = new FakeOSGiBundleContext( activator );
+                        BundleContext fake_bc = new FakeOSGiBundleContext( activator );
 
                         // Start it up by calling "void start(BundleContext fake_ctx)"
                         @SuppressWarnings("unchecked")
@@ -453,6 +463,38 @@ public class EriCase {
     }
 
     /***
+     *  Launch the OSGi Framework to load Layout IO Transports.
+     *  Framework is loaded and started up.
+     *
+     * @see "osgi.core-6.0.0.pdf", section 4.2.1"
+     * @param factoryName
+     * @param bundles
+     * @throws Exception
+     */
+    void launchOSGi( String factoryName, File[] bundles )
+                    throws Exception
+    {
+        Map p = new HashMap();
+        p.put( org.osgi.framework.Constants.FRAMEWORK_STORAGE,
+                System.getProperty("user.home")
+                                + File.separator + "osgi" );
+        FrameworkFactory factory = (FrameworkFactory) Class.forName( factoryName ).newInstance();
+        m_framework = factory.newFramework(p);
+        m_framework.init();
+
+        BundleContext context = m_framework.getBundleContext();
+
+        for ( File bundle : bundles )
+            context.installBundle( bundle.toURL().toString() );
+
+        m_framework.start();
+
+        // framework.waitForStop(0);
+    }
+
+    // -----------------------------  Start Your Engines!  -----------------------------
+
+    /***
      *  Run the transports and let the models be alive!
      */
     public void doit()
@@ -483,6 +525,11 @@ public class EriCase {
     public void shutdownTimers()
     {
         LayoutTimeoutManager.getInstance().shutdownNow();
+
+        //  Stop the bundles of the framework, and the framework itself.
+        //  If framework never really started, then it will throw exceptions on the way down.
+        try { m_framework.stop(); } catch(BundleException be) { ; }
+        try { m_framework.waitForStop(0); } catch(InterruptedException ie) { ; }
     }
 
     //--------------------------  INSTANCE VARS  --------------------------
@@ -561,5 +608,8 @@ public class EriCase {
 
     /*** Should polling begin whenever program is started up? */
     transient protected boolean        m_auto_startup;
+
+    /*** OSGi Framework to load external Layout IO Transports. */
+    transient protected Framework      m_framework;
 
 }
