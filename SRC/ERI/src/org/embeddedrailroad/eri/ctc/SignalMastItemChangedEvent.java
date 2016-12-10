@@ -23,9 +23,13 @@ import org.embeddedrailroad.eri.block.interfaces.CtcSignalMastItem;
  */
 public class SignalMastItemChangedEvent extends java.util.EventObject
 {
-    public final static int  CUZ_ADD_TO_MODEL            = 1 << 0;
+    /*** event cause : signal mast added to model. */
+    public final static int  CUZ_ADD_TO_MODEL           = 1 << 0;
+    /*** event cause : signal mast lights went dark. */
     public final static int  CUZ_WENT_DARK              = 1 << 1;
+    /*** event cause : signal mast were light up and active. */
     public final static int  CUZ_WENT_ACTIVE            = 1 << 2;
+    /*** event cause : signal mast indication changed. */
     public final static int  CUZ_INDICATION_CHANGED     = 1 << 3;
 
     /***

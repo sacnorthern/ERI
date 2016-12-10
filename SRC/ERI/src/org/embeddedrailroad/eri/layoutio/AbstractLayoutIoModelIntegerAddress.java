@@ -30,7 +30,7 @@ import java.util.logging.Level;
 
 
 /***
- *  Abstract implementation for {@link LayoutIoModel<Integer>}.
+ *  Abstract implementation for {@link LayoutIoModel} with Integer.
  *
  * <p><strong>Remember, {@link byte} type is SIGNED!!</strong>
  *

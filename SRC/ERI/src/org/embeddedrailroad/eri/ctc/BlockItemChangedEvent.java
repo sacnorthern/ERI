@@ -25,9 +25,13 @@ import org.embeddedrailroad.eri.block.interfaces.CtcBlockItem;
 public class BlockItemChangedEvent extends java.util.EventObject
 {
 
+    /*** event cause : block added to model. */
     public final static int  CUZ_ADD_TO_MODEL           = 1 << 0;
+    /*** event cause : block occupancy status changed. */
     public final static int  CUZ_OCCUPANCY              = 1 << 1;
+    /*** event cause : block signaling direction. */
     public final static int  CUZ_DIRECTION_OF_TRAVEL    = 1 << 2;
+    /*** event cause : a turnout within block changed state. */
     public final static int  CUZ_TURNOUTS               = 1 << 3;
 
     /***
@@ -88,8 +92,13 @@ public class BlockItemChangedEvent extends java.util.EventObject
         return sb.toString();
     }
 
+    /***
+     *  Retrieves the block from whence this event is tied.
+     * @return source of event.
+     */
     public CtcBlockItem  getBlock() { return (CtcBlockItem) this.source; }
 
+    /** Flags indicating what changed in block. */
+    private final int             m_reasons;
 
-    private int             m_reasons;
 }

@@ -48,8 +48,7 @@ public interface NodeMessage< TUnitAddr extends Comparable<TUnitAddr> >
 
     /***
      *  Perform validation on received packet.
-     *
-     * @return true if passes smell-test, false otherwise.
+     *  If good, then does not throw an exception.
      */
     public void         validateMessage()
             throws PacketCheckException, PacketUnknownException;

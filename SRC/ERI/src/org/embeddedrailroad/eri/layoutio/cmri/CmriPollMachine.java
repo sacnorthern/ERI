@@ -133,7 +133,7 @@ public class CmriPollMachine
      *  Return recovery rate for how often to attempt and revive a non-communicating unit.
      *
      * @return value more than 0.0 but not above 1.0.
-     * @see  CmriSerialLayoutTransport.DEFAULT_DISCOVERY_RATE
+     * @see  CmriSerialLayoutTransport#DEFAULT_DISCOVERY_RATE
      */
     public float getRecoveryRate()
     {
@@ -267,7 +267,7 @@ public class CmriPollMachine
 
     /***
      *  Stop polling and kill the polling thread, which shuts down this transport.
-     *  Stop any worker thread from polling and then do {@link Thread.join()} to reclaim it.
+     *  Stop any worker thread from polling and then do {@link Thread#join(long) } to reclaim it.
      *  Will wait just a few seconds for worker-thread to exit itself before returning to caller.
      */
     public synchronized void shutdown()

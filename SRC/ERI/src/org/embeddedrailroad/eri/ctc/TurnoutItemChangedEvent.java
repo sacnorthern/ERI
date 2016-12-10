@@ -23,6 +23,7 @@ import org.embeddedrailroad.eri.block.interfaces.CtcTurnoutItem;
  */
 public class TurnoutItemChangedEvent extends java.util.EventObject
 {
+    /*** event cause : turnout added to model. */
     public final static int  CUZ_ADD_TO_MODEL           = 1 << 0;
     /*** Asking for a possible veto... */
     public final static int  CUZ_CHECKING_VETO          = 1 << 1;
