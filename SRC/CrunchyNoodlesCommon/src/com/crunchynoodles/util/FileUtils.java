@@ -1,5 +1,5 @@
 /***  Java Commons and Niceties Library from CrunchyNoodles.com
- ***  Copyright (C) 2014 in USA by Brian Witt , bwitt@value.net
+ ***  Copyright (C) 2014, 2016 , in USA by Brian Witt , bwitt@value.net
  ***
  ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
  ***  you may not use this file except in compliance with the License.
@@ -9,7 +9,7 @@
  ***  Unless required by applicable law or agreed to in writing, software
  ***  distributed under the License is distributed on an "AS IS" BASIS,
  ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- ***  See the License for the specific languatge governing permissions and
+ ***  See the License for the specific language governing permissions and
  ***  limitations under the License.
  ***/
 
@@ -22,6 +22,12 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import com.google.common.io.*;
 
@@ -54,7 +60,7 @@ public class FileUtils
      *
      * @param filename filename
      * @param charSet E.g. "UTF-8" or "ISO-8859-1"
-     * @return file as whole string, with line endings in tack.
+     * @return file as whole string, with line endings intact.
      * @throws FileNotFoundException
      * @throws IOException
      * @see <a href="http://stackoverflow.com/questions/326390/how-to-create-a-java-string-from-the-contents-of-a-file">java string from file contents</a>
@@ -98,6 +104,53 @@ public class FileUtils
         }
 
         return sb.toString();
+    }
+
+    /***
+     *  Completely deletes a directory along with all files therein.
+     *  "In other words, it does not follow symbolic links, and visits all levels of the file tree."
+     * <p>
+     *  Requires Java 1.7 nio.
+     *
+     * @see "https://docs.oracle.com/javase/7/docs/api/java/nio/file/FileVisitor.html"
+     * @param dirname Directory to remove, i.e. "C:\Users\Mikey\Documents\Working\DeleteMe".
+     */
+    public static void deleteDirectory( final String dirname )
+    {
+        Path path = Paths.get( dirname );
+
+        try {
+            //browsing the file directory and delete recursively using java nio
+            Files.walkFileTree( path, new SimpleFileVisitor<Path>() {
+
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                        throws IOException
+                    {
+                        Files.delete(file);
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException e)
+                        throws IOException
+                    {
+                        if (e == null) {
+                            Files.delete(dir);
+                            return FileVisitResult.CONTINUE;
+                        } else {
+                            // directory iteration failed
+                            throw e;
+                        }
+                    }
+             });
+
+        }
+        catch( IOException ioe )
+        {
+            System.out.println( "deleteDirectory() failed: " + ioe.getMessage() );
+        }
+
     }
 
     // ----------------------------------------------------------------------------

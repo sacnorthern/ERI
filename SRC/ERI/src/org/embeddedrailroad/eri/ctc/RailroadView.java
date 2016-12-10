@@ -69,6 +69,6 @@ public class RailroadView
 
     //--------------------------  INSTANCE VARS  -------------------------
 
-    protected RailroadModel   m_model;
+    protected transient RailroadModel   m_model;
 
 }
