@@ -197,9 +197,9 @@ public class FakeOSGiFrameworkFactory implements FrameworkFactory
         // ------------------------------------------------------------
 
         //  Append extra stuff ...
-        _concatProps( config_settings, Constants.FRAMEWORK_SYSTEMCAPABILITIES, Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA );
+        _extendOneProperty( config_settings, Constants.FRAMEWORK_SYSTEMCAPABILITIES, Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA );
 
-        _concatProps( config_settings, Constants.FRAMEWORK_SYSTEMPACKAGES, Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA );
+        _extendOneProperty( config_settings, Constants.FRAMEWORK_SYSTEMPACKAGES, Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA );
 
         // ------------------------------------------------------------
 
@@ -223,9 +223,9 @@ public class FakeOSGiFrameworkFactory implements FrameworkFactory
      *
      * @param config_settings Mapping to update
      * @param capa_base key to appended to
-     * @param capa_extra key of optional extras to append.
+     * @param capa_extra key of extras to append, which can be {@code null} or empty-string.
      */
-    private void _concatProps( Map<String, String> config_settings,
+    private void _extendOneProperty( Map<String, String> config_settings,
                                final String  capa_base,
                                final String  capa_extra )
     {
@@ -233,7 +233,7 @@ public class FakeOSGiFrameworkFactory implements FrameworkFactory
         String  caps  = config_settings.get( capa_base );
         if( ! StringUtils.emptyOrNull( extra ) )
         {
-        //  Append ...
+            //  Append ...
             caps = caps + CAPA_SEP + extra;
             config_settings.put( capa_base, caps );
         }

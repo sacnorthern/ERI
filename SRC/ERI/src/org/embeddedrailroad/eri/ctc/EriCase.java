@@ -46,8 +46,6 @@ import org.embeddedrailroad.eri.xml.LayoutConfigurationBean;
 
 import com.crunchynoodles.util.StringUtils;
 import com.crunchynoodles.util.exceptions.UnsupportedKeyException;
-import com.crunchynoodles.util.StringUtils;
-import com.crunchynoodles.util.exceptions.UnsupportedKeyException;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -78,14 +76,16 @@ public class EriCase {
      */
     public static EriCase getInstance()
     {
-        if (s_instance == null) { // first time lock
+        EriCase inst = EriCase.s_instance;
+        if (inst == null) { // first-time lock
             synchronized (EriCase.class) {
-                if (s_instance == null) {  // second time lock
-                    s_instance = new EriCase();
+                inst = EriCase.s_instance;
+                if (inst == null) {  // second-time lock
+                    EriCase.s_instance = inst = new EriCase();
                 }
             }
         }
-        return s_instance;
+        return inst;
     }
 
     //-------------------------  INI LOAD / STORE  ------------------------
@@ -313,7 +313,9 @@ public class EriCase {
                         final LayoutIoActivator  activator = (LayoutIoActivator) prov_obj;
 
                         //  Create a fake/place-holder bundle context.
-                        BundleContext fake_bc = new FakeOSGiBundleContext( activator );
+                        //!! BundleContext fake_bc = new FakeOSGiBundleContext( activator );
+
+                        BundleContext fake_bc = null;
 
                         // Start it up by calling "void start(BundleContext fake_ctx)"
                         @SuppressWarnings("unchecked")
@@ -474,7 +476,7 @@ public class EriCase {
     void launchOSGi( String factoryName, File[] bundles )
                     throws Exception
     {
-        Map p = new HashMap();
+        Map<String,String>  p = new HashMap<String, String>();
         p.put( org.osgi.framework.Constants.FRAMEWORK_STORAGE,
                 System.getProperty("user.home")
                                 + File.separator + "osgi" );
@@ -528,8 +530,8 @@ public class EriCase {
 
         //  Stop the bundles of the framework, and the framework itself.
         //  If framework never really started, then it will throw exceptions on the way down.
-        try { m_framework.stop(); } catch(BundleException be) { ; }
-        try { m_framework.waitForStop(0); } catch(InterruptedException ie) { ; }
+        try { m_framework.stop(); } catch(BundleException be) { }
+        try { m_framework.waitForStop(0); } catch(InterruptedException ie) { }
     }
 
     //--------------------------  INSTANCE VARS  --------------------------

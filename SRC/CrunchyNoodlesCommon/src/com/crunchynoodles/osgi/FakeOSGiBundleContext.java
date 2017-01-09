@@ -40,12 +40,13 @@ import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceObjects;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.launch.Framework;
 
 
 /***
  * -----------------------  FAKE OSGi BUNDLE CONTEXT  ---------------------- <br>
+ *
  * BundleContext - A bundle's execution context within the Framework.
- * A bundle's execution context within the Framework.
  * The context is used to grant access to other methods so that this bundle can interact with the Framework.
  *  <p>
  * BundleContext methods allow a bundle to: <ul>
@@ -58,9 +59,9 @@ import org.osgi.framework.ServiceRegistration;
  *  <li> Get the Bundle object for a bundle.
  *  <li> Create {@link File} objects for files in a persistent storage area provided for the bundle by the Framework.
  * </ul>
- * A BundleContext object will be created for a bundle when the bundle is started.
- * The {@link Bundle} object
- * associated with a BundleContext object is called the context bundle.
+ * "A {@code BundleContext} object will be created for a bundle when the bundle
+ *  is started. The {@code Bundle} object associated with a {@code BundleContext}
+ *  object is called the <em>context bundle</em>."
  * <p>
  *  @see also "osgi.core-6.0.0.pdf"
  * @author brian
@@ -68,23 +69,24 @@ import org.osgi.framework.ServiceRegistration;
 
 public class FakeOSGiBundleContext implements BundleContext
 {
-    final public  Object  m_reference;
-    final private List<Bundle>  m_bundle;
+    final public  Framework   m_reference;
+    final private Bundle     m_bundle;
 
     /*** Bundles that are interested in our state changes. */
     final private transient EventListenerList  m_bundleListener;
 
 
-    public FakeOSGiBundleContext( Object obj )
+    public FakeOSGiBundleContext( Framework obj )
     {
         this.m_bundleListener = new EventListenerList ();
-
+        this.m_bundle = null;
         this.m_reference = obj;
-        this.m_bundle = new ArrayList<Bundle>(1);
     }
 
     @Override
-    public String getProperty( String string ) {
+    public String getProperty( String string )
+    {
+        // this.getBundle().
         throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -93,7 +95,7 @@ public class FakeOSGiBundleContext implements BundleContext
     @Override
     public Bundle getBundle()
     {
-        return m_bundle.get( 0 );
+        return m_bundle;
     }
 
     @Override
@@ -110,12 +112,15 @@ public class FakeOSGiBundleContext implements BundleContext
     }
 
     @Override
-    public Bundle getBundle( long l ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+    public Bundle getBundle( long l )
+    {
+        return m_bundle;
     }
 
     @Override
-    public Bundle[] getBundles() {
+    public Bundle[] getBundles()
+    {
+        // "4.5.1 : getBundles() - Returns an array of the bundles currently installed in the Framework."
         throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
     }
 

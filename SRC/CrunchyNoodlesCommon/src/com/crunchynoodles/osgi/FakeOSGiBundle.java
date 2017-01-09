@@ -1,8 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+/***  Java Commons and Niceties Library from CrunchyNoodles.com
+ ***  Copyright (C) 2016 in USA by Brian Witt , bwitt@value.net
+ ***
+ ***  Licensed under the Apache License, Version 2.0 ( the "License" ) ;
+ ***  you may not use this file except in compliance with the License.
+ ***  You may obtain a copy of the License at:
+ ***        http://www.apache.org/licenses/LICENSE-2.0
+ ***
+ ***  Unless required by applicable law or agreed to in writing, software
+ ***  distributed under the License is distributed on an "AS IS" BASIS,
+ ***  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ***  See the License for the specific language governing permissions and
+ ***  limitations under the License.
+ ***/
+
 package com.crunchynoodles.osgi;
 
 import java.io.File;
@@ -34,14 +44,13 @@ public class FakeOSGiBundle implements Bundle
      *  same {@link #getBundleId() bundle id} they are equal."
      *
      * @param ident Framework's bundle ID.
-     * @param url_wherefrom "file:YOUR.jar" (no forward-slashes with "file:").
      */
-    public FakeOSGiBundle( long ident, String url_wherefrom )
+    public FakeOSGiBundle( long ident )
     {
         m_state = UNINSTALLED;
         m_ident = ident;
         m_last_update_time_millis = 0;
-        m_wherefrom_url = url_wherefrom;
+        m_wherefrom_url = null;
     }
 
     // -----------------------  Settors and Gettors  --------------------------
@@ -66,6 +75,33 @@ public class FakeOSGiBundle implements Bundle
         if( UNINSTALLED == m_state )
         {
             throw new IllegalStateException( "bundle is uninstalled." );
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return ((int) m_ident) * 0x | ((int) (m_ident >> 31));
+    }
+
+    @Override
+    public boolean equals( Object obj ) {
+        if( this == obj ) {
+            return true;
+        }
+        if( obj == null ) {
+            return false;
+        }
+        if( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final FakeOSGiBundle other = (FakeOSGiBundle) obj;
+        if( this.m_state != other.m_state ) {
+            return false;
+        }
+        if( this.m_ident != other.m_ident ) {
+            return false;
         }
         return true;
     }
